@@ -2,13 +2,25 @@ import AppLayout from '@/layouts/app-layout';
 import Register from './auth/register';
 import AppTable, { Column } from '@/components/table';
 import Profile from 'settings/profile';
-import { Head } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { PopUpMessage } from '@/components/pop-up-message';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash } from 'lucide-react';
 import { useEcho } from '@laravel/echo-react';
 import { useEffect, useState } from 'react';
+import { FormEventHandler } from 'react';
+
+import { type BreadcrumbItem, type SharedData } from '@/types';
+
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+
+import * as React from 'react';
+import Box from '@mui/material/Box';
+import Modal from '@mui/material/Modal';
+import Typography from '@mui/material/Typography';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -17,10 +29,146 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+type userForm = {
+    name: string,
+    email: string,
+    password: string,
+    role: string,
+};
+
 function RegiterAccount() {
     return (
         <Register />
     );
+}
+
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 800,
+  bgcolor: 'background.paper',
+  boxShadow: 24,
+  p: 4,
+};
+
+function EditUserModal({ isOpen, onClose, userData }) {
+    const { data, setData, patch, errors, processing, reset } = useForm({
+        name: userData?.name || '',
+        email: userData?.email || '',
+        password: '',
+        role: userData?.role || '',
+    });
+
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+        patch(route('user.update', userData?.id), {
+            preserveScroll: true,
+            onSuccess: (response) => {
+                console.log(`response ${response}`)
+                reset('password');
+                onClose();
+            },
+            onError: (errors) => {
+                console.log('Update failed:', errors);
+            }
+        });
+    };
+
+    return (<>
+        <Modal
+            keepMounted
+            open={isOpen}
+            onClose={onClose}
+            aria-labelledby="keep-mounted-modal-title"
+            aria-describedby="keep-mounted-modal-description"
+        >
+            <Box sx={style}>
+                <Typography id="keep-mounted-modal-title" variant="h6" component="h2" className="flex items-center justify-between">
+                    Edit User
+                    <Button className="text-[#ffffff] !bg-[#393E46]" onClick={onClose}>
+                        <X />
+                    </Button>
+                </Typography>
+                <Box sx={{ mt: 2 }}>
+                    <form onSubmit={submit} className="space-y-4">
+                        <div>
+                            <Label className="block text-sm font-medium mb-1">Name</Label>
+                            <Input
+                                type="text"
+                                value={data.name}
+                                onChange={(e) => setData('name', e.target.value)}
+                                autoComplete="name"
+                                className="w-full border rounded px-3 py-2"
+                            />
+                            {errors.name && <span className="text-red-500 text-sm">{errors.name}</span>}
+                        </div>
+
+                        <div>
+                            <Label className="block text-sm font-medium mb-1">Email</Label>
+                            <Input
+                                type="email"
+                                value={data.email}
+                                onChange={(e) => setData('email', e.target.value)}
+                                autoComplete="email"
+                                className="w-full border rounded px-3 py-2"
+                            />
+                            {errors.email && <span className="text-red-500 text-sm">{errors.email}</span>}
+                        </div>
+
+                        <div>
+                            <Label className="block text-sm font-medium mb-1">Password</Label>
+                            <Input
+                                type="text"
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
+                                autoComplete="current-password"
+                                className="w-full border rounded px-3 py-2"
+                            />
+                            {errors.email && <span className="text-red-500 text-sm">{errors.email}</span>}
+                        </div>
+
+                        <div>
+                            <Label htmlFor='role' className="block text-sm font-medium mb-1">Role</Label>
+                            <Select
+                                value={data.role}
+                                onValueChange={(value) => setData('role', value)}
+                                className="w-full border rounded px-3 py-2"
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a role" />
+                                </SelectTrigger>
+                                <SelectContent className="z-[9999]">
+                                    <SelectItem value="super user">Super User</SelectItem>
+                                    <SelectItem value="staff">Staff</SelectItem>
+                                    <SelectItem value="technician">Technician</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {errors.role && <span className="text-red-500 text-sm">{errors.role}</span>}
+                        </div>
+
+                        <div className="flex justify-end space-x-2 pt-4">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                            >
+                                {processing ? 'Saving...' : 'Save'}
+                            </button>
+                        </div>
+                    </form>
+                </Box>
+            </Box>
+        </Modal>
+    </>);
 }
 
 function Accounts() {
@@ -28,15 +176,19 @@ function Accounts() {
     const [fetchedUsers, setFetchedUsers] = useState<any[]>([]);
     const [deleteProcessLoading, setDeleteProcessing] = useState<Set<number>>(new Set());
 
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedUserData, setSelectedUserData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [fetchLoading, setFetchLoading] = useState(true);
+
+    const { auth } = usePage().props;
+
     const [popups, setPopups] = useState<Array<{
         id: string;
         message: string;
         show: boolean;
         animate: boolean;
     }>>([]);
-    // const [showPanel, setShowPanel] = useState(false);
-    // const [animate, setAnimate] = useState(false);
-    // const [panelMessage, setPanelMessage] = useState("");
 
     const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
 
@@ -83,7 +235,7 @@ function Accounts() {
         }, 3000);
     };
 
-    async function hundleFetchUsers() {
+    const hundleFetchUsers = async () => {
         try {
             const response = await fetch(`${apiBase}/manage-accounts/fetch`, {
                 method: 'GET',
@@ -100,30 +252,60 @@ function Accounts() {
 
         } catch ( err ) {
             throw err instanceof Error ? err : new Error(String(err));
+        } finally {
+            setFetchLoading(false);
         }
     }
 
-    async function handleEdit( userId: number ) {
+    const handleEdit = async ( userId: number ) => {
+
         if ( !userId ) {
             return console.error('No user ID provided');
         }
 
+        setLoading(true);
+
         try{
             const res = await fetch(`${apiBase}/manage-accounts/edit/${userId}`, {
-                method: 'POST',
+                method: 'GET',
                 headers: {
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    'Content-Type': 'application/json',
+                    // "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || ''
                 }
             });
 
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+
             const userData = await res.json();
+
+            setSelectedUserData(userData.data);
+            setIsModalOpen(true);
 
         } catch (err) {
             console.error("Error editing user:", err);
+        } finally {
+            setLoading(false);
         }
+
+        return (<>
+
+        </>)
     }
 
-    async function handleDelete( userId: number ){
+    useEffect(() => {
+        if (selectedUserData) {
+            console.log(`User ${selectedUserData.id}`);
+        }
+    }, [selectedUserData]);
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedUserData(null);
+    };
+
+    const handleDelete = async ( userId: number ) => {
         setDeleteProcessing(prev => new Set([...prev, userId]))
         if (!userId) {
             setDeleteProcessing(prev => {
@@ -181,7 +363,7 @@ function Accounts() {
                 <div className="flex items-center justify-center gap-5">
                     <button
                         className="text-[#222831] dark:text-[#ffffff]"
-                        onClick={() => console.log("Edit", row)}>
+                        onClick={() => handleEdit(row.userId)}>
                         <Pencil className="w-4 h-4" />
                     </button>
                     <button
@@ -215,9 +397,13 @@ function Accounts() {
         return { userId, name, email, role };
     }
 
-    const rows = fetchedUsers.map( user =>
+    const rows = fetchedUsers
+    .filter(user => user.id !== auth.user?.id)
+    .map( user =>
         createData(user.id, user.name, user.email, user.role)
     );
+
+    // console.log(selectedUserData.name)
 
 
     return (<>
@@ -229,7 +415,21 @@ function Accounts() {
                 message={popup.message}
             />
         ))}
-        <AppTable columns={columns} rows={ rows } />
+
+        {selectedUserData && (
+            <EditUserModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                userData={selectedUserData}
+            />
+        )}
+
+        <AppTable
+            columns={columns}
+            rows={ rows }
+            isLoading={fetchLoading} // Pass loading state
+            rowsPerPageOptions={[5, 10, 25]}
+        />
     </>);
 }
 

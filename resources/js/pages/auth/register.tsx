@@ -146,7 +146,7 @@ export default function Register() {
                                 <SelectValue placeholder="Select a role" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="super_user">Super User</SelectItem>
+                                <SelectItem value="super user">Super User</SelectItem>
                                 <SelectItem value="staff">Staff</SelectItem>
                                 <SelectItem value="technician">Technician</SelectItem>
                             </SelectContent>

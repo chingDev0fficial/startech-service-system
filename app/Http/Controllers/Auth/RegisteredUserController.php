@@ -13,6 +13,8 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 
+use Illuminate\Support\Facades\Crypt;
+
 
 class RegisteredUserController extends Controller
 {
