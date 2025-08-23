@@ -3,7 +3,7 @@ import { Radio } from "@material-tailwind/react";
 function CustomRadio({options}) {
     return (<>
         {options.map(option => (
-            <label className="flex items-center border border-gray-500 rounded-[20px] gap-5 p-5 cursor-pointer  has-[:checked]:border-[#222831]">
+            <label className="flex items-center border border-input rounded-[20px] gap-5 p-5 cursor-pointer  has-[:checked]:border-[#222831]">
                 <input
                     name="service"
                     value={option.value}
