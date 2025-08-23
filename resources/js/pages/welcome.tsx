@@ -15,21 +15,23 @@ import { Input } from '@/components/ui/input';
 
 import routes from './routes.json';
 
+type ServiceType = "hardware repair" | "software solution" | "maintenance"
+
+interface AppointmentFormData {
+    serviceLocation: string,
+    date: string,
+    time: string,
+    serviceType: serviceType | "",
+    fullname: string,
+    email: string,
+    phone_no: string,
+    address?: string,
+    description: string,
+}
+
 export default function welcome(){
 
-    type serviceType = "hardware repair" | "software solution" | "maintenance"
 
-    interface appointmentFormData {
-        serviceLocation: string,
-        date: string,
-        time: string,
-        serviceType: serviceType | "",
-        fullname: string,
-        email: string,
-        phone_no: string,
-        address?: string,
-        description: string,
-    }
     const { data, setData, post, processing, errors, reset } = useForm<appointmentFormData>({
         serviceLocation: '',
         date: '',
@@ -137,8 +139,8 @@ export default function welcome(){
                         <div className="flex flex-col gap-[10px] w-full">
                             <Label htmlFor="role">Services</Label>
                             <Select
-                                value={serviceType}
-                                onValueChange={(value: serviceType) => setData(serviceType, value)}
+                                value={data.serviceType}
+                                onValueChange={(value: ServiceType) => setData('serviceType', value)}
                                 disabled={processing}
                             >
                                 <SelectTrigger>
