@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
+import { useEcho } from '@laravel/echo-react';
+
 import routes from './routes.json';
 
 type ServiceType = "hardware repair" | "software solution" | "maintenance"
@@ -32,9 +34,31 @@ interface AppointmentFormData {
 
 
 export default function welcome(){
+    // const echo = useEcho();
+    //
+    // const [fetchedAppoints, setFetchedAppoints] = useState<any[]>([]);
+    //
+    // useEffect(() => {
+    //
+    //     hundleFetchUsers()
+    //         .then(data => setFetchedUsers(data))
+    //         .catch(err => {throw new Error(err)});
+    //
+    //     echo.channel('appointments')
+    //         .listen('.client.appoint', (event: any) => {
+    //             addPopup('Successfully Deleted');
+    //             setFetchedAppoints(event.appointments)
+    //             // setFetchedUsers(prev => prev.filter(user => user.id !== event.user.id));
+    //         });
+    //
+    //     // Cleanup listener on unmount
+    //     return () => {
+    //         echo.leaveChannel('users');
+    //     };
+    // }, [echo]);
 
 
-    const { data, setData, post, processing, errors, reset } = useForm<appointmentFormData>({
+    const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormData>({
         serviceLocation: '',
         date: '',
         time: '',
@@ -43,6 +67,7 @@ export default function welcome(){
         email: '',
         phone_no: '',
         address: '',
+        item: '',
         description: '',
     });
 
@@ -73,8 +98,8 @@ export default function welcome(){
     }
 
     const options = [
-        { value: 0, title: "In-Store Service", sub: "Visit our service center"},
-        { value: 1, title: "Home Service", sub: "We will come to you (+25Php)"},
+        { value: "in-store", title: "In-Store Service", sub: "Visit our service center"},
+        { value: "home", title: "Home Service", sub: "We will come to you (+25Php)"},
     ]
 
     const footerItems = [
@@ -88,11 +113,8 @@ export default function welcome(){
         "02:30 PM", "04:00 PM", "05:30 PM"
     ]
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        // console.log(Object.fromEntries(formData));
-        console.log (e.currentTarget);
+    const handleSubmit = (formData) => {
+        console.log(formData);
     }
 
     return (<>
@@ -126,29 +148,44 @@ export default function welcome(){
             <div className="grid content-center justify-items-center p-[20px]">
                 <h1 className="text-[2rem] font-bold text-[#222831]">Book Your Service</h1>
                 <div className="lg:w-[60%] w-full">
-                    <form onSubmit={handleSubmit} className="flex flex-col bg-[#ffffff] shadow-lg rounded-lg p-[20px] gap-5">
+                    <form action={handleSubmit} className="flex flex-col bg-[#ffffff] shadow-lg rounded-lg p-[20px] gap-5">
                         <div className="flex lg:flex-row flex-col justify-center gap-[10px]">
                             <div className="flex flex-col gap-[10px] w-full">
                                 <label className="font-medium text-[#222831]">Service Location</label>
-                                <CustomRadio options={options} />
+                                <CustomRadio
+                                    options={options}
+                                    name="serviceLocation"
+                                    value={data.serviceLocation}
+                                    onChange={(option) => setData('serviceLocation', option)}
+                                />
                             </div>
 
                             <div className="flex flex-col gap-[10px] w-full">
                                 <label className="font-medium text-[#222831]">Select Time & Date</label>
-                                <Input
+                                <input
                                     type="date"
+                                    name="date"
+                                    value={data.date}
+                                    onChange={handleChange}
                                     className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0"
                                     required
                                 />
                                 <div className="grid grid-cols-3 gap-2">
-                                    <TimeList times={technicianAvailableTime} />
+                                    <TimeList
+                                        times={technicianAvailableTime}
+                                        name="time"
+                                        value={data.time}
+                                        onChange={(time) => setData('time', time)}
+                                    />
                                 </div>
                             </div>
                         </div>
                         <div className="flex flex-col gap-[10px] w-full">
-                            <Label htmlFor="role">Services</Label>
+                            <Label htmlFor="serviceType">Services</Label>
                             <Select
+                                name="serviceType"
                                 value={data.serviceType}
+                                onChange={handleChange}
                                 onValueChange={(value: ServiceType) => setData('serviceType', value)}
                                 disabled={processing}
                             >
@@ -166,15 +203,15 @@ export default function welcome(){
                         <div className="flex flex-col gap-[10px] w-full">
                             <label className="font-medium text-[#222831]">Contact Inforation</label>
                             <div className="grid lg:grid-rows-2 lg:grid-cols-2 gap-2">
-                                <input type="text" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Full Name" required />
-                                <input type="email" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Email"  required />
-                                <input type="text" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Phone Number" required />
-                                <input type="tel" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Address (for home service only)" />
+                                <input name="fullname" value={data.fullname} onChange={handleChange} type="text" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Full Name" required />
+                                <input name="email" value={data.email} onChange={handleChange} type="email" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Email"  required />
+                                <input name="phone_no" value={data.phone_no} onChange={handleChange} type="tel" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Phone Number" required />
+                                <input name="address" value={data.address} onChange={handleChange} type="text" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Address (for home service only)" />
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-[10px] w-full">
-                            <label className="font-medium text-[#222831]">Problem Description</label>
+                            <label className="font-medium text-[#222831]">Problem Descriptiom</label>
                             <textarea className="h-32 rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Please describe the issue you're experiencing..."></textarea>
                         </div>
 

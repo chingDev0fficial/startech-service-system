@@ -44,7 +44,6 @@ class DeleteUserJob implements ShouldQueue
      */
     public function handle(): void
     {
-        Log::info("Working? " . $this->id);
         User::find($this->id)?->delete();
         broadcast(new UserDeleted($this->id))->toOthers();
     }

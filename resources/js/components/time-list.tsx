@@ -1,10 +1,19 @@
-function TimeList({times}) {
+interface TimeListProps {
+    times: string[];
+    value: string; // current selected time
+    onChange: (time: string) => void;
+}
+
+function TimeList({times, name, value, onChange}: TimeListProps) {
     return (<>
         {times.map(time => (
-            <label className="group flex items-center justify-center border border-input rounded-[8px] p-1 cursor-pointer  has-[:checked]:border-[#222831] has-[:checked]:bg-[#222831]">
+            <label key={time} className="group flex items-center justify-center border border-input rounded-[8px] p-1 cursor-pointer  has-[:checked]:border-[#222831] has-[:checked]:bg-[#222831]">
                 <input
-                    name="time"
                     type="radio"
+                    name={name}
+                    value={time}
+                    checked={value === time}
+                    onChange={() => onChange(time)}
                     className="appearance-none"
                 />
                 <div className="flex items-center justify-center">
