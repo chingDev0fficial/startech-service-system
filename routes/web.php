@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\http\Controllers\UserController;
+use App\Http\Controllers\AppointmentController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -26,6 +27,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // PUT GENERAL ROUTES LAST
     Route::get('manage-accounts', [RegisteredUserController::class, 'create'])
         ->name('manage-accounts.register');
+    Route::get('manage-appointments', [AppointmentController::class, 'create'])
+        ->name('manage-appointments');
 });
 
 require __DIR__.'/settings.php';
