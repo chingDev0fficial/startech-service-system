@@ -25,7 +25,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Manage Appointments',
-        href: '#',
+        href: '/manage-appointments',
         icon: ClipboardClock,
     },
     {
