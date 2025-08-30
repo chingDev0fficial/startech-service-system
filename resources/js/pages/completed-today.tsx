@@ -11,6 +11,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+
 export default function CompletedTasks() {
   const [isLoading, setIsLoading] = useState(true);
   
@@ -71,10 +72,6 @@ export default function CompletedTasks() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleViewDetails = (jobId) => {
-    // Handle view details logic here
-    console.log(`View details for job ${jobId}`);
-  };
 
 
 
@@ -191,13 +188,8 @@ export default function CompletedTasks() {
 
                   {/* Action Buttons */}
                   <div className="flex gap-3">
-                    <button
-                      onClick={() => handleViewDetails(job.id)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium text-sm transition-colors"
-                    >
-                      View Details
-                    </button>
-                   
+                    
+                    
                   </div>
                 </div>
               ))}
