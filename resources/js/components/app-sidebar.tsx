@@ -30,12 +30,12 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Manage History',
-        href: '#',
+        href: '/manage-history',
         icon: History,
     },
     {
         title: 'Manage Billings',
-        href: '#',
+        href: '/manage-billings',
         icon: BanknoteArrowUp,
     },
     {
