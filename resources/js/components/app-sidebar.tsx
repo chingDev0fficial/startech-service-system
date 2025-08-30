@@ -6,6 +6,8 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, User, Bell, ClipboardClock, History, BanknoteArrowUp, BadgeCheck } from 'lucide-react';
 import AppLogo from './app-logo';
+import { Check } from 'lucide-react';
+import { Loader } from 'lucide-react';
 
 const mainNavItems: NavItem[] = [
     {
@@ -43,6 +45,22 @@ const mainNavItems: NavItem[] = [
         href: '#',
         icon: BadgeCheck,
     },
+    {
+        title: 'My Appointments',
+        href: '/my-appointments',
+        icon: ClipboardClock,
+    },
+    {
+        title: 'In Progress',
+        href: '/in-progress',
+        icon: Loader,
+    },
+    {
+        title: 'Completed Today',
+        href: '/completed-today',
+        icon: Check,
+    },
+    
 ];
 
 const footerNavItems: NavItem[] = [

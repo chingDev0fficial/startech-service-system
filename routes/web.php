@@ -35,6 +35,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('manage-billings');
     Route::get('manage-history', [HistoryController::class, 'create'])
         ->name('manage-history');
+    Route::get('my-appointments', [App\Http\Controllers\MyAppointmentController::class, 'create'])
+        ->name('my-appointments');
+    Route::get('in-progress', [App\Http\Controllers\InProgressController::class, 'create'])
+        ->name('in-progress');
+    Route::get('completed-today', [App\Http\Controllers\CompletedTodayController::class, 'create'])
+        ->name('completed-today');
 });
 
 require __DIR__.'/settings.php';

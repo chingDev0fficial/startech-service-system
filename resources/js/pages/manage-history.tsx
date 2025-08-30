@@ -10,6 +10,28 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+interface HistoryRecord {
+  id: string;
+  service: string;
+  customer: string;
+  serviceDate: string;
+  completionDate: string | null;
+  status: string;
+  technician: string;
+  amount: number;
+  rating: number | null;
+  serviceType: string;
+}
+
+interface SearchFilters {
+  globalSearch: string;
+  dateRange: { from: string; to: string };
+  status: string[];
+  serviceType: string;
+  technician: string;
+  amountRange: { min: number; max: number };
+}
+
 import { useState, useEffect } from 'react';
 
 export default function ManageHistory() {
@@ -88,7 +110,7 @@ export default function ManageHistory() {
                 customer: 'Robert Garcia',
                 serviceDate: '2024-07-25',
                 completionDate: '2024-07-26',
-                status: 'Refunded',
+                status: 'Completed',
                 technician: 'Sarah Kim',
                 amount: 89.99,
                 rating: 2,
@@ -146,7 +168,6 @@ export default function ManageHistory() {
         const statusClasses = {
             'Completed': 'bg-green-100 text-green-800',
             'Cancelled': 'bg-red-100 text-red-800',
-            'Refunded': 'bg-orange-100 text-orange-800',
             'In Review': 'bg-blue-100 text-blue-800'
         };
         
@@ -301,7 +322,7 @@ export default function ManageHistory() {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                                 <div className="flex flex-wrap gap-2">
-                                    {['Completed', 'Cancelled', 'Refunded', 'In Review'].map(status => (
+                                    {['Completed', 'Cancelled', 'In Review'].map(status => (
                                         <button
                                             key={status}
                                             onClick={() => handleStatusToggle(status)}
@@ -346,33 +367,6 @@ export default function ManageHistory() {
                                 </div>
                             </div>
 
-                            {/* Quick Date Presets */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Quick Dates</label>
-                                <div className="flex flex-wrap gap-1">
-                                    {[
-                                        { label: 'Today', days: 0 },
-                                        { label: '7 Days', days: 7 },
-                                        { label: '30 Days', days: 30 },
-                                        { label: '90 Days', days: 90 }
-                                    ].map(preset => (
-                                        <button
-                                            key={preset.label}
-                                            onClick={() => {
-                                                const to = new Date().toISOString().split('T')[0];
-                                                const from = new Date(Date.now() - preset.days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-                                                setSearchFilters(prev => ({
-                                                    ...prev,
-                                                    dateRange: { from, to }
-                                                }));
-                                            }}
-                                            className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded text-gray-600"
-                                        >
-                                            {preset.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
                         </div>
                     </div>
                 )}
@@ -510,11 +504,11 @@ export default function ManageHistory() {
                                                         <button className="text-blue-600 hover:text-blue-900 text-sm">
                                                             View
                                                         </button>
-                                                        {record.status === 'Completed' && (
+                                                        {/* {record.status === 'Completed' && (
                                                             <button className="text-green-600 hover:text-green-900 text-sm">
                                                                 Invoice
                                                             </button>
-                                                        )}
+                                                        )} */}
                                                     </div>
                                                 </td>
                                             </tr>
