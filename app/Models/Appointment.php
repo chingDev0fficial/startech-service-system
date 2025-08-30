@@ -32,6 +32,7 @@ class Appointment extends Model
         'schedule_at',
         'status',
         'description',
+        'mark_as',
     ];
 
     /**

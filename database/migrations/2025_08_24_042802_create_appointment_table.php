@@ -18,12 +18,13 @@ return new class extends Migration
                 ->constrained('client')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->date('schedule_at');
+            $table->datetime('schedule_at');
             $table->string('item');
             $table->string('service_type');
             $table->string('service_location');
             $table->string('description');
             $table->string('status')->default('pending');
+            $table->string('mark_as')->nullable();
             $table->timestamps();
 
         });

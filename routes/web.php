@@ -26,6 +26,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('manage-accounts/edit/{user}', [UserController::class, 'update'])
         ->name('user.update');
 
+    Route::get('manage-appointments/fetch', [AppointmentController::class, 'fetch']);
+    Route::post('manage-appointments/accept/{appointment}', [AppointmentController::class, 'accept'])
+        ->name('appointment.accept');
+    Route::post('manage-appointments/decline/{appointment}', [AppointmentController::class, 'decline'])
+        ->name('appointment.decline');
+
     // PUT GENERAL ROUTES LAST
     Route::get('manage-accounts', [RegisteredUserController::class, 'create'])
         ->name('manage-accounts.register');
