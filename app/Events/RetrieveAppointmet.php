@@ -10,7 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AddAppointment implements ShouldBroadcast
+class RetrieveAppointment implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -43,6 +43,6 @@ class AddAppointment implements ShouldBroadcast
      */
     public function broadcastAs(): string
     {
-        return 'client.appoint';
+        return 'appointments.retrieve';
     }
 }

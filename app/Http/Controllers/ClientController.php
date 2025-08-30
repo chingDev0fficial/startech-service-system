@@ -23,6 +23,7 @@ class ClientController extends Controller
             'address'           => 'required|string|max:255',
             'item'              => 'required|string|max:255',
             'description'       => 'required|string',
+            /* 'mark_as'           => 'nullable|string', */
         ]);
 
         // First, create or find the client
