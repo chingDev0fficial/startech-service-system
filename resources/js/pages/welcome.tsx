@@ -29,6 +29,8 @@ interface AppointmentFormData {
     description: string,
 }
 
+
+
 export default function welcome(){
 
 
@@ -86,12 +88,18 @@ export default function welcome(){
         "02:30 PM", "04:00 PM", "05:30 PM"
     ]
 
-    const handleSubmit = (formData) => {
-        console.log(formData);
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        // console.log(Object.fromEntries(formData));
+        console.log (e.currentTarget);
     }
 
     return (<>
         <div className="grid grid-rows-1 bg-[#F0F1F2] min-h-screen">
+
+            
+
             <div className="sticky top-0 left-0 right-0 z-50">
                 <NavBar tabs={tabs} />
             </div>
@@ -103,6 +111,7 @@ export default function welcome(){
                 <div className="grid grid-flow-col content-center justify-items-center p-[20px] gap-[10px]">
                     <PrimaryButton text="Book Now" onClick={() => alert("Learn More clicked")} />
                     <SecondaryButton text="View Services" onClick={() => alert("Learn More clicked")} />
+
                 </div>
             </div>
 
@@ -117,7 +126,7 @@ export default function welcome(){
             <div className="grid content-center justify-items-center p-[20px]">
                 <h1 className="text-[2rem] font-bold text-[#222831]">Book Your Service</h1>
                 <div className="lg:w-[60%] w-full">
-                    <form action={handleSubmit} className="flex flex-col bg-[#ffffff] shadow-lg rounded-lg p-[20px] gap-5">
+                    <form onSubmit={handleSubmit} className="flex flex-col bg-[#ffffff] shadow-lg rounded-lg p-[20px] gap-5">
                         <div className="flex lg:flex-row flex-col justify-center gap-[10px]">
                             <div className="flex flex-col gap-[10px] w-full">
                                 <label className="font-medium text-[#222831]">Service Location</label>
@@ -165,7 +174,7 @@ export default function welcome(){
                         </div>
 
                         <div className="flex flex-col gap-[10px] w-full">
-                            <label className="font-medium text-[#222831]">Problem Descriptiom</label>
+                            <label className="font-medium text-[#222831]">Problem Description</label>
                             <textarea className="h-32 rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Please describe the issue you're experiencing..."></textarea>
                         </div>
 
