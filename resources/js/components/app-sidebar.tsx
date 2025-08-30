@@ -14,53 +14,63 @@ const mainNavItems: NavItem[] = [
         title: 'dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
+        accessRole: ['super user']
     },
     {
         title: 'Manage Accounts',
         href: '/manage-accounts',
         icon: User,
-    },
-    {
-        title: 'Notification',
-        href: '#',
-        icon: Bell,
+        accessRole: ['super user']
     },
     {
         title: 'Manage Appointments',
         href: '/manage-appointments',
         icon: ClipboardClock,
+        accessRole: ['super user', 'staff']
+    },
+    {
+        title: 'Notification',
+        href: '#',
+        icon: Bell,
+        accessRole: ['super user', 'staff']
     },
     {
         title: 'Manage History',
         href: '/manage-history',
         icon: History,
+        accessRole: ['super user', 'staff']
     },
     {
         title: 'Manage Billings',
         href: '/manage-billings',
         icon: BanknoteArrowUp,
+        accessRole: ['super user', 'staff']
     },
     {
         title: 'Manage Warranty',
         href: '#',
         icon: BadgeCheck,
+        accessRole: ['super user', 'staff']
     },
     {
         title: 'My Appointments',
         href: '/my-appointments',
         icon: ClipboardClock,
+        accessRole: ['technician']
     },
     {
         title: 'In Progress',
         href: '/in-progress',
         icon: Loader,
+        accessRole: ['technician']
     },
     {
         title: 'Completed Today',
         href: '/completed-today',
         icon: Check,
+        accessRole: ['technician']
     },
-    
+
 ];
 
 const footerNavItems: NavItem[] = [
