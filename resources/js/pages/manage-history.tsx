@@ -53,7 +53,7 @@ export default function ManageHistory() {
         { name: 'Service History', href: '/history' }
     ];
 
-    // Mock data - replace with actual API call
+
     useEffect(() => {
         const mockHistory = [
             {
@@ -136,6 +136,7 @@ export default function ManageHistory() {
         }, 1000);
     }, []);
 
+    
     // Advanced filtering logic
     const filteredHistory = history.filter(record => {
         // Global search
@@ -226,6 +227,41 @@ export default function ManageHistory() {
                                 Export Report
                             </button> */}
                         </div>
+                    </div>
+                </div>
+
+{/* Summary Statistics */}
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div className="bg-white p-4 rounded-lg shadow text-center">
+                        <div className="text-2xl font-bold text-gray-900">{history.length}</div>
+                        <div className="text-sm text-gray-500">Total Services</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow text-center">
+                        <div className="text-2xl font-bold text-green-600">
+                            {history.filter(h => h.status === 'Completed').length}
+                        </div>
+                        <div className="text-sm text-gray-500">Completed</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow text-center">
+                        <div className="text-2xl font-bold text-blue-600">
+                            ${history.filter(h => h.status === 'Completed').reduce((sum, h) => sum + h.amount, 0).toFixed(2)}
+                        </div>
+                        <div className="text-sm text-gray-500">Total Revenue</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow text-center">
+                        <div className="text-2xl font-bold text-yellow-600">
+                            {history.filter(h => h.rating).length > 0 
+                                ? (history.filter(h => h.rating).reduce((sum, h) => sum + h.rating, 0) / history.filter(h => h.rating).length).toFixed(1)
+                                : '0.0'
+                            }
+                        </div>
+                        <div className="text-sm text-gray-500">Avg Rating</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow text-center">
+                        <div className="text-2xl font-bold text-purple-600">
+                            {filteredHistory.length}
+                        </div>
+                        <div className="text-sm text-gray-500">Filtered Results</div>
                     </div>
                 </div>
 
@@ -520,40 +556,7 @@ export default function ManageHistory() {
                     )}
                 </div>
 
-                {/* Summary Statistics */}
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-gray-900">{history.length}</div>
-                        <div className="text-sm text-gray-500">Total Services</div>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-green-600">
-                            {history.filter(h => h.status === 'Completed').length}
-                        </div>
-                        <div className="text-sm text-gray-500">Completed</div>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-blue-600">
-                            ${history.filter(h => h.status === 'Completed').reduce((sum, h) => sum + h.amount, 0).toFixed(2)}
-                        </div>
-                        <div className="text-sm text-gray-500">Total Revenue</div>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-yellow-600">
-                            {history.filter(h => h.rating).length > 0 
-                                ? (history.filter(h => h.rating).reduce((sum, h) => sum + h.rating, 0) / history.filter(h => h.rating).length).toFixed(1)
-                                : '0.0'
-                            }
-                        </div>
-                        <div className="text-sm text-gray-500">Avg Rating</div>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-purple-600">
-                            {filteredHistory.length}
-                        </div>
-                        <div className="text-sm text-gray-500">Filtered Results</div>
-                    </div>
-                </div>
+                
 
             </div>
         </AppLayout>

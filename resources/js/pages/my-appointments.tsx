@@ -83,7 +83,7 @@ export default function TechnicianAppointments() {
             },
             {
                 id: 'APPT-2024-002',
-                time: '10:30 AM',
+                time: '',
                 serviceType: 'On-Site Service',
                 location: 'Customer Location',
                 status: 'In Progress',
@@ -216,6 +216,7 @@ export default function TechnicianAppointments() {
                         </div>
                     </div>
                 </div>
+                
 
                 {/* Filters */}
                 <div className="bg-white p-4 rounded-lg shadow mb-4">
@@ -249,6 +250,33 @@ export default function TechnicianAppointments() {
                         </div>
                     </div>
                 </div>
+
+{/* Summary Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div className="bg-white p-4 rounded-lg shadow text-center">
+                        <div className="text-2xl font-bold text-gray-900">{appointments.length}</div>
+                        <div className="text-sm text-gray-500">Total Today</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow text-center">
+                        <div className="text-2xl font-bold text-yellow-600">
+                            {appointments.filter(a => a.status === 'Pending').length}
+                        </div>
+                        <div className="text-sm text-gray-500">Pending</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow text-center">
+                        <div className="text-2xl font-bold text-blue-600">
+                            {appointments.filter(a => a.status === 'In Progress').length}
+                        </div>
+                        <div className="text-sm text-gray-500">In Progress</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow text-center">
+                        <div className="text-2xl font-bold text-green-600">
+                            {appointments.filter(a => a.status === 'Completed').length}
+                        </div>
+                        <div className="text-sm text-gray-500">Completed</div>
+                    </div>
+                </div>
+
 
                 {/* Appointments List */}
                 <div className="space-y-4">
@@ -368,32 +396,6 @@ export default function TechnicianAppointments() {
                             </div>
                         ))
                     )}
-                </div>
-
-                {/* Summary Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-gray-900">{appointments.length}</div>
-                        <div className="text-sm text-gray-500">Total Today</div>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-yellow-600">
-                            {appointments.filter(a => a.status === 'Pending').length}
-                        </div>
-                        <div className="text-sm text-gray-500">Pending</div>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-blue-600">
-                            {appointments.filter(a => a.status === 'In Progress').length}
-                        </div>
-                        <div className="text-sm text-gray-500">In Progress</div>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-green-600">
-                            {appointments.filter(a => a.status === 'Completed').length}
-                        </div>
-                        <div className="text-sm text-gray-500">Completed</div>
-                    </div>
                 </div>
 
             </div>

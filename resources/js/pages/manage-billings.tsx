@@ -125,6 +125,32 @@ export default function ManageBillings() {
                     </div>
                 </div>
 
+                {/* Summary */}
+                <div className="grid grid-cols-4 gap-4 mt-4">
+                    <div className="bg-white p-4 rounded-lg shadow text-center">
+                        <div className="text-2xl font-bold">{billings.length}</div>
+                        <div className="text-sm text-gray-500">Total</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow text-center">
+                        <div className="text-2xl font-bold text-green-600">
+                            ₱{billings.filter(b => b.status === 'Completed').reduce((sum, b) => sum + b.amount, 0).toFixed(2)}
+                        </div>
+                        <div className="text-sm text-gray-500">Completed</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow text-center">
+                        <div className="text-2xl font-bold text-yellow-600">
+                            ₱{billings.filter(b => b.status === 'In Progress').reduce((sum, b) => sum + b.amount, 0).toFixed(2)}
+                        </div>
+                        <div className="text-sm text-gray-500">Pending</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow text-center">
+                        <div className="text-2xl font-bold text-blue-600">
+                            ₱{billings.reduce((sum, b) => sum + b.amount, 0).toFixed(2)}
+                        </div>
+                        <div className="text-sm text-gray-500">Total Revenue</div>
+                    </div>
+                </div>
+
                 {/* Filters */}
                 <div className="bg-white p-4 rounded-lg shadow mb-4">
                     <div className="flex gap-4">
@@ -220,32 +246,6 @@ export default function ManageBillings() {
                             </tbody>
                         </table>
                     )}
-                </div>
-
-                {/* Summary */}
-                <div className="grid grid-cols-4 gap-4 mt-4">
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold">{billings.length}</div>
-                        <div className="text-sm text-gray-500">Total</div>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-green-600">
-                            ₱{billings.filter(b => b.status === 'Completed').reduce((sum, b) => sum + b.amount, 0).toFixed(2)}
-                        </div>
-                        <div className="text-sm text-gray-500">Completed</div>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-yellow-600">
-                            ₱{billings.filter(b => b.status === 'In Progress').reduce((sum, b) => sum + b.amount, 0).toFixed(2)}
-                        </div>
-                        <div className="text-sm text-gray-500">Pending</div>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-blue-600">
-                            ₱{billings.reduce((sum, b) => sum + b.amount, 0).toFixed(2)}
-                        </div>
-                        <div className="text-sm text-gray-500">Total Revenue</div>
-                    </div>
                 </div>
 
             </div>

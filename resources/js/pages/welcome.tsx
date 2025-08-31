@@ -96,8 +96,18 @@ export default function welcome(){
     }
 
     const options = [
-        { value: "in-store", title: "In-Store Service", sub: "Visit our service center"},
-        { value: "home", title: "Home Service", sub: "We will come to you (+25Php)"},
+        { value: "in-store", title: "In-Store Service", sub: "Visit our service center" },
+        { 
+            value: "home", 
+            title: "Home Service", 
+            sub: (
+                <span>
+                    +350Php - City Area
+                    <br />
+                    +500Php - Outside City
+                </span>
+            )
+        },
     ]
 
     const footerItems = [

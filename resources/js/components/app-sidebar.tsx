@@ -8,6 +8,7 @@ import { BookOpen, Folder, LayoutGrid, User, Bell, ClipboardClock, History, Bank
 import AppLogo from './app-logo';
 import { Check } from 'lucide-react';
 import { Loader } from 'lucide-react';
+import { Receipt } from 'lucide-react';
 
 const mainNavItems: NavItem[] = [
     {
@@ -43,7 +44,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Manage Billings',
         href: '/manage-billings',
-        icon: BanknoteArrowUp,
+        icon: Receipt,
         accessRole: ['super user', 'staff']
     },
     {
