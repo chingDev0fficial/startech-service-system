@@ -244,7 +244,7 @@ export default function ManageHistory() {
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow text-center">
                         <div className="text-2xl font-bold text-blue-600">
-                            ${history.filter(h => h.status === 'Completed').reduce((sum, h) => sum + h.amount, 0).toFixed(2)}
+                            ₱{history.filter(h => h.status === 'Completed').reduce((sum, h) => sum + h.amount, 0).toFixed(2)}
                         </div>
                         <div className="text-sm text-gray-500">Total Revenue</div>
                     </div>
@@ -377,7 +377,7 @@ export default function ManageHistory() {
                             {/* Amount Range */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Amount Range: ${searchFilters.amountRange.min} - ${searchFilters.amountRange.max}
+                                    Amount Range: ₱{searchFilters.amountRange.min} - ₱{searchFilters.amountRange.max}
                                 </label>
                                 <div className="flex gap-2">
                                     <input
@@ -519,7 +519,7 @@ export default function ManageHistory() {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                                                    ${record.amount.toFixed(2)}
+                                                    ₱{record.amount.toFixed(2)}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     {record.rating ? (
