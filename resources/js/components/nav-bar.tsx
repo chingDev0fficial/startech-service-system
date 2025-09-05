@@ -5,7 +5,7 @@ import { Menu } from 'lucide-react';
 
 export function NavBar({ tabs }){
     return (
-        <nav className="flex flex-row items-center justify-between bg-[#222831] p-[20px] h-[5rem]">
+        <nav className="flex flex-row items-center justify-between bg-[#fc1304] p-[20px] h-[5rem]">
             <AppLogo />
             <div className="lg:flex hidden items-center gap-[20px] text-[#ffffff] text-[1rem]">
                 {tabs.map((tab) => (
@@ -21,7 +21,7 @@ export function NavBar({ tabs }){
                         <button
                             key={tab.name}
                             onClick={tab.onClick}
-                            className="bg-[#393E46] whitespace-nowrap p-[0.5rem] rounded-[5px]"
+                            className="bg-[#fc1304] whitespace-nowrap p-[0.5rem] rounded-[5px]"
                         >
                             {tab.name}
                         </button>
@@ -31,7 +31,7 @@ export function NavBar({ tabs }){
                 ))}
             </div>
             <div className="lg:hidden flex items-center">
-                <button className="p-[0.5rem] rounded-[5px] bg-[#393E46]" onClick={() => alert("Menu clicked")}>
+                <button className="p-[0.5rem] rounded-[5px] bg-[#fc1304]" onClick={() => alert("Menu clicked")}>
                     <Icon iconNode={ Menu } className="text-[#ffffff] h-[1.5rem] w-[1.5rem]" />
                 </button>
             </div>

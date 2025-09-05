@@ -45,7 +45,7 @@ function CollapsibleWrapper({
           <CollapsibleTrigger asChild>
             <button
                 type="button"
-                className="p-0 m-0 text-sm font-semibold text-[#222831] bg-transparent border-none cursor-pointer dark:text-[#ffffff]"
+                className="p-0 m-0 text-sm font-semibold text-[#fc1304] bg-transparent border-none cursor-pointer dark:text-[#ffffff]"
             >
                 {open ? "View less Schedule" : "View full Schedule"}
             </button>

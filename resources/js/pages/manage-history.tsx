@@ -5,7 +5,7 @@ import { type BreadcrumbItem, type SharedData } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Manage History',
+        title: 'Service Record',
         href: '#',
     },
 ];
@@ -553,11 +553,10 @@ export default function ManageHistory() {
                                 </tbody>
                             </table>
                         </div>
-                    )}
+                    )} 
                 </div>
 
-                
-
+        
             </div>
         </AppLayout>
     </>);

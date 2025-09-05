@@ -16,7 +16,7 @@ import { BsDribbble, BsFacebook, BsGithub, BsInstagram, BsTwitter } from "react-
 
 export function CustomFooter() {
   return (
-    <Footer container className="!rounded-none bg-[#222831]">
+    <Footer container className="!rounded-none bg-[#fc1304] text-[#ffffff]">
       <div className="w-full">
         <div className="grid grid-cols-1 w-full justify-between sm:flex sm:justify-between md:flex md:grid-cols-1">
           <div className="lg:mb-[0] mb-5">
@@ -24,37 +24,41 @@ export function CustomFooter() {
           </div>
           <div className="grid grid-cols-2 gap-8 sm:mt-4 sm:grid-cols-3 sm:gap-6">
             <div>
-              <FooterTitle title="about" />
-              <FooterLinkGroup col>
-                <FooterLink href="#">Flowbite</FooterLink>
-                <FooterLink href="#">Tailwind CSS</FooterLink>
+              <FooterTitle title="about" className="!text-white" /><FooterLinkGroup col>
+                <FooterLink href="#" className="!text-white">Flowbite</FooterLink>
+                <FooterLink href="#" className="!text-white">Tailwind CSS</FooterLink>
               </FooterLinkGroup>
             </div>
             <div>
-              <FooterTitle title="Follow us" />
+              <FooterTitle title="Follow us" className="!text-white" />
               <FooterLinkGroup col>
-                <FooterLink href="#">Github</FooterLink>
-                <FooterLink href="#">Discord</FooterLink>
+                <FooterLink href="#" className="!text-white">Github</FooterLink>
+                <FooterLink href="#" className="!text-white">Discord</FooterLink>
               </FooterLinkGroup>
             </div>
             <div>
-              <FooterTitle title="Legal" />
+              <FooterTitle title="Legal" className="!text-white" />
               <FooterLinkGroup col>
-                <FooterLink href="#">Privacy Policy</FooterLink>
-                <FooterLink href="#">Terms &amp; Conditions</FooterLink>
+                <FooterLink href="#" className="!text-white">Privacy Policy</FooterLink>
+                <FooterLink href="#" className="!text-white">Terms &amp; Conditions</FooterLink>
               </FooterLinkGroup>
             </div>
           </div>
         </div>
         <FooterDivider />
         <div className="w-full sm:flex sm:items-center sm:justify-between">
-          <FooterCopyright href="#" by="NEMCO Development Team™" year={2025} />
+          <FooterCopyright
+            href="#"
+            by="NEMCO Development Team™"
+            year={2025}
+            className="!text-white"
+          />
           <div className="mt-4 flex space-x-6 sm:mt-0 sm:justify-center">
-            <FooterIcon href="#" icon={BsFacebook} />
-            <FooterIcon href="#" icon={BsInstagram} />
-            <FooterIcon href="#" icon={BsTwitter} />
-            <FooterIcon href="#" icon={BsGithub} />
-            <FooterIcon href="#" icon={BsDribbble} />
+            <FooterIcon href="#" icon={BsFacebook} className="!text-white" />
+            <FooterIcon href="#" icon={BsInstagram} className="!text-white" />
+            <FooterIcon href="#" icon={BsTwitter} className="!text-white" />
+            <FooterIcon href="#" icon={BsGithub} className="!text-white" />
+            <FooterIcon href="#" icon={BsDribbble} className="!text-white" />
           </div>
         </div>
       </div>

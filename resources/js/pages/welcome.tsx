@@ -61,7 +61,7 @@ export default function welcome(){
         date: '',
         time: '',
         serviceType: '',
-        fullname: '',
+        fullname: '',       
         email: '',
         phone_no: '',
         address: '',
@@ -161,7 +161,7 @@ export default function welcome(){
             <div className="sticky top-0 left-0 right-0 z-50">
                 <NavBar tabs={tabs} />
             </div>
-            <div className="grid content-center justify-items-center p-[20px] mb-[2rem]">
+            {/* <div className="grid content-center justify-items-center p-[20px] mb-[2rem]">
                 <h1 className="text-[2rem] font-bold text-[#222831]">Expert Computer Repair Services</h1>
                 <p className="text-thin text-[#393E46] mt-[10px]">
                     Professional repairs for all your tech needs - in store or at your doorstep.
@@ -170,7 +170,7 @@ export default function welcome(){
                     <PrimaryButton text="Book Now" onClick={() => alert("Learn More clicked")} />
                     <SecondaryButton text="View Services" onClick={() => alert("Learn More clicked")} />
                 </div>
-            </div>
+            </div> */}
 
              <div className="grid content-center justify-items-center p-[20px]">
                 <h1 className="text-[2rem] font-bold text-[#222831]">Our Services & Pricing</h1>
@@ -248,7 +248,7 @@ export default function welcome(){
                         <div className="flex flex-col gap-[10px] w-full">
                             <label className="font-medium text-[#222831]">Client Device</label>
                             <input name="item" value={data.item} onChange={handleChange} type="text" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Eg. Printer Epson L23500" />
-                            <label className="font-medium text-[#222831]">Problem Descriptiom</label>
+                            <label className="font-medium text-[#222831]">Problem Description</label>
                             <textarea name="description" value={data.description} onChange={handleChange} className="h-32 rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Please describe the issue you're experiencing..."></textarea>
                         </div>
 
