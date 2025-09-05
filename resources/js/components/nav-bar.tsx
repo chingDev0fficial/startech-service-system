@@ -5,7 +5,7 @@ import { Menu } from 'lucide-react';
 
 export function NavBar({ tabs }){
     return (
-        <nav className="flex flex-row items-center justify-between bg-[#fc1304] p-[20px] h-[5rem]">
+        <nav className="flex flex-row items-center justify-between bg-gradient-to-r from-[#ff0000] via-[#ff0000] to-[#fdc700] p-[20px] h-[5rem]">
             <AppLogo />
             <div className="lg:flex hidden items-center gap-[20px] text-[#ffffff] text-[1rem]">
                 {tabs.map((tab) => (

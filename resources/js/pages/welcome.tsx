@@ -70,9 +70,9 @@ export default function welcome(){
     });
 
     const tabs = [
-        { component: "link", name: "Get Started", href: "#", className: "hover:underline transition-colors whitespace-nowrap"},
-        { component: "link", name: "Admin", href: "/login", className: "hover:underline transition-colors whitespace-nowrap" },
-        { component: "primary-button", name: "Contact Us", onClick: () => alert("Contact Us clicked") }
+        { component: "link", name: "Get Started", href: "#", className: "hover:underline transition-colors whitespace-nowrap ml-2"},
+        { component: "link", name: "Admin", href: "/login", className: "hover:underline transition-colors whitespace-nowrap ml-2" },
+        { component: "link", name: "Contact Us", onClick: () => alert("Contact Us clicked"), className: "hover:underline transition-colors whitespace-nowrap ml-2" }
     ];
 
     const cardsContent = {
