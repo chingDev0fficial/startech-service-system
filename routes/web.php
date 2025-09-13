@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin & Staff routes
     Route::middleware(['role:super user,staff'])->group(function () {
+        Route::get('manage-accounts/fetch', [UserController::class, 'fetch']);
         Route::get('manage-appointments/fetch', [AppointmentController::class, 'fetch']);
         Route::post('manage-appointments/accept/{technician}/{appointment}', [AppointmentController::class, 'accept'])
             ->name('appointment.accept');
