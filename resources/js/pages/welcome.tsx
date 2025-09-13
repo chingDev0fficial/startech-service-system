@@ -25,22 +25,25 @@ interface AppointmentFormData {
     address?: string,
     item: string,
     description: string,
+    warrantyReceipt: File | null,
 }
 
 export default function Welcome(){
     const [notification, setNotification] = useState<string | null>(null);
+    const [preview, setPreview] = useState(null);
 
     const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormData>({
         serviceLocation: '',
         date: '',
         time: '',
         serviceType: '',
-        fullname: '',       
+        fullname: '',
         email: '',
         phone_no: '',
         address: '',
         item: '',
         description: '',
+        warrantyReceipt: null,
     });
 
     const tabs = [
@@ -71,9 +74,9 @@ export default function Welcome(){
 
     const options = [
         { value: "in-store", title: "In-Store Service", sub: "Visit our service center" },
-        { 
-            value: "home", 
-            title: "Home Service", 
+        {
+            value: "home",
+            title: "Home Service",
             sub: (
                 <span>
                     +350Php - City Area
@@ -105,49 +108,68 @@ export default function Welcome(){
         );
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] || null;
+
+        console.log("Selected file:", file); // Debug line
+
+        // ✅ IMPORTANT: Update the form data with the actual file
+        setData('warrantyReceipt', file);
+
+        if (file) {
+            const previewUrl = URL.createObjectURL(file);
+            setPreview(previewUrl);
+            console.log("File added to form data:", file.name); // Debug line
+        } else {
+            setPreview(null);
+        }
+    };
+
     const handleSubmitAppointment = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        // Add this debug logging
+        console.log("Form data being submitted:", data);
+        console.log("File in form data:", data.warrantyReceipt);
+
+        if (data.warrantyReceipt) {
+            console.log("File details:", {
+                name: data.warrantyReceipt.name,
+                size: data.warrantyReceipt.size,
+                type: data.warrantyReceipt.type
+            });
+        }
 
         setNotification('Sending your booking...');
 
         post(route('client.appoint'), {
+            forceFormData: true,
             onSuccess: () => {
-            setNotification('Booking sent successfully! We will contact you soon.');
-
+                setNotification('Booking sent successfully! We will contact you soon.');
                 setTimeout(() => setNotification(null), 5000);
-            
-            reset('serviceLocation');
-            reset('date');
-            reset('time');
-            reset('serviceType');
-            reset('fullname');
-            reset('email');
-            reset('phone_no');
-            reset('address');
-            reset('item');
-            reset('description');
-        },
-        onError: (error) => {
-            console.error(error);
-            setNotification('Failed to send booking. Please try again.');
-            setTimeout(() => setNotification(null), 5000);
-        },
-        onFinish: () => {
-            // Remove the "sending" message if still showing
-            if (notification === 'Sending your booking...') {
-                setNotification(null);
+                reset(); // Reset all at once instead of individually
+                setPreview(null);
+            },
+            onError: (error) => {
+                console.error(error);
+                setNotification('Failed to send booking. Please try again.');
+                setTimeout(() => setNotification(null), 5000);
+            },
+            onFinish: () => {
+                if (notification === 'Sending your booking...') {
+                    setNotification(null);
+                }
             }
-        }
-    })
-}
+        });
+    }
 
     return (<>
         {/* Top Notification */}
         {notification && (
             <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[100] transition-all duration-300 ease-in-out">
                 <div className={`flex items-center gap-3 px-6 py-4 rounded-lg shadow-lg min-w-[300px] max-w-[500px] ${
-                    notification.includes('Failed') 
-                        ? 'bg-red-500 text-white' 
+                    notification.includes('Failed')
+                        ? 'bg-red-500 text-white'
                         : notification.includes('successfully')
                         ? 'bg-green-500 text-white'
                         : 'bg-blue-500 text-white'
@@ -159,23 +181,23 @@ export default function Welcome(){
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     )}
-                    
+
                     {/* Success Icon */}
                     {notification.includes('successfully') && (
                         <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                     )}
-                    
+
                     {/* Error Icon */}
                     {notification.includes('Failed') && (
                         <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     )}
-                    
+
                     <span className="flex-1 font-medium">{notification}</span>
-                    
+
                     {/* Close Button - only show for non-loading notifications */}
                     {notification !== 'Sending your booking...' && (
                         <button
@@ -202,11 +224,11 @@ export default function Welcome(){
                     <CustomCard icon={ BrushCleaning } iconColor="purple" title="Maintenance" content={ cardsContent.maintenance } buttonText="Book Service" onButtonClick={ () => alert("Learn More Clicked") } />
                 </div>
             </div>
-            
+
             <div className="grid content-center justify-items-center p-[20px]">
                 <h1 className="text-[2rem] font-bold text-[#222831]">Book Your Service</h1>
                 <div className="lg:w-[60%] w-full">
-                    <form onSubmit={handleSubmitAppointment} className="flex flex-col bg-[#ffffff] shadow-lg rounded-lg p-[20px] gap-5">
+                    <form onSubmit={handleSubmitAppointment} encType="multipart/form-data" className="flex flex-col bg-[#ffffff] shadow-lg rounded-lg p-[20px] gap-5">
                         <div className="flex lg:flex-row flex-col justify-center gap-[10px]">
                             <div className="flex flex-col gap-[10px] w-full">
                                 <label className="font-medium text-[#222831]">Service Location</label>
@@ -273,6 +295,21 @@ export default function Welcome(){
                             <textarea name="description" value={data.description} onChange={handleChange} className="h-32 rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Please describe the issue you're experiencing..."></textarea>
                         </div>
 
+
+                        <div className="flex flex-col gap-[1px] w-full">
+                            <label className="font-medium text-[#222831]">Warranty Card/Reciept</label>
+                            <input name="warrantyReceipt" onChange={handleImageChange} type="file" accept="image/*" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0 w-[100%]" />
+                            {preview && (
+                                <div className="mt-4">
+                                <p>Image Preview:</p>
+                                <img
+                                    src={preview}
+                                    alt="Preview"
+                                    className="w-48 rounded shadow"
+                                />
+                                </div>
+                            )}
+                        </div>
                         <PrimaryButton text="Confirm Booking" type="submit" onClick={() => {}} processing={processing} />
                     </form>
                 </div>
