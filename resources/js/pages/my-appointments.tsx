@@ -3,6 +3,8 @@ import { Head } from '@inertiajs/react';
 import AppTable, { Column } from '@/components/table';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { useState, useEffect } from 'react';
+import { useEcho } from '@laravel/echo-react';
+import { usePage } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -11,38 +13,59 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
+
+interface Service {
+    id: number;
+    appointment_id: number;
+    user_id: number;
+    warranty: string;
+    warrantyStatus: string;
+    appointment_date: string;
+    appointment_time: string;
+    appointment_issue: string;
+    client_name: string;
+    client_email: string;
+    client_phone: string;
+    technician_name: string;
+    technician_email: string;
+}
 
 interface Appointment {
-  id: string;
-  time: string;
-  serviceType: string;
-  location: string;
-  status: 'Pending' | 'In Progress' | 'Completed' | 'Cancelled';
-  customer: {
-    name: string;
-    phone: string;
-    email: string;
-    type: 'Premium' | 'Standard' | 'VIP';
-  };
-  device: {
-    name: string;
-    serial: string;
-    issue: string;
-    warranty: string;
-    warrantyStatus: 'Valid' | 'Expired' | 'Void';
-  };
-  notes: string;
+    id: string;
+    time: string;
+    serviceType: string;
+    location: string;
+    status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    customer: {
+        name: string;
+        phone: string;
+        email: string;
+    };
+    device: {
+        name: string;
+        warranty: string;
+        warrantyStatus: 'valid' | 'expired' | null;
+    };
+    notes: string;
 }
 
 interface TechnicianInfo {
-  name: string;
-  id: string;
-  shift: string;
+    name: string;
+    id: string;
+    shift: string;
 }
 
 export default function TechnicianAppointments() {
     // Initialization
+    const echo = useEcho();
+
+    const { auth } = usePage<SharedData>().props;
+    const currentUserId = auth.user?.id;
+    console.log("Current User ID: ", currentUserId);
+
     const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [services, setServices] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -52,105 +75,96 @@ export default function TechnicianAppointments() {
         shift: '9:00 AM - 6:00 PM'
     });
 
-    const breadcrumbs = [
-        { name: 'Dashboard', href: '/dashboard' },
-        { name: 'My Appointments', href: '/appointments' }
-    ];
+    const handleFetchedServices = async () => {
+        try {
+            // setLoading(true);
+            const response = await fetch(route('my-appointments.fetch'), {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            return result.retrieved;
+
+        } catch (err) {
+            console.error('Error fetching users:', err);
+            throw err instanceof Error ? err : new Error(String(err));
+        } finally {
+            // setLoading(false);
+        }
+    }
+
+    const loadServices = async () => {
+        try {
+            const users = await handleFetchedServices();
+            setServices(users);
+        } catch (err) {
+            console.error('Failed to fetch users:', err);
+        }
+    }
 
     // Mock data - replace with actual API call
     useEffect(() => {
+        loadServices();
+        console.log(services);
+        const serviceAppointments = services
+        .filter((service: Service) => service.user_id === currentUserId)
+        .map((service: Service) => ({
+            id: service.id.toString(),
+            time: service.appointment_date,
+            serviceType: service.appointment_service_type,
+            location: service.appointment_service_location,
+            status: service.appointment_status,
+            customer: {
+                name: service.client_name,
+                phone: service.client_phone,
+                email: service.client_email,
+            },
+            device: {
+                name: service.appointment_item_name,
+                warranty: service.warranty,
+                warrantyStatus: service.warranty_status
+            },
+            issue: service.appointment_description
+        }));
+
         const mockAppointments: Appointment[] = [
-            {
-                id: 'APPT-2024-001',
-                time: '9:00 AM',
-                serviceType: 'In-Store Service',
-                location: 'Service Center',
-                status: 'Pending',
-                customer: {
-                    name: 'John Smith',
-                    phone: '(555) 123-4567',
-                    email: 'john.smith@email.com',
-                    type: 'Premium'
-                },
-                device: {
-                    name: 'MacBook Pro 2021',
-                    serial: 'MBP2021-ABC123',
-                    issue: 'Screen flickering',
-                    warranty: 'Valid until Jan 15, 2025',
-                    warrantyStatus: 'Valid'
-                },
-                notes: 'Screen started flickering yesterday during video calls. Issue seems to worsen when laptop gets warm.'
-            },
-            {
-                id: 'APPT-2024-002',
-                time: '',
-                serviceType: 'On-Site Service',
-                location: 'Customer Location',
-                status: 'In Progress',
-                customer: {
-                    name: 'Sarah Johnson',
-                    phone: '(555) 987-6543',
-                    email: 'sarah.j@company.com',
-                    type: 'VIP'
-                },
-                device: {
-                    name: 'Dell XPS 15',
-                    serial: 'DXP2023-DEF456',
-                    issue: 'Won\'t boot up',
-                    warranty: 'Expired on Oct 20, 2024',
-                    warrantyStatus: 'Expired'
-                },
-                notes: 'Computer suddenly shut down and won\'t turn back on. Customer mentioned power issues in the building recently.'
-            },
-            {
-                id: 'APPT-2024-003',
-                time: '1:00 PM',
-                serviceType: 'Remote Support',
-                location: 'Remote',
-                status: 'Pending',
-                customer: {
-                    name: 'Michael Chen',
-                    phone: '(555) 456-7890',
-                    email: 'mchen@startup.io',
-                    type: 'Standard'
-                },
-                device: {
-                    name: 'iPhone 14 Pro',
-                    serial: 'IP14P-GHI789',
-                    issue: 'Battery draining quickly',
-                    warranty: 'Valid until Mar 10, 2025',
-                    warrantyStatus: 'Valid'
-                },
-                notes: 'Battery percentage drops rapidly even with minimal usage. Phone gets warm during charging.'
-            },
-            {
-                id: 'APPT-2024-004',
-                time: '3:30 PM',
-                serviceType: 'In-Store Service',
-                location: 'Service Center',
-                status: 'Completed',
-                customer: {
-                    name: 'Lisa Brown',
-                    phone: '(555) 321-0987',
-                    email: 'lisa.brown@email.com',
-                    type: 'Premium'
-                },
-                device: {
-                    name: 'iPad Air 5th Gen',
-                    serial: 'IPA5-JKL012',
-                    issue: 'Charging port not working',
-                    warranty: 'Valid until Dec 30, 2024',
-                    warrantyStatus: 'Valid'
-                },
-                notes: 'Charging cable doesn\'t stay connected properly. Customer has tried multiple cables.'
-            }
+            ...serviceAppointments,
+            // {
+            //     id: 'APPT-2024-001',
+            //     time: '9:00 AM',
+            //     serviceType: 'In-Store Service',
+            //     location: 'Service Center',
+            //     status: 'Pending',
+            //     customer: {
+            //         name: 'John Smith',
+            //         phone: '(555) 123-4567',
+            //         email: 'john.smith@email.com',
+            //         type: 'Premium'
+            //     },
+            //     device: {
+            //         name: 'MacBook Pro 2021',
+            //         serial: 'MBP2021-ABC123',
+            //         warranty: 'Valid until Jan 15, 2025',
+            //         warrantyStatus: 'Valid'
+            //     },
+            //     notes: 'Screen started flickering yesterday during video calls. Issue seems to worsen when laptop gets warm.'
+            // },
         ];
 
         setTimeout(() => {
             setAppointments(mockAppointments);
             setLoading(false);
         }, 1000);
-    }, [selectedDate]);
+    }, [selectedDate, echo]);
+
+    console.log("Appointments: ", appointments);
 
     const filteredAppointments = appointments.filter(appointment => {
         return statusFilter === 'all' || appointment.status.toLowerCase().replace(' ', '') === statusFilter;
@@ -158,12 +172,12 @@ export default function TechnicianAppointments() {
 
     const getStatusBadge = (status: string) => {
         const statusClasses = {
-            'Pending': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            'In Progress': 'bg-blue-100 text-blue-800 border-blue-200',
-            'Completed': 'bg-green-100 text-green-800 border-green-200',
-            'Cancelled': 'bg-red-100 text-red-800 border-red-200'
+            'pending': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+            'in-progress': 'bg-blue-100 text-blue-800 border-blue-200',
+            'completed': 'bg-green-100 text-green-800 border-green-200',
+            'cancelled': 'bg-red-100 text-red-800 border-red-200'
         };
-        
+
         return `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusClasses[status as keyof typeof statusClasses] || 'bg-gray-100 text-gray-800 border-gray-200'}`;
     };
 
@@ -173,17 +187,17 @@ export default function TechnicianAppointments() {
             'VIP': 'bg-yellow-100 text-yellow-800',
             'Standard': 'bg-gray-100 text-gray-800'
         };
-        
+
         return `inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${typeClasses[type as keyof typeof typeClasses]}`;
     };
 
     const getWarrantyStatus = (status: string) => {
         const statusClasses = {
-            'Valid': 'text-green-600',
-            'Expired': 'text-red-600',
-            'Void': 'text-gray-500'
+            'valid': 'text-green-600',
+            'expired': 'text-red-600',
+            'void': 'text-gray-500'
         };
-        
+
         return statusClasses[status as keyof typeof statusClasses] || 'text-gray-500';
     };
 
@@ -191,7 +205,7 @@ export default function TechnicianAppointments() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="My Appointments" />
             <div className="flex h-full flex-1 flex-col gap-[1px] rounded-xl p-4 overflow-x-auto">
-                
+
                 {/* Header */}
                 <div className="bg-white p-6 rounded-lg shadow mb-4">
                     <div className="flex justify-between items-start">
@@ -202,10 +216,10 @@ export default function TechnicianAppointments() {
                                 </div>
                             </div>
                             <h1 className="text-2xl font-bold text-gray-900">
-                                My Appointments - {new Date(selectedDate).toLocaleDateString('en-US', { 
-                                    year: 'numeric', 
-                                    month: 'long', 
-                                    day: 'numeric' 
+                                My Appointments - {new Date(selectedDate).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
                                 })}
                             </h1>
                             <p className="text-gray-600 mt-1">Assigned to {technicianInfo.name}</p>
@@ -216,7 +230,7 @@ export default function TechnicianAppointments() {
                         </div>
                     </div>
                 </div>
-                
+
 
                 {/* Filters */}
                 <div className="bg-white p-4 rounded-lg shadow mb-4">
@@ -259,19 +273,19 @@ export default function TechnicianAppointments() {
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow text-center">
                         <div className="text-2xl font-bold text-yellow-600">
-                            {appointments.filter(a => a.status === 'Pending').length}
+                            {appointments.filter(a => a.status === 'pending').length}
                         </div>
                         <div className="text-sm text-gray-500">Pending</div>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow text-center">
                         <div className="text-2xl font-bold text-blue-600">
-                            {appointments.filter(a => a.status === 'In Progress').length}
+                            {appointments.filter(a => a.status === 'in-progress').length}
                         </div>
                         <div className="text-sm text-gray-500">In Progress</div>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow text-center">
                         <div className="text-2xl font-bold text-green-600">
-                            {appointments.filter(a => a.status === 'Completed').length}
+                            {appointments.filter(a => a.status === 'completed').length}
                         </div>
                         <div className="text-sm text-gray-500">Completed</div>
                     </div>
@@ -319,11 +333,11 @@ export default function TechnicianAppointments() {
                                             <div className="space-y-2 text-sm">
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600">Name:</span>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center">
                                                         <span className="font-medium">{appointment.customer.name}</span>
-                                                        <span className={getCustomerTypeBadge(appointment.customer.type)}>
-                                                            {appointment.customer.type}
-                                                        </span>
+                                                        {/* <span className={getCustomerTypeBadge(appointment.customer.type)}> */}
+                                                        {/*     {appointment.customer.type} */}
+                                                        {/* </span> */}
                                                     </div>
                                                 </div>
                                                 <div className="flex justify-between">
@@ -346,14 +360,6 @@ export default function TechnicianAppointments() {
                                                     <span className="font-medium">{appointment.device.name}</span>
                                                 </div>
                                                 <div className="flex justify-between">
-                                                    <span className="text-gray-600">Serial:</span>
-                                                    <span className="font-medium font-mono text-xs">{appointment.device.serial}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-600">Issue:</span>
-                                                    <span className="font-medium">{appointment.device.issue}</span>
-                                                </div>
-                                                <div className="flex justify-between">
                                                     <span className="text-gray-600">Warranty:</span>
                                                     <span className={`font-medium ${getWarrantyStatus(appointment.device.warrantyStatus)}`}>
                                                         {appointment.device.warranty}
@@ -368,7 +374,7 @@ export default function TechnicianAppointments() {
                                         <h3 className="text-sm font-medium text-gray-900 mb-3">Customer Notes</h3>
                                         <div className="bg-blue-50 p-4 rounded-lg">
                                             <p className="text-sm text-blue-800 italic">
-                                                "{appointment.notes}"
+                                                "{appointment.issue}"
                                             </p>
                                         </div>
                                     </div>

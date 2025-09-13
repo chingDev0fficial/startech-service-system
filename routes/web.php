@@ -45,16 +45,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin & Staff routes
     Route::middleware(['role:super user,staff'])->group(function () {
         Route::get('manage-appointments/fetch', [AppointmentController::class, 'fetch']);
-        Route::post('manage-appointments/accept/{appointment}', [AppointmentController::class, 'accept'])
+        Route::post('manage-appointments/accept/{technician}/{appointment}', [AppointmentController::class, 'accept'])
             ->name('appointment.accept');
         Route::post('manage-appointments/decline/{appointment}', [AppointmentController::class, 'decline'])
             ->name('appointment.decline');
         Route::get('manage-appointments', [AppointmentController::class, 'create'])
             ->name('manage-appointments');
+        /* Route::post */
+        Route::get('manage-billings', [BillingsController::class, 'create'])
+            ->name('manage-billings');
+        Route::get('manage-history', [HistoryController::class, 'create'])
+            ->name('manage-history');
+
     });
 
     // Customer routes
     Route::middleware(['role:technician'])->group(function () {
+        Route::get('my-appointments/fetch', [App\Http\Controllers\MyAppointmentController::class, 'fetch'])
+            ->name('my-appointments.fetch');
+
         Route::get('my-appointments', [App\Http\Controllers\MyAppointmentController::class, 'create'])
             ->name('my-appointments');
         Route::get('in-progress', [App\Http\Controllers\InProgressController::class, 'create'])

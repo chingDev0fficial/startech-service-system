@@ -42,7 +42,7 @@ class Appointment extends Model
      */
 
     /**
-     * Get the attributes that should be cast.
+     * get the attributes that should be cast.
      *
      * @return array<string, string>
      */
@@ -50,12 +50,12 @@ class Appointment extends Model
     {
         return [
             'id' => 'string',
-            'schedule_at' => 'datetime', // Cast schedule_at to datetime
+            'schedule_at' => 'datetime', // cast schedule_at to datetime
             'updated_at' => 'datetime',
         ];
     }
     public function client()
     {
-        return $this->belongsTo(Client::class, 'client_id');
+        return $this->belongsto(Client::class, 'client_id');
     }
 }
