@@ -360,14 +360,14 @@ function Accounts() {
             minWidth: 150,
             align: "center",
             render: (row) => (
-                <div className="flex items-center justify-center gap-5">
+                <div className="flex items-center justify-center gap-2">
                     <button
-                        className="text-[#222831] dark:text-[#ffffff]"
+                        className="text-[#222831] text-[#ffffff] bg-blue-700 p-2 rounded-md"
                         onClick={() => handleEdit(row.userId)}>
                         <Pencil className="w-4 h-4" />
                     </button>
                     <button
-                        className="text-[#222831] dark:text-[#ffffff]"
+                        className="text-[#222831] text-[#ffffff] bg-red-700 p-2 rounded-md"
                         onClick={() => handleDelete(row.userId)}>
                         {deleteProcessLoading.has(row.userId) ? (
                             <LoaderCircle className="h-4 w-4 animate-spin" />

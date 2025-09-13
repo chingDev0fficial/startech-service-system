@@ -339,19 +339,19 @@ export default function ManageAccount() {
             minWidth: 150,
             align: "center",
             render: (row) => (
-                <div className="flex items-center justify-center gap-5">
+                <div className="flex items-center justify-center gap-2">
                     <button
-                        className="text-[#222831] dark:text-[#ffffff]"
+                        className="text-[#222831] text-[#ffffff] bg-blue-700 p-2 rounded-md"
                         onClick={() => handleView(row.appointmentId)}>
                         <Eye className="w-4 h-4" />
                     </button>
                     <button
-                        className="text-[#222831] dark:text-[#ffffff]"
+                        className="text-[#222831] text-[#ffffff] bg-green-700 p-2 rounded-md"
                         onClick={() => handleAccept(row.appointmentId)}>
                         <Check className="w-4 h-4" />
                     </button>
                     <button
-                        className="text-[#222831] dark:text-[#ffffff]"
+                        className="text-[#222831] text-[#ffffff] bg-red-700 p-2 rounded-md"
                         onClick={() => handleDecline(row.appointmentId)}>
                             <X className="w-4 h-4" />
                         {/* {deleteProcessLoading.has(row.userId) ? ( */}

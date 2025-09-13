@@ -27,9 +27,9 @@ function CustomCard({icon, iconColor, title, content, buttonText, onButtonClick}
                 ))}
             </CardContent>
 
-            <div className="w-[100%] pl-[20px] pr-[20px]">
-                <PrimaryButton text={ buttonText } onClick={ onButtonClick } className="w-[100%]" />
-            </div>
+            {/* <div className="w-[100%] pl-[20px] pr-[20px]"> */}
+            {/*     <PrimaryButton text={ buttonText } onClick={ onButtonClick } className="w-[100%]" /> */}
+            {/* </div> */}
         </Card>
     );
 }
