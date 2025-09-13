@@ -52,4 +52,4 @@
         <?php if (!isset($__inertiaSsrDispatched)) { $__inertiaSsrDispatched = true; $__inertiaSsrResponse = app(\Inertia\Ssr\Gateway::class)->dispatch($page); }  if ($__inertiaSsrResponse) { echo $__inertiaSsrResponse->body; } else { ?><div id="app" data-page="<?php echo e(json_encode($page)); ?>"></div><?php } ?>
     </body>
 </html>
-<?php /**PATH C:\xampp\htdocs\projects\startech-service-system\resources\views/app.blade.php ENDPATH**/ ?>
+<?php /**PATH C:\xampp\htdocs\projects\startech_service_system\resources\views/app.blade.php ENDPATH**/ ?>

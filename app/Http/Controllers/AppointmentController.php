@@ -17,7 +17,6 @@ class AppointmentController extends Controller
 
     public function fetch()
     {
-        /* Log::info('working!'); */
         // Get appointments
         $appointments = DB::table('appointment')
             ->join('client', 'appointment.client_id', '=', 'client.id')
@@ -36,8 +35,23 @@ class AppointmentController extends Controller
         ]);
     }
 
-    public function accept(Request $request, $appointment)
+    public function accept(Request $request, $technician, $appointment)
     {
+
+        $validated = $request->validate([
+            /* 'appointmentId' => 'required|string', */
+            /* 'userId' => 'required|string', */
+            'warranty' => 'nullable|string',
+            'warrantyStatus' => 'nullable|string',
+        ]);
+
+        DB::table('service')->insert([
+            'appointment_id' => $appointment,
+            'user_id' => $technician,
+            'warranty' => $validated['warranty'],
+            'warranty_status' => $validated['warrantyStatus'],
+        ]);
+
         DB::table('appointment')
             ->where('id', $appointment)
             ->update(['mark_as' => 'accepted']);

@@ -6,7 +6,6 @@ import { type SharedData } from '@/types';
 export function NavMain({ items = [] }: { items: NavItem[] }) {
     const { auth } = usePage<SharedData>().props;
     const page = usePage();
-    console.log(auth);
     return (
         <SidebarGroup className="px-2 py-0">
             <SidebarGroupLabel>Platform</SidebarGroupLabel>

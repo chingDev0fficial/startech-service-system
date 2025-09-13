@@ -29,12 +29,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-type userForm = {
-    name: string,
-    email: string,
-    password: string,
-    role: string,
-};
+// type userForm = {
+//     name: string,
+//     email: string,
+//     password: string,
+//     role: string,
+// };
 
 function RegiterAccount() {
     return (
