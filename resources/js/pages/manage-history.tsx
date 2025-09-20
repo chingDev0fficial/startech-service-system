@@ -121,7 +121,7 @@ export default function ManageHistory() {
         console.log(serviceLocation);
         if (services.length > 0) {
             const serviceAppointments = services
-                // .filter((service: Jobs) => service.appointment_status === 'completed') // Only completed services for history
+                .filter((service: Jobs) => service.appointment_service_location === serviceLocation) // Only completed services for history
                 .map((service: Jobs) => ({
                     id: service.id.toString(),
                     service: `${service.appointment_item_name} - ${service.appointment_service_type}`,
@@ -131,7 +131,7 @@ export default function ManageHistory() {
                         month: 'long',
                         day: 'numeric'
                     }),
-                    completionDate: new Date(service.appointment_date).toLocaleDateString('en-US', {
+                    completionDate: new Date(service.completion_date).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'

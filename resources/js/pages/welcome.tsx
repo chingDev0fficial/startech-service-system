@@ -75,7 +75,7 @@ export default function Welcome(){
     const options = [
         { value: "in-store", title: "In-Store Service", sub: "Visit our service center" },
         {
-            value: "home",
+            value: "home-service",
             title: "Home Service",
             sub: (
                 <span>
