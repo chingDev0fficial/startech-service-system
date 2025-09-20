@@ -52,11 +52,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('appointment.decline');
         Route::get('manage-appointments', [AppointmentController::class, 'create'])
             ->name('manage-appointments');
+
         /* Route::post */
         Route::get('manage-billings', [BillingsController::class, 'create'])
             ->name('manage-billings');
-        Route::get('manage-history', [HistoryController::class, 'create'])
+        /* Route::get('manage-history', [HistoryController::class, 'create']) */
+        /*     ->name('manage-history'); */
+        Route::get('/manage-history/{service_location}', [HistoryController::class, 'create'])
+            ->where('service_location', 'in-store|home-service')
             ->name('manage-history');
+
+        Route::get('/manage-history/fetch', [HistoryController::class, 'fetch'])
+            ->name('manage-history.fetch');
+
+
+        /* Route::get('my-appointments/fetch', [App\Http\Controllers\MyAppointmentController::class, 'fetch']) */
+        /*     ->name('my-appointments.fetch'); */
 
     });
 
@@ -69,6 +80,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('my-appointments');
         Route::get('in-progress', [App\Http\Controllers\InProgressController::class, 'create'])
             ->name('in-progress');
+        Route::post('in-progress', [App\Http\Controllers\InProgressController::class, 'update'])
+            ->name('in-progress.mark-in-progress');
         Route::get('completed-today', [App\Http\Controllers\CompletedTodayController::class, 'create'])
             ->name('completed-today');
     });

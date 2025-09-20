@@ -10,6 +10,14 @@ import { Check } from 'lucide-react';
 import { Loader } from 'lucide-react';
 import { Receipt } from 'lucide-react';
 
+export interface NavItem {
+    title: string;
+    href: string;
+    icon: React.ComponentType<any>;
+    accessRole?: string[];
+    children?: NavItem[]; // Add this for nested items
+}
+
 const mainNavItems: NavItem[] = [
     {
         title: 'dashboard',
@@ -39,7 +47,21 @@ const mainNavItems: NavItem[] = [
         title: 'Manage History',
         href: '/manage-history',
         icon: History,
-        accessRole: ['super user', 'staff']
+        accessRole: ['super user', 'staff'],
+        children: [ // Add children
+            {
+                title: 'In Store',
+                href: '/manage-history/in-store',
+                icon: History, // You can use different icons
+                accessRole: ['super user', 'staff']
+            },
+            {
+                title: 'Home Service',
+                href: '/manage-history/home-service',
+                icon: History,
+                accessRole: ['super user', 'staff']
+            }
+        ]
     },
     {
         title: 'Manage Billings',
