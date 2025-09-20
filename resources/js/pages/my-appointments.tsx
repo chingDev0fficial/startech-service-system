@@ -62,7 +62,6 @@ export default function TechnicianAppointments() {
 
     const { auth } = usePage<SharedData>().props;
     const currentUserId = auth.user?.id;
-    console.log("Current User ID: ", currentUserId);
 
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [services, setServices] = useState<any[]>([]);
@@ -112,7 +111,6 @@ export default function TechnicianAppointments() {
     // Mock data - replace with actual API call
     useEffect(() => {
         loadServices();
-        console.log(services);
         const serviceAppointments = services
         .filter((service: Service) => service.user_id === currentUserId)
         .map((service: Service) => ({
@@ -136,26 +134,6 @@ export default function TechnicianAppointments() {
 
         const mockAppointments: Appointment[] = [
             ...serviceAppointments,
-            // {
-            //     id: 'APPT-2024-001',
-            //     time: '9:00 AM',
-            //     serviceType: 'In-Store Service',
-            //     location: 'Service Center',
-            //     status: 'Pending',
-            //     customer: {
-            //         name: 'John Smith',
-            //         phone: '(555) 123-4567',
-            //         email: 'john.smith@email.com',
-            //         type: 'Premium'
-            //     },
-            //     device: {
-            //         name: 'MacBook Pro 2021',
-            //         serial: 'MBP2021-ABC123',
-            //         warranty: 'Valid until Jan 15, 2025',
-            //         warrantyStatus: 'Valid'
-            //     },
-            //     notes: 'Screen started flickering yesterday during video calls. Issue seems to worsen when laptop gets warm.'
-            // },
         ];
 
         setTimeout(() => {
@@ -164,7 +142,7 @@ export default function TechnicianAppointments() {
         }, 1000);
     }, [selectedDate, echo]);
 
-    console.log("Appointments: ", appointments);
+    // console.log("Appointments: ", appointments);
 
     const filteredAppointments = appointments.filter(appointment => {
         return statusFilter === 'all' || appointment.status.toLowerCase().replace(' ', '') === statusFilter;
@@ -381,19 +359,19 @@ export default function TechnicianAppointments() {
 
                                     {/* Action Buttons */}
                                     <div className="flex gap-3 mt-6">
-                                        {appointment.status === 'Pending' && (
-                                            <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                                                Start Job
-                                            </button>
-                                        )}
-                                        {appointment.status === 'In Progress' && (
-                                            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                                                Update Status
-                                            </button>
-                                        )}
-                                        <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                                            View History
-                                        </button>
+                                        {/* {appointment.status === 'Pending' && ( */}
+                                        {/*     <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"> */}
+                                        {/*         Start Job */}
+                                        {/*     </button> */}
+                                        {/* )} */}
+                                        {/* {appointment.status === 'In Progress' && ( */}
+                                        {/*     <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"> */}
+                                        {/*         Update Status */}
+                                        {/*     </button> */}
+                                        {/* )} */}
+                                        {/* <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"> */}
+                                        {/*     View History */}
+                                        {/* </button> */}
                                         <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium">
                                             Contact Customer
                                         </button>
