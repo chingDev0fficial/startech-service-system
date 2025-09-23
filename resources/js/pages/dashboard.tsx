@@ -114,9 +114,9 @@ export default function Dashboard() {
             .then(data => {
                 const activeRepairCount = data.filter(appointment => appointment.status === "in-progress").length
                 const pendingAppointmentsCount = data.filter(appointment => appointment.status === "pending").length
+
                 setActiveRepair(activeRepairCount);
                 setPendingAppointments(pendingAppointmentsCount);
-
                 setDataAppointments(data);
             })
             .catch(error => {
@@ -219,7 +219,7 @@ export default function Dashboard() {
                        <Card className="bg-sidebar p-5 shadow-lg m-4 border border-sidebar-border p-2">
                             <CardHeader className="grid grid-cols-[1fr_60px] items-center">
                                 <CardTitle>Recent Service Request</CardTitle>
-                                <a href="#" className="text-xs">View All</a>
+                                {/* <a href={route('manage-appointments')} className="text-xs">View All</a> */}
                             </CardHeader>
 
                             <CardContent className="grid grid-cols-1 gap-3 pb-5">
