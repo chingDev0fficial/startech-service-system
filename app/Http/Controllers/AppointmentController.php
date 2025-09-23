@@ -67,4 +67,6 @@ class AppointmentController extends Controller
 
         return response()->json(['message' => 'Appointment declined successfully']);
     }
+
+    /* public function */
 }

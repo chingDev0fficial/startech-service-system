@@ -5,6 +5,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\BillingsController;
 use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\DashboardController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -27,6 +28,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin-only routes
     Route::middleware(['role:super user'])->group(function () {
+        Route::get('dashboard/fetch-todays-appointment', [DashboardController::class, 'fetchTodaysAppoint'])
+            ->name('fetch.todaysAppoint');
+        Route::get('dashboard/fetch-technician', [DashboardController::class, 'fetchTech'])
+            ->name('fetch.tech');
         Route::get('manage-accounts/fetch', [UserController::class, 'fetch']);
         Route::post('manage-accounts', [RegisteredUserController::class, 'store']);
         Route::delete('manage-accounts/delete/{user}', [UserController::class, 'destroy']);
@@ -45,7 +50,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin & Staff routes
     Route::middleware(['role:super user,staff'])->group(function () {
         Route::get('manage-accounts/fetch', [UserController::class, 'fetch']);
-        Route::get('manage-appointments/fetch', [AppointmentController::class, 'fetch']);
+        Route::get('manage-appointments/fetch', [AppointmentController::class, 'fetch'])
+            ->name('appointment.fetch');
         Route::post('manage-appointments/accept/{technician}/{appointment}', [AppointmentController::class, 'accept'])
             ->name('appointment.accept');
         Route::post('manage-appointments/decline/{appointment}', [AppointmentController::class, 'decline'])
