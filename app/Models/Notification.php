@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notifiable;
 
 class Notification extends Model
 {
-     /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<\Database\Factories\NotificationFactory> */
     use HasUlids, HasFactory, Notifiable;
 
     protected $table = 'notification';
@@ -25,6 +25,7 @@ class Notification extends Model
      */
     protected $fillable = [
         'appointment_id',
+        'client_id', // Added this since you have a client relationship
         'status',
         'created_at',
     ];
@@ -34,6 +35,9 @@ class Notification extends Model
      *
      * @var list<string>
      */
+    protected $hidden = [
+        // Add any attributes you want to hide from JSON serialization
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -53,5 +57,13 @@ class Notification extends Model
     public function client()
     {
         return $this->belongsTo(Client::class, 'client_id');
+    }
+
+    /**
+     * Get the appointment associated with the notification.
+     */
+    public function appointment()
+    {
+        return $this->belongsTo(Appointment::class, 'appointment_id');
     }
 }

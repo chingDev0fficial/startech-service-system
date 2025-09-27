@@ -297,7 +297,7 @@ export default function Welcome(){
 
 
                         <div className="flex flex-col gap-[1px] w-full">
-                            <label className="font-medium text-[#222831]">Warranty Card/Reciept</label>
+                            <label className="font-medium text-[#222831]">Warranty Sticker/Reciept</label>
                             <input name="warrantyReceipt" onChange={handleImageChange} type="file" accept="image/*" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0 w-[100%]" />
                             {preview && (
                                 <div className="mt-4">
