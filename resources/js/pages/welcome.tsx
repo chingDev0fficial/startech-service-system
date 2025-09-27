@@ -119,7 +119,7 @@ export default function Welcome(){
         if (file) {
             const previewUrl = URL.createObjectURL(file);
             setPreview(previewUrl);
-            console.log("File added to form data:", file.name); // Debug line
+            // console.log("File added to form data:", file.name); // Debug line
         } else {
             setPreview(null);
         }

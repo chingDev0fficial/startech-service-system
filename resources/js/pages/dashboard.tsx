@@ -13,7 +13,8 @@ import { ToolCase, ClipboardClock, PhilippinePeso, Star, User, LaptopMinimal, Ap
 
 import { CollapsibleWrapper } from "@/components/collapsable-content";
 
-
+import { useState, useEffect } from 'react';
+import { useEcho } from '@laravel/echo-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -68,40 +69,135 @@ function DashboardCard({ icon, iconColor, title, value }) {
 }
 
 export default function Dashboard() {
+    const echo = useEcho();
+    const [currentDateTime, setCurrentDateTime] = useState<Date>(new Date());
 
-    let todaysAppointment = [
-        {setTime: "10:00 AM", serviceType: "Home Service", client: "Rober Wilson", purpose: "Gaming PC Setup"},
-        {setTime: "10:00 AM", serviceType: "In-Store", client: "Rober Wilson", purpose: "Gaming PC Setup"},
-        {setTime: "10:00 AM", serviceType: "Home Service", client: "Rober Wilson", purpose: "Gaming PC Setup"},
-        {setTime: "10:00 AM", serviceType: "Home Service", client: "Rober Wilson", purpose: "Gaming PC Setup"},
-        {setTime: "10:00 AM", serviceType: "In-Store", client: "Rober Wilson", purpose: "Gaming PC Setup"},
-        {setTime: "10:00 AM", serviceType: "In-Store", client: "Rober Wilson", purpose: "Gaming PC Setup"},
-    ];
+    const [dataAppointments, setDataAppointments] = useState([]);
+    const [dataTech, setDataTech] = useState([]);
+    const [activeRepair, setActiveRepair] = useState<number>(0);
+    const [pendingAppointments, setPendingAppointments] = useState<number>(0);
 
-    let availableStatusTechnician = [
-        {icon: User, name: "Alex Thompson", status: "Available"},
-        {icon: User, name: "Maria Garcia", status: "Busy"},
-        {icon: User, name: "James Wilson", status: "On Service"},
-        {icon: User, name: "Prince Carl Ajoc", status: "On Service"},
-    ]
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentDateTime(new Date());
+        }, 1000); // Update every second
 
-    let recentServiceReq = [
-        {serviceType: "hardware repair", itemBrand: "iPhone 14 Pro", purpose: "Screen Replacement", customerName: "Sarah Johnson", appointmentId: "#SR-2024-0156", status: "In Progress"},
-        {serviceType: "maintenance", itemBrand: "iPhone 14 Pro", purpose: "Screen Replacement", customerName: "Sarah Johnson", appointmentId: "#SR-2024-0156", status: "Completed"},
-        {serviceType: "maintenance", itemBrand: "iPhone 14 Pro", purpose: "Screen Replacement", customerName: "Sarah Johnson", appointmentId: "#SR-2024-0156", status: "Waiting Part"},
-        {serviceType: "software solution", itemBrand: "iPhone 14 Pro", purpose: "Screen Replacement", customerName: "Sarah Johnson", appointmentId: "#SR-2024-0156", status: "In Progress"},
-        {serviceType: "hardware repair", itemBrand: "iPhone 14 Pro", purpose: "Screen Replacement", customerName: "Sarah Johnson", appointmentId: "#SR-2024-0156", status: "Completed"},
-        {serviceType: "hardware repair", itemBrand: "iPhone 14 Pro", purpose: "Screen Replacement", customerName: "Sarah Johnson", appointmentId: "#SR-2024-0156", status: "In Progress"},
-        {serviceType: "maintenance", itemBrand: "iPhone 14 Pro", purpose: "Screen Replacement", customerName: "Sarah Johnson", appointmentId: "#SR-2024-0156", status: "Completed"},
-        {serviceType: "software solution", itemBrand: "iPhone 14 Pro", purpose: "Screen Replacement", customerName: "Sarah Johnson", appointmentId: "#SR-2024-0156", status: "Waiting Part"},
-        {serviceType: "software solution", itemBrand: "iPhone 14 Pro", purpose: "Screen Replacement", customerName: "Sarah Johnson", appointmentId: "#SR-2024-0156", status: "In Progress"},
-        {serviceType: "maintenance", itemBrand: "iPhone 14 Pro", purpose: "Screen Replacement", customerName: "Sarah Johnson", appointmentId: "#SR-2024-0156", status: "Completed"},
-        {serviceType: "hardware repair", itemBrand: "iPhone 14 Pro", purpose: "Screen Replacement", customerName: "Sarah Johnson", appointmentId: "#SR-2024-0156", status: "In Progress"},
-    ]
+        return () => clearInterval(timer); // Cleanup
+    }, [echo]);
+
+    const handleFetchAppointment = async () => {
+        try
+        {
+            const response = await fetch(route('fetch.todaysAppoint'), {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+
+            if ( !response.ok )
+            {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.retrieved;
+        }
+        catch( error )
+        {
+            console.error('Error fetching appointments:', error);
+        }
+    }
+
+    useEffect(() => {
+        handleFetchAppointment()
+            .then(data => {
+                const activeRepairCount = data.filter(appointment => appointment.status === "in-progress").length
+                const pendingAppointmentsCount = data.filter(appointment => appointment.status === "pending").length
+
+                setActiveRepair(activeRepairCount);
+                setPendingAppointments(pendingAppointmentsCount);
+                setDataAppointments(data);
+            })
+            .catch(error => {
+                console.error('Failed to fetch appointments:', error);
+            });
+    }, [currentDateTime, echo])
+
+    let todaysAppointment = dataAppointments
+        .filter(appointment => new Date(appointment?.schedule_at).toLocaleDateString() === currentDateTime.toLocaleDateString())
+        .map(appointment => ({
+            setTime: appointment.schedule_at,
+            serviceType: appointment.service_type,
+            client: appointment.name,
+            purpose: appointment.service_location,
+        }))
+
+    let recentServiceReq = dataAppointments
+        .map(appointment => ({
+            serviceType: appointment.service_type,
+            itemBrand: appointment.item,
+            purpose: appointment.description,
+            customerName: appointment.name,
+            appointmentId: `#${appointment.id}`,
+            status: appointment.status
+        }))
+
+    const handleFetchTech = async () => {
+        try
+        {
+            const response = await fetch(route('fetch.tech'), {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+
+            if ( !response.ok )
+            {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.retrieved;
+        }
+        catch( error )
+        {
+            console.error('Error fetching appointments:', error);
+        }
+    }
+
+    useEffect(() => {
+        handleFetchTech()
+            .then(data => {
+                setDataTech(data);
+            })
+            .catch(error => {
+                console.error('Failed to fetch appointments:', error);
+            });
+    }, [echo])
+
+    let availableStatusTechnician = dataTech
+        .filter(tech => tech.role === "technician")
+        .map(tech => ({
+            icon: User,
+            name: tech.name,
+            status: "Available"
+        }))
+
+    // useEffect(() => {
+    //     handleFetchAppointment()
+    //         .then(data => {
+    //         })
+    //         .catch(error => {
+    //             console.error('Failed to fetch appointments:', error);
+    //         });
+    // }, [currentDateTime, echo])
+
 
     const statCards = [
-        {icon: ToolCase, iconColor: "blue", title: "Active Repairs", value: "24"},
-        {icon: ClipboardClock, iconColor: "orange", title: "pending Appointments", value: "12"},
+        {icon: ToolCase, iconColor: "blue", title: "Active Repairs", value: activeRepair},
+        {icon: ClipboardClock, iconColor: "orange", title: "pending Appointments", value: pendingAppointments},
         {icon: PhilippinePeso, iconColor: "green", title: "Today's Revenue", value: "200,450Php"},
         {icon: Star, iconColor: "purple", title: "Satisfaction", value: "4.9/5"},
     ]
@@ -123,7 +219,7 @@ export default function Dashboard() {
                        <Card className="bg-sidebar p-5 shadow-lg m-4 border border-sidebar-border p-2">
                             <CardHeader className="grid grid-cols-[1fr_60px] items-center">
                                 <CardTitle>Recent Service Request</CardTitle>
-                                <a href="#" className="text-xs">View All</a>
+                                {/* <a href={route('manage-appointments')} className="text-xs">View All</a> */}
                             </CardHeader>
 
                             <CardContent className="grid grid-cols-1 gap-3 pb-5">

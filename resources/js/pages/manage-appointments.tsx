@@ -18,11 +18,6 @@ import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 
-// type userForm = {
-//     appointment: string;
-//     userId: string;
-// };
-
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Manage Account',
@@ -50,6 +45,77 @@ interface AppointmentFormData {
 }
 
 const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
+
+function viewAppointment({ isOpen, onClose, appointmentData }) {
+    const [fetchedAppointmentsData, setFetchedAppointmentsData] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    const handleFetchAppointmentsData = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(route('appointment.fetch'), {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const result = await response.json();
+            return result.retrieved;
+        } catch(err) {
+            console.error('Error fetching users:', err);
+            throw err instanceof Error ? err : new Error(String(err));
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const appointments = await handleFetchAppointmentsData();
+                setFetchedAppointmentsData(appointments);
+            } catch(e) {
+                console.error('Failed to fetch appointments:', e);
+            }
+        };
+
+        if (isOpen) {
+            fetchData();
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
+        console.log(fetchedAppointmentsData);
+    }, [fetchedAppointmentsData]);
+
+    return (
+        <Modal
+            keepMounted
+            open={isOpen}
+            onClose={onClose}
+            aria-labelledby="keep-mounted-modal-title"
+            aria-describedby="keep-mounted-modal-description"
+        >
+            <Box sx={style}>
+                <Typography id="keep-mounted-modal-title" variant="h6" component="h2" className="flex items-center justify-between">
+                    Available Technicians
+                    <Button className="text-[#ffffff] !bg-[#393E46]" onClick={onClose}>
+                        <X />
+                    </Button>
+                </Typography>
+                <Box sx={{ mt: 2 }}>
+
+                    test
+                </Box>
+            </Box>
+        </Modal>
+    );
+
+
+}
 
 function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
     const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormData>({
@@ -292,6 +358,7 @@ export default function ManageAccount() {
     };
 
     const handleView = async ( id: number ) => {
+        viewAppointment(true, true, 1);
         console.log("clicked view", id);
     };
 
@@ -341,17 +408,17 @@ export default function ManageAccount() {
             render: (row) => (
                 <div className="flex items-center justify-center gap-2">
                     <button
-                        className="text-[#222831] text-[#ffffff] bg-blue-700 p-2 rounded-md"
+                        className="text-[#222831] text-[#ffffff] bg-blue-700 p-2 rounded-md transform hover:scale-105 transition-transform duration-300 cursor-pointer"
                         onClick={() => handleView(row.appointmentId)}>
                         <Eye className="w-4 h-4" />
                     </button>
                     <button
-                        className="text-[#222831] text-[#ffffff] bg-green-700 p-2 rounded-md"
+                        className="text-[#222831] text-[#ffffff] bg-green-700 p-2 rounded-md transform hover:scale-105 transition-transform duration-300 cursor-pointer"
                         onClick={() => handleAccept(row.appointmentId)}>
                         <Check className="w-4 h-4" />
                     </button>
                     <button
-                        className="text-[#222831] text-[#ffffff] bg-red-700 p-2 rounded-md"
+                        className="text-[#222831] text-[#ffffff] bg-red-700 p-2 rounded-md transform hover:scale-105 transition-transform duration-300 cursor-pointer"
                         onClick={() => handleDecline(row.appointmentId)}>
                             <X className="w-4 h-4" />
                         {/* {deleteProcessLoading.has(row.userId) ? ( */}
