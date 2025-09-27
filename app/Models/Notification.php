@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Notifications\Notifiable;
 
 class Notification extends Model
 {
@@ -43,6 +46,10 @@ class Notification extends Model
             'created_at' => 'datetime',
         ];
     }
+
+    /**
+     * Get the client that owns the notification.
+     */
     public function client()
     {
         return $this->belongsTo(Client::class, 'client_id');
