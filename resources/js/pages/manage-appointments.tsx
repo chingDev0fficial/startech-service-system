@@ -402,23 +402,24 @@ export default function ManageAccount() {
         { id: "device", label: "Device", minWidth: 170 },
         { id: "issue", label: "Issue", minWidth: 170 },
         {
+            id: "actions",
             label: "Actions",
             minWidth: 150,
             align: "center",
             render: (row) => (
                 <div className="flex items-center justify-center gap-2">
                     <button
-                        className="text-[#222831] text-[#ffffff] bg-blue-700 p-2 rounded-md transform hover:scale-105 transition-transform duration-300 cursor-pointer"
+                        className="text-[#ffffff] bg-blue-700 p-2 rounded-md transform hover:scale-105 transition-transform duration-300 cursor-pointer"
                         onClick={() => handleView(row.appointmentId)}>
                         <Eye className="w-4 h-4" />
                     </button>
                     <button
-                        className="text-[#222831] text-[#ffffff] bg-green-700 p-2 rounded-md transform hover:scale-105 transition-transform duration-300 cursor-pointer"
+                        className="text-[#ffffff] bg-green-700 p-2 rounded-md transform hover:scale-105 transition-transform duration-300 cursor-pointer"
                         onClick={() => handleAccept(row.appointmentId)}>
                         <Check className="w-4 h-4" />
                     </button>
                     <button
-                        className="text-[#222831] text-[#ffffff] bg-red-700 p-2 rounded-md transform hover:scale-105 transition-transform duration-300 cursor-pointer"
+                        className="text-[#ffffff] bg-red-700 p-2 rounded-md transform hover:scale-105 transition-transform duration-300 cursor-pointer"
                         onClick={() => handleDecline(row.appointmentId)}>
                             <X className="w-4 h-4" />
                         {/* {deleteProcessLoading.has(row.userId) ? ( */}
@@ -429,7 +430,7 @@ export default function ManageAccount() {
                     </button>
                 </div>
             ),
-        },
+        }
     ];
 
     type Data = {
