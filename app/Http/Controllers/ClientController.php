@@ -46,7 +46,6 @@ class ClientController extends Controller
 
         // Combine date and time for schedule_at
         $scheduleAt = Carbon::parse($validated['date'] . ' ' . $validated['time'])->format('Y-m-d H:i:s');
-        Log::info("Date & Time: " . $scheduleAt);
 
         // Create the appointment
         DB::table('appointment')->insert([
@@ -59,6 +58,12 @@ class ClientController extends Controller
             'warranty_receipt' => $warrantyReceiptPath, // Add this field
             'created_at' => now(),
             'updated_at' => now(),
+        ]);
+
+        DB::table('notification')->insert([
+            'type' => 'client_req',
+            'title' => 'New Appointment Request',
+            'message' => "{$validated['fullname']} booked an appointment"
         ]);
 
         // Return success response for Inertia

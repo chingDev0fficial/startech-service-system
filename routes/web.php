@@ -6,6 +6,7 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\BillingsController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -70,7 +71,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/manage-history/fetch', [HistoryController::class, 'fetch'])
             ->name('manage-history.fetch');
 
-
+        Route::get('notification', [NotificationController::class, 'create'])
+            ->name('notif');
+        Route::get('notification/fetch', [NotificationController::class, 'fetch'])
+            ->name('notification.fetch');
         /* Route::get('my-appointments/fetch', [App\Http\Controllers\MyAppointmentController::class, 'fetch']) */
         /*     ->name('my-appointments.fetch'); */
 

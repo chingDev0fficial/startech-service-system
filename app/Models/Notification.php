@@ -21,9 +21,10 @@ class Notification extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'appointment_id',
+        'type',
+        'title',
+        'message',
         'status',
-        'created_at',
     ];
 
     /**
