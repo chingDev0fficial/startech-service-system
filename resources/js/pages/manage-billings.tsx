@@ -2,8 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import AppTable, { Column } from '@/components/table';
 import { type BreadcrumbItem, type SharedData } from '@/types';
-
-
+import { useEcho } from '@laravel/echo-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -13,82 +12,81 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 import { useState, useEffect } from 'react';
 
+const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
+
 export default function ManageBillings() {
     // Initialization
+    const echo = useEcho();
     const [billings, setBillings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [fetchedAppointments, setFetchedAppointments] = useState([]);
 
-    const breadcrumbs = [
-        { name: 'Dashboard', href: '/dashboard' },
-        { name: 'Manage Billings', href: '/billings' }
-    ];
+    const handleFetchedAppointments = async () => {
+        try {
+            const response = await fetch(`${apiBase}/manage-appointments/fetch`, {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
 
-    // Mock data - replace with actual API call
+            const result = await response.json();
+
+            return result.retrieved;
+
+        } catch ( err ) {
+            throw err instanceof Error ? err : new Error(String(err));
+        }
+    }
+
     useEffect(() => {
-        const mockBillings = [
-            {
-                id: 'SR-2024-0156',
-                service: 'iPhone 14 Pro - Screen Replacement',
-                customer: 'Sarah Johnson',
-                status: 'In Progress',
-                amount: 299.99,
-                date: '2024-08-25',
-                
-            },
-            {
-                id: 'SR-2024-0157',
-                service: 'MacBook Pro - Deep Clean',
-                customer: 'John Doe',
-                status: 'Completed',
-                amount: 149.99,
-                date: '2024-08-20',
-                
-            },
-            {
-                id: 'SR-2024-0158',
-                service: 'Dell XPS - System Tune-up',
-                customer: 'Jane Smith',
-                status: 'Waiting Part',
-                amount: 89.99,
-                date: '2024-08-22',
-                
-            },
-            {
-                id: 'SR-2024-0159',
-                service: 'HP Laptop - OS Installation',
-                customer: 'Bob Wilson',
-                status: 'In Progress',
-                amount: 129.99,
-                date: '2024-08-23',
-                
-            },
-            {
-                id: 'SR-2024-0160',
-                service: 'Samsung Galaxy - Battery Replace',
-                customer: 'Alice Brown',
-                status: 'Completed',
-                amount: 79.99,
-                date: '2024-08-18',
-                
-            },
-            {
-                id: 'SR-2024-0161',
-                service: 'iPad Air - Charging Port Fix',
-                customer: 'Chris Davis',
-                status: 'In Progress',
-                amount: 199.99,
-                date: '2024-08-24',
-                
-            }
-        ];
+        handleFetchedAppointments()
+            .then(data => setFetchedAppointments(
+                data.filter(appointment => appointment.price && appointment.price !== 'null')
+                    .map(appointment => ({
+                        id: appointment.id,
+                        service: `${appointment.item} - ${appointment.service_type}`,
+                        customer: appointment.client_name,
+                        status: appointment.status,
+                        amount: parseInt(appointment.price),
+                        date: '2024-08-25',
+                    }))
 
-        setTimeout(() => {
-            setBillings(mockBillings);
-            setLoading(false);
-        }, 1000);
-    }, []);
+            ))
+            .catch(err => {
+                console.error('Failed to fetch appointments:', err);
+            });
+
+        if (echo) {
+            echo.channel('appointments')
+                .listen('.appointments.retrieve', (event: any) => {
+                    setFetchedAppointments(prev =>
+                    prev
+                        .filter(appointment => appointment.price && appointment.price !== 'null')
+                        .map(appointment => ({
+                            id: appointment.id,
+                            service: `${appointment.item} - ${appointment.service_type}`,
+                            customer: appointment.client_name,
+                            status: appointment.status,
+                            amount: parseInt(appointment.price),
+                            date: '2024-08-25',
+                        }))
+                    );
+            });
+        }
+
+        setBillings(fetchedAppointments);
+        setLoading(false);
+
+        // Cleanup listener on unmount
+        return () => {
+            if (echo) {
+                echo.channel('appointments').stopListening('.appointments.retrieve');
+            }
+        };
+    }, [echo]);
 
     // Filter billings
     const filteredBillings = billings.filter(billing => {
@@ -101,11 +99,11 @@ export default function ManageBillings() {
 
     const getStatusBadge = (status) => {
         const statusClasses = {
-            'Completed': 'bg-green-100 text-green-800',
-            'In Progress': 'bg-yellow-100 text-yellow-800',
-            'Waiting Part': 'bg-red-100 text-red-800'
+            'completed': 'bg-green-100 text-green-800',
+            'in-progress': 'bg-yellow-100 text-yellow-800',
+            // 'Waiting Part': 'bg-red-100 text-red-800'
         };
-        
+
         return `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[status] || 'bg-gray-100 text-gray-800'}`;
     };
 
@@ -113,7 +111,7 @@ export default function ManageBillings() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manage Billings" />
             <div className="flex h-full flex-1 flex-col gap-[1px] rounded-xl p-4 overflow-x-auto">
-                
+
                 {/* Header */}
                 <div className="bg-white p-6 rounded-lg shadow mb-4">
                     <div className="flex justify-between items-center">
@@ -121,28 +119,28 @@ export default function ManageBillings() {
                             <h1 className="text-2xl font-bold text-gray-900">Manage Billings</h1>
                             <p className="text-gray-600 mt-1">Track and manage service billing requests</p>
                         </div>
-                        
+
                     </div>
                 </div>
 
                 {/* Summary */}
-                <div className="grid grid-cols-4 gap-4 mt-4">
+                <div className="grid grid-cols-2 gap-4 mt-4 mb-4">
                     <div className="bg-white p-4 rounded-lg shadow text-center">
                         <div className="text-2xl font-bold">{billings.length}</div>
                         <div className="text-sm text-gray-500">Total</div>
                     </div>
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-green-600">
-                            ₱{billings.filter(b => b.status === 'Completed').reduce((sum, b) => sum + b.amount, 0).toFixed(2)}
-                        </div>
-                        <div className="text-sm text-gray-500">Completed</div>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-yellow-600">
-                            ₱{billings.filter(b => b.status === 'In Progress').reduce((sum, b) => sum + b.amount, 0).toFixed(2)}
-                        </div>
-                        <div className="text-sm text-gray-500">Pending</div>
-                    </div>
+                    {/* <div className="bg-white p-4 rounded-lg shadow text-center"> */}
+                    {/*     <div className="text-2xl font-bold text-green-600"> */}
+                    {/*         ₱{billings.filter(b => b.status === 'completed').reduce((sum, b) => sum + b.amount, 0).toFixed(2)} */}
+                    {/*     </div> */}
+                    {/*     <div className="text-sm text-gray-500">Completed</div> */}
+                    {/* </div> */}
+                    {/* <div className="bg-white p-4 rounded-lg shadow text-center"> */}
+                    {/*     <div className="text-2xl font-bold text-yellow-600"> */}
+                    {/*         ₱{billings.filter(b => b.status === 'in-progress').reduce((sum, b) => sum + b.amount, 0).toFixed(2)} */}
+                    {/*     </div> */}
+                    {/*     <div className="text-sm text-gray-500">In Progress</div> */}
+                    {/* </div> */}
                     <div className="bg-white p-4 rounded-lg shadow text-center">
                         <div className="text-2xl font-bold text-blue-600">
                             ₱{billings.reduce((sum, b) => sum + b.amount, 0).toFixed(2)}
@@ -161,16 +159,16 @@ export default function ManageBillings() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="flex-1 px-3 py-2 border rounded-md"
                         />
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="px-3 py-2 border rounded-md"
-                        >
-                            <option value="all">All Status</option>
-                            <option value="completed">Completed</option>
-                            <option value="inprogress">In Progress</option>
-                            <option value="waitingpart">Waiting Part</option>
-                        </select>
+                        {/* <select */}
+                        {/*     value={statusFilter} */}
+                        {/*     onChange={(e) => setStatusFilter(e.target.value)} */}
+                        {/*     className="px-3 py-2 border rounded-md" */}
+                        {/* > */}
+                        {/*     <option value="all">All Status</option> */}
+                        {/*     <option value="completed">Completed</option> */}
+                        {/*     <option value="inprogress">In Progress</option> */}
+                        {/*     <option value="waitingpart">Waiting Part</option> */}
+                        {/* </select> */}
                     </div>
                 </div>
 
@@ -233,12 +231,12 @@ export default function ManageBillings() {
                                             <td className="px-6 py-4 text-sm text-gray-900">
                                                 ₱{billing.amount.toFixed(2)}
                                             </td>
-                                            
+
                                             <td className="px-6 py-4 text-right">
                                                 <button className="text-blue-600 hover:text-blue-900 text-sm mr-3">
                                                     View
                                                 </button>
-                                                
+
                                             </td>
                                         </tr>
                                     ))

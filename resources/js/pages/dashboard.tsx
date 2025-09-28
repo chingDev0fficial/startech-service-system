@@ -76,6 +76,7 @@ export default function Dashboard() {
     const [dataTech, setDataTech] = useState([]);
     const [activeRepair, setActiveRepair] = useState<number>(0);
     const [pendingAppointments, setPendingAppointments] = useState<number>(0);
+    const [totalRevenue, setTotalRevenue] = useState<number>(0);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -115,6 +116,15 @@ export default function Dashboard() {
                 const activeRepairCount = data.filter(appointment => appointment.status === "in-progress").length
                 const pendingAppointmentsCount = data.filter(appointment => appointment.status === "pending").length
 
+                const formatter = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'PHP',
+                });
+                const revenueTotal = data.filter(appointment => appointment.status === "completed")
+                    .reduce((sum, appointment) => sum + parseInt(appointment.price), 0);
+                const formattedPrice = formatter.format(revenueTotal);
+
+                setTotalRevenue(formattedPrice);
                 setActiveRepair(activeRepairCount);
                 setPendingAppointments(pendingAppointmentsCount);
                 setDataAppointments(data);
@@ -146,10 +156,11 @@ export default function Dashboard() {
     const handleFetchTech = async () => {
         try
         {
-            const response = await fetch(route('fetch.tech'), {
+            const response = await fetch('dashboard/fetch-technician', {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
                 }
             })
 
@@ -182,23 +193,13 @@ export default function Dashboard() {
         .map(tech => ({
             icon: User,
             name: tech.name,
-            status: "Available"
+            status: tech.status
         }))
-
-    // useEffect(() => {
-    //     handleFetchAppointment()
-    //         .then(data => {
-    //         })
-    //         .catch(error => {
-    //             console.error('Failed to fetch appointments:', error);
-    //         });
-    // }, [currentDateTime, echo])
-
 
     const statCards = [
         {icon: ToolCase, iconColor: "blue", title: "Active Repairs", value: activeRepair},
         {icon: ClipboardClock, iconColor: "orange", title: "pending Appointments", value: pendingAppointments},
-        {icon: PhilippinePeso, iconColor: "green", title: "Today's Revenue", value: "200,450Php"},
+        {icon: PhilippinePeso, iconColor: "green", title: "Today's Revenue", value: totalRevenue},
         {icon: Star, iconColor: "purple", title: "Satisfaction", value: "4.9/5"},
     ]
 
@@ -214,7 +215,6 @@ export default function Dashboard() {
                     ))}
                 </div>
                 <div className="grid lg:grid-cols-[1fr_400px] gap-1 relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-transparent md:min-h-min">
-                    {/* <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" /> */}
                     <div className="h-full w-full rounded-xl">
                        <Card className="bg-sidebar p-5 shadow-lg m-4 border border-sidebar-border p-2">
                             <CardHeader className="grid grid-cols-[1fr_60px] items-center">
@@ -238,7 +238,7 @@ export default function Dashboard() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className={`flex items-center justify-center w-22 text-[0.7rem] ${req.status.toLowerCase() === "in progress" ? "bg-yellow-500/30 text-yellow-700" : req.status.toLowerCase() === "completed" ? "bg-green-500/30 text-green-700" : "bg-red-500/30 text-red-700"} dark:text-[#ffffff] p-1 rounded-xl`}>
+                                        <div className={`flex items-center justify-center w-22 text-[0.7rem] ${req.status.toLowerCase() === "in-progress" ? "bg-yellow-500/30 text-yellow-700" : req.status.toLowerCase() === "completed" ? "bg-green-500/30 text-green-700" : "bg-red-500/30 text-red-700"} dark:text-[#ffffff] p-1 rounded-xl`}>
                                             { req.status }
                                         </div>
                                     </div>
