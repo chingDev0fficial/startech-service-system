@@ -30,8 +30,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:super user'])->group(function () {
         Route::get('dashboard/fetch-todays-appointment', [DashboardController::class, 'fetchTodaysAppoint'])
             ->name('fetch.todaysAppoint');
-        Route::get('dashboard/fetch-technician', [DashboardController::class, 'fetchTech'])
-            ->name('fetch.tech');
+        Route::get('dashboard/fetch-technician', [DashboardController::class, 'fetchTech']);
         Route::get('manage-accounts/fetch', [UserController::class, 'fetch']);
         Route::post('manage-accounts', [RegisteredUserController::class, 'store']);
         Route::delete('manage-accounts/delete/{user}', [UserController::class, 'destroy']);
@@ -79,17 +78,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Customer routes
     Route::middleware(['role:technician'])->group(function () {
-        Route::get('my-appointments/fetch', [App\Http\Controllers\MyAppointmentController::class, 'fetch'])
-            ->name('my-appointments.fetch');
 
         Route::get('my-appointments', [App\Http\Controllers\MyAppointmentController::class, 'create'])
             ->name('my-appointments');
         Route::get('in-progress', [App\Http\Controllers\InProgressController::class, 'create'])
             ->name('in-progress');
-        Route::post('in-progress', [App\Http\Controllers\InProgressController::class, 'update'])
-            ->name('in-progress.mark-in-progress');
         Route::get('completed-today', [App\Http\Controllers\CompletedTodayController::class, 'create'])
             ->name('completed-today');
+
+        Route::get('my-appointments/fetch', [App\Http\Controllers\MyAppointmentController::class, 'fetch'])
+            ->name('my-appointments.fetch');
+        Route::post('in-progress', [App\Http\Controllers\InProgressController::class, 'update'])
+            ->name('in-progress.mark-in-progress');
     });
 });
 

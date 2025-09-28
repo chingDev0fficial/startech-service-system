@@ -7,6 +7,13 @@ import { useState, useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 
+import { Eye, Check, X } from 'lucide-react';
+
+import Box from '@mui/material/Box';
+import Modal from '@mui/material/Modal';
+import Typography from '@mui/material/Typography';
+import { Button } from '@/components/ui/button';
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'In Progress',
@@ -14,16 +21,146 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 800,
+    // maxHeight: '75vh',
+    bgcolor: 'background.paper',
+    boxShadow: 24,
+    p: 4,
+};
+
 interface Jobs {
     id: string,
-    appointment_id: number,
+    appointmentId: number,
     customer: string,
     device: string,
-    start_time: string,
-    service_type: string,
+    startTime: string,
+    serviceType: string,
     description: string,
-    appointment_status: string,
+    status: string,
 }
+
+interface SetCompleteModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSave: (amount: number) => void;
+    isLoading: boolean;
+}
+
+const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteModalProps) => {
+    const [amount, setAmount] = useState<string>('');
+    const [error, setError] = useState<string>('');
+
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        // Allow only numbers and decimal points
+        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+            setAmount(value);
+            setError('');
+        }
+    };
+
+    const handleSave = () => {
+        const numericAmount = parseFloat(amount);
+
+        if (!amount || amount.trim() === '') {
+            console.log('error1')
+            setError('Amount is required');
+            return;
+        }
+
+        if (isNaN(numericAmount) || numericAmount <= 0) {
+            console.log('error2')
+            setError('Please enter a valid amount greater than 0');
+            return;
+        }
+
+        onSave(numericAmount);
+    };
+
+    const handleClose = () => {
+        setAmount('');
+        setError('');
+        onClose();
+    };
+
+    return (
+        <Modal
+            keepMounted
+            open={isOpen}
+            onClose={handleClose}
+            aria-labelledby="keep-mounted-modal-title"
+            aria-describedby="keep-mounted-modal-description"
+        >
+            <Box sx={style}>
+                <Typography
+                    id="keep-mounted-modal-title"
+                    variant="h6"
+                    component="h2"
+                    className="flex items-center justify-between"
+                >
+                    Mark as Complete
+                    <Button
+                        className="text-[#ffffff] !bg-[#393E46]"
+                        onClick={handleClose}
+                        disabled={isLoading}
+                    >
+                        <X />
+                    </Button>
+                </Typography>
+
+                <Box sx={{ mt: 2 }}>
+                    <p className="mb-4">Please enter the service amount and confirm completion.</p>
+
+                    <div className="mb-4">
+                        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
+                            Service Amount ($)
+                        </label>
+                        <input
+                            id="amount"
+                            type="text"
+                            value={amount}
+                            onChange={handleAmountChange}
+                            placeholder="0.00"
+                            disabled={isLoading}
+                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                                error ? 'border-red-500' : 'border-gray-300'
+                            }`}
+                        />
+                        {error && (
+                            <p className="mt-1 text-sm text-red-600">{error}</p>
+                        )}
+                    </div>
+
+                    <div className="flex gap-2 justify-end">
+                        <Button
+                            onClick={handleClose}
+                            variant="outline"
+                            disabled={isLoading}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleSave}
+                            disabled={isLoading}
+                            className="bg-green-600 hover:bg-green-700"
+                        >
+                            {isLoading ? (
+                                <LoaderCircle className="h-4 w-4 animate-spin" />
+                            ) : (
+                                "Mark Complete"
+                            )}
+                        </Button>
+                    </div>
+                </Box>
+            </Box>
+        </Modal>
+    );
+};
 
 export default function InProgress() {
     const { auth } = usePage<SharedData>().props;
@@ -37,6 +174,10 @@ export default function InProgress() {
     const [inProgressProcessLoading, setInProgressProcessing] = useState<Set<number>>(new Set());
     const [completeProcessLoading, setCompleteProcessing] = useState<Set<number>>(new Set());
     const [cancelProcessLoading, setCancelProcessing] = useState<Set<number>>(new Set());
+
+    const [openCompleteModal, setOpenCompleteModal] = useState<boolean>(false);
+    const [isModalSaveClick, setIsModalSaveClick] = useState<boolean>(false);
+    const [jobData, setJobData] = useState<number>(0);
 
     // Mock data - replace with actual API call
     const handleFetchedServices = async () => {
@@ -60,98 +201,131 @@ export default function InProgress() {
             console.error('Error fetching users:', err);
             throw err instanceof Error ? err : new Error(String(err));
         } finally {
-            // setLoading(false);
-        }
-    }
-
-    const loadServices = async () => {
-        try {
-            const fetchedServices = await handleFetchedServices();
-            setServices(fetchedServices);
-        } catch (err) {
-            console.error('failed to fetch services:', err);
+            setLoading(false);
         }
     }
 
     // Load services when selectedDate or echo changes
     useEffect(() => {
-        loadServices();
+        handleFetchedServices()
+            .then(data => {
+                const transformedData = data
+                    .filter((service: any) => service.user_id === currentUserId)
+                    .filter((service: any) => service.appointment_status === 'pending' || service.appointment_status === 'in-progress')
+                    .map((service: any) => ({
+                        id: service.id.toString(),
+                        appointmentId: service.appointment_id,
+                        customer: service.client_name,
+                        device: service.appointment_item_name,
+                        startTime: new Date(service.appointment_date).toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                        }),
+                        serviceType: service.appointment_service_type,
+                        description: service.appointment_description,
+                        status: service.appointment_status,
+                    }));
+                setJobs(transformedData);
+            })
+            .catch(err => console.error(err));
+
+        echo.channel('services')
+            .listen('.services.retrieve', (event: any) => {
+                const newServices = event.services || [event]; // Adjust based on your event structure
+                const transformedNewServices = newServices
+                    .filter((service: any) => service.user_id === currentUserId)
+                    .filter((service: any) => service.appointment_status === 'pending' || service.appointment_status === 'in-progress')
+                    .map((service: any) => ({
+                        id: service.id.toString(),
+                        appointmentId: service.appointment_id,
+                        customer: service.client_name,
+                        device: service.appointment_item_name,
+                        startTime: new Date(service.appointment_date).toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                        }),
+                        serviceType: service.appointment_service_type,
+                        description: service.appointment_description,
+                        status: service.appointment_status,
+                    }));
+
+                // Update state with new services (you might want to merge or replace)
+                setJobs(prev => [...prev, ...transformedNewServices]);
+            });
+
+        return () => {
+            echo.leaveChannel('services');
+        };
     }, [echo]);
 
-    // Filter and set jobs when services data is actually available
-    useEffect(() => {
-        // console.log('Services data:', services[0].appointment_status !== 'completed');
-        // console.log('Current user ID:', currentUserId);
-        if (services.length > 0) {
-            const serviceAppointments = services
-                .filter((service: Jobs) => service.user_id === currentUserId)
-                .filter((service: Jobs) => service.appointment_status === 'pending' || service.appointment_status === 'in-progress')
-                .map((service: Jobs) => ({
-                    id: service.id.toString(),
-                    appointment_id: service.appointment_id,
-                    customer: service.client_name,
-                    device: service.appointment_item_name,
-                    startTime: new Date(service.appointment_date).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                    }),
-                    service_type: service.appointment_service_type,
-                    description: service.appointment_description,
-                    status: service.appointment_status,
-                }));
-
-            const jobs = [...serviceAppointments];
-
-            setTimeout(() => {
-                setJobs(jobs);
-                setLoading(false);
-            }, 1000);
-        }
-    }, [services, currentUserId]); // This runs when services or currentUserId changes
+    const handleCompleteModalClose = () => {
+        setOpenCompleteModal(false);
+    }
 
     const handleMark = async (jobId: number, status: string) => {
-        // Logic to mark job as in progress
-        // console.log(`Marking job ${jobId} as in progress`);
+        if (!jobId) {
+            return console.error("No user ID provided");
+        }
 
         if (status === 'in-progress') {
             setInProgressProcessing(prev => new Set([...prev, jobId]));
-            if (!jobId) {
-                setInProgressProcessing(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(jobId);
-                    return newSet;
-                });
-                return console.error("No user ID provided");
-            }
+            await makeApiCall(jobId, status);
+            setInProgressProcessing(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(jobId);
+                return newSet;
+            });
         }
         else if (status === 'completed') {
-            setCompleteProcessing(prev => new Set([...prev, jobId]));
-            if (!jobId) {
-                setCompleteProcessing(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(jobId);
-                    return newSet;
-                });
-                return console.error("No user ID provided");
-            }
+            // Only open modal for completed status, don't set loading state yet
+            setJobData(jobId);
+            setOpenCompleteModal(true);
+            return; // Exit early, don't make API call yet
         }
         else if (status === 'canceled') {
             setCancelProcessing(prev => new Set([...prev, jobId]));
-            if (!jobId) {
-                setCancelProcessing(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(jobId);
-                    return newSet;
-                });
-                return console.error("No user ID provided");
-            }
+            await makeApiCall(jobId, status);
+            setCancelProcessing(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(jobId);
+                return newSet;
+            });
         }
+    }
 
+    // Update your handleModalSave function to accept amount parameter
+    const handleModalSave = async (amount: number) => {
+        setIsModalSaveClick(true);
+        setCompleteProcessing(prev => new Set([...prev, jobData]));
+
+        await makeApiCallWithAmount(jobData, 'completed', amount);
+
+        // Clean up states
+        setCompleteProcessing(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(jobData);
+            return newSet;
+        });
+        setOpenCompleteModal(false);
+        setIsModalSaveClick(false);
+        setJobData(0);
+    }
+
+    // Update your makeApiCall function to handle amount
+    const makeApiCallWithAmount = async (jobId: number, status: string, amount?: number) => {
         try {
+            const body = {
+                id: jobId,
+                currentUserId: currentUserId,
+                status: status,
+                ...(amount && { price: amount }) // Include amount if provided
+            };
+
             const response = await fetch(route('in-progress.mark-in-progress'), {
                 method: 'POST',
-                body: JSON.stringify({ id: jobId, status: status }),
+                body: JSON.stringify(body),
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
@@ -163,12 +337,46 @@ export default function InProgress() {
             }
         }
         catch(error) {
-            console.error('Error marking job as in progress:', error);
+            console.error('Error marking job:', error);
+        }
+    }
+
+    // Or update your existing makeApiCall function:
+    const makeApiCall = async (jobId: number, status: string, amount?: number) => {
+        try {
+            const body = {
+                id: jobId,
+                currentUserId: currentUserId,
+                status: status,
+                ...(amount && { amount: amount })
+            };
+
+            const response = await fetch(route('in-progress.mark-in-progress'), {
+                method: 'POST',
+                body: JSON.stringify(body),
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+        }
+        catch(error) {
+            console.error('Error marking job:', error);
         }
     }
 
     return (
         <>
+            <SetCompleteModal
+                isOpen={openCompleteModal}
+                onClose={handleCompleteModalClose}
+                onSave={handleModalSave}
+                isLoading={completeProcessLoading.has(jobData)}
+            />
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="In Progress" />
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
@@ -193,7 +401,7 @@ export default function InProgress() {
                                             {job.customer} - {job.device}
                                         </h2>
                                         <p className="text-sm text-gray-600">
-                                            Schedule: {job.startTime} | {job.service_type}
+                                            Schedule: {job.startTime} | {job.serviceType}
                                         </p>
                                     </div>
                                     <span className="rounded-full bg-yellow-200 px-3 py-1 text-xs font-medium text-yellow-800">
@@ -215,30 +423,30 @@ export default function InProgress() {
                                         {job.status === "pending" && (
                                             <>
                                             <button
-                                                onClick={() => handleMark(job.appointment_id, 'in-progress')}
+                                                onClick={() => handleMark(job.appointmentId, 'in-progress')}
                                                 className="rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-600"
                                             >
-                                                {inProgressProcessLoading.has(job.appointment_id) ? (
+                                                {inProgressProcessLoading.has(job.appointmentId) ? (
                                                     <LoaderCircle className="h-4 w-4 animate-spin" />
                                                 ) : (
                                                     "Mark Progress"
                                                 )}
                                             </button>
                                             <button
-                                                onClick={() => handleMark(job.appointment_id, 'completed')}
+                                                onClick={() => handleMark(job.appointmentId, 'completed')}
                                                 className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
                                             >
-                                                {completeProcessLoading.has(job.appointment_id) ? (
+                                                {completeProcessLoading.has(job.appointmentId) ? (
                                                     <LoaderCircle className="h-4 w-4 animate-spin" />
                                                 ) : (
                                                     "Mark Complete"
                                                 )}
                                         </button>
                                         <button
-                                            onClick={() => handleMark(job.appointment_id, 'canceled')}
+                                            onClick={() => handleMark(job.appointmentId, 'canceled')}
                                             className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
                                         >
-                                            {cancelProcessLoading.has(job.appointment_id) ? (
+                                            {cancelProcessLoading.has(job.appointmentId) ? (
                                                 <LoaderCircle className="h-4 w-4 animate-spin" />
                                             ) : (
                                                 "Mark Cancel"
@@ -250,10 +458,10 @@ export default function InProgress() {
                                 {job.status === "in-progress" && (
                                     <>
                                     <button
-                                        onClick={() => handleMark(job.appointment_id, 'completed')}
+                                        onClick={() => handleMark(job.appointmentId, 'completed')}
                                         className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
                                     >
-                                        {completeProcessLoading.has(job.appointment_id) ? (
+                                        {completeProcessLoading.has(job.appointmentId) ? (
                                             <LoaderCircle className="h-4 w-4 animate-spin" />
                                         ) : (
                                             "Mark Complete"

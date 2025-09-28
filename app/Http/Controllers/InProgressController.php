@@ -20,8 +20,17 @@ class InProgressController extends Controller
             ->where('id', $request->id)
             ->update([
                 'status' => $request->status,
+                'price' => $request->price,
                 'updated_at' => now() // or Carbon::now()
             ]);
+
+        DB::table('users')
+            ->where('id', $request->currentUserId)
+            ->update([
+                'status' => $request->status == 'in-progress' ? 'unavailable' :
+                        ($request->status == 'completed' ? 'available' : null)
+            ]);
+
         return response()->json(['message' => 'Appointment status updated to in-progress'], 200);
     }
 
