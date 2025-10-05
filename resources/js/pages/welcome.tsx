@@ -1,4 +1,5 @@
-import { useForm } from '@inertiajs/react';
+import {useForm, usePage} from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 import InputError from '@/components/input-error';
 
 import { NavBar } from "@/components/nav-bar";
@@ -10,11 +11,11 @@ import { TimeList } from "@/components/time-list";
 import { CustomFooter } from "@/components/custom-footer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
 
 type ServiceType = "hardware repair" | "software solution" | "maintenance"
 
 interface AppointmentFormData {
+    clientId: number;
     serviceLocation: string,
     date: string,
     time: string,
@@ -26,29 +27,51 @@ interface AppointmentFormData {
     item: string,
     description: string,
     warrantyReceipt: File | null,
+    clientStatus: string
 }
 
 export default function Welcome(){
+    const { auth } = usePage().props;
     const [notification, setNotification] = useState<string | null>(null);
     const [preview, setPreview] = useState(null);
 
+    const client = auth.client;
+
     const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormData>({
+        clientId: client ? client.id : 0,
         serviceLocation: '',
         date: '',
         time: '',
         serviceType: '',
-        fullname: '',
-        email: '',
-        phone_no: '',
+        fullname: client ? client.name : '',
+        email: client ? client.email : '',
+        phone_no: client ? client.phone_number : '',
         address: '',
         item: '',
         description: '',
         warrantyReceipt: null,
+        clientStatus: client ? client.client_status : 'guest',
     });
 
     const tabs = [
-        { component: "link", name: "Get Started", href: "#", className: "hover:underline transition-colors whitespace-nowrap ml-2"},
-        { component: "link", name: "Admin", href: "/login", className: "hover:underline transition-colors whitespace-nowrap ml-2" },
+        {
+            component: client ? "text" : "link",
+            name: client ? `Welcome, ${client.name}` : "Get Started",
+            href: client ? undefined : "/client-register",
+            className: `transition-colors whitespace-nowrap ml-2 ${client ? "" : "hover:underline"}`
+        },
+        ...(client ? [{
+            component: "link",
+            name: "Transactions",
+            href: "/client-transactions",
+            className: "hover:underline transition-colors whitespace-nowrap ml-2"
+        }] : []),
+        {
+            component: "link",
+            name: client ? "Logout" : "Login",
+            href: client ? "/client-logout" : "/client-login",
+            className: "hover:underline transition-colors whitespace-nowrap ml-2"
+        },
         { component: "link", name: "Contact Us", onClick: () => alert("Contact Us clicked"), className: "hover:underline transition-colors whitespace-nowrap ml-2" }
     ];
 
@@ -110,8 +133,6 @@ export default function Welcome(){
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
-
-        console.log("Selected file:", file); // Debug line
 
         // ✅ IMPORTANT: Update the form data with the actual file
         setData('warrantyReceipt', file);

@@ -7,11 +7,18 @@ use App\Http\Controllers\BillingsController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ClientController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
+
+Route::get('/client-transactions', [ClientController::class, 'createHist'])
+    ->name('client.appointment.transactions');
+
+Route::get('/client-transactions/fetch', [ClientController::class, 'fetchTransactions'])
+    ->name('client.appointment.transactions.fetch');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 

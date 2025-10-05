@@ -9,7 +9,7 @@ export function NavBar({ tabs }){
             <AppLogo />
             <div className="lg:flex hidden items-center gap-[20px] text-[#ffffff] text-[1rem]">
                 {tabs.map((tab) => (
-                    tab.component === "link" ? (
+                    tab.component === "link" || tab.component === "text" ? (
                         <a
                             key={tab.name}
                             href={tab.href}

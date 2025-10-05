@@ -20,7 +20,6 @@ class HistoryController extends Controller
 
     public function fetch()
     {
-        Log::info("Working");
         $services = DB::table('appointment')
             ->leftJoin('service', 'appointment.id', '=', 'service.appointment_id')
             ->leftJoin('client', 'appointment.client_id', '=', 'client.id')
@@ -35,12 +34,15 @@ class HistoryController extends Controller
                 'appointment.updated_at as completion_date',
                 'appointment.description as appointment_description',
                 'appointment.status as appointment_status',
+                'appointment.price as amount',
+                'client.id as client_id',
                 'client.name as client_name',
                 'client.email as client_email',
                 'client.phone_number as client_phone',
                 'users.name as technician_name',
                 'users.email as technician_email',
-                'service.user_id'
+                'service.rating as rating',
+                'service.user_id',
             )
             ->get();
 
