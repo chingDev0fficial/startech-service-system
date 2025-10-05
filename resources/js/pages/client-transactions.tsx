@@ -18,7 +18,7 @@ interface HistoryRecord {
     serviceLocation: string;
 }
 
-export default function Welcome(){
+export default function ClientTransactions(){
     const { auth } = usePage().props;
     const [appointments, setAppointments] = useState([])
     const [transactions, setTransactions] = useState<HistoryRecord[]>([]);
@@ -193,7 +193,7 @@ export default function Welcome(){
                                 <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 mb-1 truncate">
                                     ₱{transactions
                                     .filter(h => h.status?.toLowerCase() === 'completed')
-                                    .reduce((sum, h) => sum + h.amount, 0)
+                                    .reduce((sum, h) => sum + (Number(h.amount) || 0), 0)
                                     .toFixed(2)}
                                 </div>
                                 <div className="text-xs sm:text-sm text-gray-500 font-medium">Total Revenue</div>
@@ -297,7 +297,7 @@ export default function Welcome(){
                                                                 </span>
                                                         </td>
                                                         <td className="px-4 xl:px-6 py-4 text-sm font-medium text-gray-900">
-                                                            ₱{record.amount?.toFixed(2) || '0.00'}
+                                                            ₱{(Number(record.amount) || 0)?.toFixed(2) || '0.00'}
                                                         </td>
                                                         <td className="px-4 xl:px-6 py-4">
                                                             {record.rating ? (
@@ -377,7 +377,7 @@ export default function Welcome(){
                                                         <div>
                                                             <p className="text-xs text-gray-500 mb-1">Amount</p>
                                                             <p className="text-base sm:text-lg font-bold text-gray-900">
-                                                                ₱{record.amount?.toFixed(2) || '0.00'}
+                                                                ₱{(Number(record.amount) || 0)?.toFixed(2) || '0.00'}
                                                             </p>
                                                         </div>
                                                     </div>
