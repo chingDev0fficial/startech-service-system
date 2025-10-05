@@ -21,6 +21,7 @@ interface HistoryRecord {
 }
 
 interface Jobs {
+    amount: number;
     id: number;
     appointment_id: number;
     client_name: string;
@@ -138,8 +139,8 @@ export default function ManageHistory() {
                     }),
                     status: service.appointment_status,
                     technician: service.technician_name || 'Not Assigned',
-                    amount: 129.99, // You might want to get this from your service data
-                    rating: 5, // You might want to get this from your service data
+                    amount: service.amount || 0, // You might want to get this from your service data
+                    rating: service.rating || null, // You might want to get this from your service data
                     serviceType: service.appointment_service_type,
                     serviceLocation: serviceLocation // Set based on current route
                 }));

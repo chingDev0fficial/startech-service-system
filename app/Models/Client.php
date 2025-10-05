@@ -5,8 +5,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use App\Http\Models\Appointment;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Client extends Model
+class Client extends Authenticatable
 {
     use HasFactory, Notifiable;
 
@@ -17,13 +18,20 @@ class Client extends Model
         'email',
         'phone_number',
         'address',
+        'password',
+        'client_status'
+    ];
+
+    protected $hidden = [
+        'password',
+//         'remember_token',
     ];
 
     protected function casts(): array
     {
         return [
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
+//             'email_verified_at' => 'datetime',
+            'password' => 'hashed',
         ];
     }
 

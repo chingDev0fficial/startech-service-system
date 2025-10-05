@@ -6,6 +6,8 @@ use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 // use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\ClientAuthController;
+use App\Http\Controllers\Auth\ClientRegisterController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\ClientController;
@@ -18,8 +20,21 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-    // Route::get('manage-accounts', [RegisteredUserController::class, 'create'])
-    // ->name('manage-accounts.register');
+    Route::post('client-login', [ClientAuthController::class, 'store'])
+        ->name('client.login.store');
+
+    Route::post('register', [ClientRegisterController::class, 'store'])
+        ->name('client.register.store');
+
+    Route::get('client-login', [ClientAuthController::class, 'create'])
+        ->name('client.login');
+
+    Route::get('client-register', [ClientRegisterController::class, 'create'])
+        ->name('client.register');
+
+    Route::get('client-logout', [ClientAuthController::class, 'destroy'])
+        ->name('client.logout');
+
 
     // Route::post('manage-accounts', [RegisteredUserController::class, 'store']);
 

@@ -39,7 +39,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Notification',
-        href: '#',
+        href: 'notification',
         icon: Bell,
         accessRole: ['super user', 'staff']
     },

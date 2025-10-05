@@ -24,10 +24,15 @@ class Notification extends Model
      * @var list<string>
      */
     protected $fillable = [
+<<<<<<< HEAD
         'appointment_id',
         'client_id', // Added this since you have a client relationship
+=======
+        'type',
+        'title',
+        'message',
+>>>>>>> 71c1097a5f6df146fb65a89d9383ffcb236cb932
         'status',
-        'created_at',
     ];
 
     /**
