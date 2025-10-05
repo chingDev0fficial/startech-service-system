@@ -14,7 +14,7 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
-Route::middleware(['client', 'verified'])->group(function () {
+Route::middleware(['client'])->group(function () {
     Route::get('/client-transactions', [ClientController::class, 'createHist'])
         ->name('client.appointment.transactions');
 

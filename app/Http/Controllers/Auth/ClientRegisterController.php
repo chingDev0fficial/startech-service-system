@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -23,10 +24,9 @@ class ClientRegisterController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|',
+            'email' => 'required|string|lowercase|email|max:255',
             'phone' => 'required|string|max:15',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'client_status' => 'required|string|max:11'
         ]);
 
         $client = Client::create([
@@ -34,17 +34,15 @@ class ClientRegisterController extends Controller
             'email' => $request->email,
             'phone_number' => $request->phone,
             'password' => Hash::make($request->password),
-            'client_status' => $request->client_status,
+            'client_status' => 'registered', // Set default status
         ]);
 
-        // Add client to session - Using Auth guard
+        // Log the client in automatically
         Auth::guard('client')->login($client);
 
-        Log::info(Auth::guard('client')->user());
-
-        // Or if you want to regenerate session (more secure)
         $request->session()->regenerate();
 
-        return redirect()->intended(route('home', absolute: false));
+        // Redirect to client-specific route, NOT 'home'
+        return redirect()->route('home'); // Or whatever your client dashboard route is
     }
 }
