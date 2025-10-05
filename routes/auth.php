@@ -23,7 +23,7 @@ Route::middleware('guest')->group(function () {
     Route::post('client-login', [ClientAuthController::class, 'store'])
         ->name('client.login.store');
 
-    Route::post('register', [ClientRegisterController::class, 'store'])
+    Route::post('client-register', [ClientRegisterController::class, 'store'])
         ->name('client.register.store');
 
     Route::get('client-login', [ClientAuthController::class, 'create'])
