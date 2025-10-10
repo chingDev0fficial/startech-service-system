@@ -46,7 +46,7 @@ interface AppointmentFormData {
 
 const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
 
-function viewAppointment({ isOpen, onClose, appointmentData }) {
+function ViewAppointment({ isOpen, onClose, appointmentData }) {
     const [fetchedAppointmentsData, setFetchedAppointmentsData] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -101,7 +101,7 @@ function viewAppointment({ isOpen, onClose, appointmentData }) {
         >
             <Box sx={style}>
                 <Typography id="keep-mounted-modal-title" variant="h6" component="h2" className="flex items-center justify-between">
-                    Available Technicians
+                    Appointment Data
                     <Button className="text-[#ffffff] !bg-[#393E46]" onClick={onClose}>
                         <X />
                     </Button>
@@ -319,6 +319,9 @@ export default function ManageAccount() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAppointmentData, setSelectedAppointmentData] = useState<number>(0);
 
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [viewAppointmentData, setViewAppointmentData] = useState(null);
+
     const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
 
     const handleFetchedAppointments = async () => {
@@ -363,8 +366,13 @@ export default function ManageAccount() {
     };
 
     const handleView = async ( id: number ) => {
-        viewAppointment(true, true, 1);
-        console.log("clicked view", id);
+        setViewAppointmentData(id);
+        setIsViewModalOpen(true);
+    };
+
+    const handleCloseViewModal = () => {
+        setIsViewModalOpen(false);
+        setViewAppointmentData(null);
     };
 
     const handleAccept = async (appointmentId) => {
@@ -470,6 +478,12 @@ export default function ManageAccount() {
             isOpen={isModalOpen}
             onClose={handleCloseModal}
             appointmentData={selectedAppointmentData}
+        />
+
+        <ViewAppointment
+            isOpen={isViewModalOpen}
+            onClose={handleCloseViewModal}
+            appointmentData={viewAppointmentData}
         />
 
         <AppLayout breadcrumbs={breadcrumbs}>
