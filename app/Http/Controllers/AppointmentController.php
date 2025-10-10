@@ -35,26 +35,60 @@ class AppointmentController extends Controller
         ]);
     }
 
-    public function accept(Request $request, $technician, $appointment)
+    public function accept(Request $request, $appointment)
     {
+        function logicHelper($technicians, $appointment)
+        {
+            foreach ( $technicians as $tech ) {
+
+                $inQueues = DB::table('queues_tech')
+                    ->where('technician_id', $tech->id)
+                    ->get();
+
+
+                Log::info("Data: " . $tech->id);
+                Log::info("In Queues: " . $inQueues);
+
+                if ( $inQueues->isEmpty() ) {
+                    DB::table('queues_tech')->insert([
+                        'technician_id' => $tech->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    DB::table('service')->insert([
+                        'appointment_id' => $appointment,
+                        'user_id' => $tech->id,
+                        'warranty' => $validated['warranty'],
+                        'warranty_status' => $validated['warrantyStatus'],
+                    ]);
+
+                    DB::table('appointment')
+                        ->where('id', $appointment)
+                        ->update(['mark_as' => 'accepted']);
+                    
+                    return true;
+                }
+            };
+        }
 
         $validated = $request->validate([
-            /* 'appointmentId' => 'required|string', */
-            /* 'userId' => 'required|string', */
             'warranty' => 'nullable|string',
             'warrantyStatus' => 'nullable|string',
         ]);
 
-        DB::table('service')->insert([
-            'appointment_id' => $appointment,
-            'user_id' => $technician,
-            'warranty' => $validated['warranty'],
-            'warranty_status' => $validated['warrantyStatus'],
-        ]);
+        $technicians = DB::table('users')
+            ->where('role', 'technician')
+            ->get();
 
-        DB::table('appointment')
-            ->where('id', $appointment)
-            ->update(['mark_as' => 'accepted']);
+        $response = logicHelper($technicians, $appointment);
+        if ( $response ) {
+            return response()->json(['message' => 'Appointment accepted successfully']);
+        }
+
+        $in_queue = DB::table('queues_tech')->delete();
+
+        $response = logicHelper($technicians, $appointment);
 
         return response()->json(['message' => 'Appointment accepted successfully']);
     }

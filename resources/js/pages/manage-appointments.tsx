@@ -138,64 +138,64 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
         );
     };
 
-    const handleFetchedUsers = async () => {
-        try {
-            setLoading(true);
-            const response = await fetch(`${apiBase}/manage-accounts/fetch`, {
-                method: 'GET',
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
+    // const handleFetchedUsers = async () => {
+    //     try {
+    //         setLoading(true);
+    //         const response = await fetch(`${apiBase}/manage-accounts/fetch`, {
+    //             method: 'GET',
+    //             headers: {
+    //                 "Content-Type": "application/json"
+    //             }
+    //         });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! status: ${response.status}`);
+    //         }
 
-            const result = await response.json();
-            return result.retrieved;
+    //         const result = await response.json();
+    //         return result.retrieved;
 
-        } catch (err) {
-            console.error('Error fetching users:', err);
-            throw err instanceof Error ? err : new Error(String(err));
-        } finally {
-            setLoading(false);
-        }
-    }
+    //     } catch (err) {
+    //         console.error('Error fetching users:', err);
+    //         throw err instanceof Error ? err : new Error(String(err));
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // }
 
-    const fetchUsers = async () => {
-        try {
-            const users = await handleFetchedUsers();
-            setFetchedUsers(users); // Set users to state
-            // console.log('Fetched users:', users);
-            return users;
-        } catch (err) {
-            console.error('Failed to fetch users:', err);
-            setFetchedUsers([]); // Set empty array on error
-        }
-    }
+    // const fetchUsers = async () => {
+    //     try {
+    //         const users = await handleFetchedUsers();
+    //         setFetchedUsers(users); // Set users to state
+    //         // console.log('Fetched users:', users);
+    //         return users;
+    //     } catch (err) {
+    //         console.error('Failed to fetch users:', err);
+    //         setFetchedUsers([]); // Set empty array on error
+    //     }
+    // }
 
-    // Fetch users when modal opens
-    useEffect(() => {
-        if (isOpen) {
-            fetchUsers();
-        }
-    }, [isOpen]);
+    // // Fetch users when modal opens
+    // useEffect(() => {
+    //     if (isOpen) {
+    //         fetchUsers();
+    //     }
+    // }, [isOpen]);
 
-    // Transform fetched users to options format
-    const options = fetchedUsers
-        .filter(user => user.role === 'technician')
-        .map(user => ({
-            value: user.id?.toString() || user.value,
-            title: user.name || user.title || 'Unknown User'
-        }));
+    // // Transform fetched users to options format
+    // const options = fetchedUsers
+    //     .filter(user => user.role === 'technician')
+    //     .map(user => ({
+    //         value: user.id?.toString() || user.value,
+    //         title: user.name || user.title || 'Unknown User'
+    //     }));
 
-    const displayOptions = options;
+    // const displayOptions = options;
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         const appointment = e.target.appointmentId.value;
-        const technician = e.target.userId.value;
+        // const technician = e.target.userId.value;
 
         // Use post instead of patch for appointment creation
         post(route('appointment.accept', {technician: technician, appointment: appointment}), {
@@ -225,7 +225,7 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
         >
             <Box sx={style}>
                 <Typography id="keep-mounted-modal-title" variant="h6" component="h2" className="flex items-center justify-between">
-                    Available Technicians
+                    Set Appointment Warranty (if available)
                     <Button className="text-[#ffffff] !bg-[#393E46]" onClick={onClose}>
                         <X />
                     </Button>
@@ -235,7 +235,7 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
 
                     <form onSubmit={submit} className="space-y-4">
                         <input type="hidden" name="appointmentId" value={appointmentData} />
-                        <div className="flex flex-col gap-[10px] w-full overflow-x-auto max-h-48 md:max-h-64 lg:max-h-80 overflow-y-auto">
+                        {/* <div className="flex flex-col gap-[10px] w-full overflow-x-auto max-h-48 md:max-h-64 lg:max-h-80 overflow-y-auto">
                             {loading ? (
                                 <div className="text-center py-4">
                                     <span>Loading technicians...</span>
@@ -253,8 +253,14 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
                                 </div>
                             )}
 
-                        </div>
+                        </div> */}
 
+                        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                            <p className='text-[15px]' >Note</p>
+                            <p className='text-[13px]'>Set the date when the warranty expires and the warranty 
+                                status base on the receipt submitted by the client</p>
+                        </div>
+                        
                         <div>
                             <input
                                 type="date"
@@ -285,14 +291,14 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
+                                className="px-4 py-2 text-[#393E46]/600 border rounded hover:bg-[#393E46]/50"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                disabled={processing || loading || !data.userId || options.length === 0}
-                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                                // disabled={processing || loading || !data.userId || options.length === 0}
+                                className="px-4 py-2 bg-[#393E46] text-white rounded hover:bg-[#393E46]/70 disabled:opacity-50"
                             >
                                 {processing ? 'Saving...' : 'Assign Technician'}
                             </button>
