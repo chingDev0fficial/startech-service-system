@@ -198,10 +198,9 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
         // const technician = e.target.userId.value;
 
         // Use post instead of patch for appointment creation
-        post(route('appointment.accept', {technician: technician, appointment: appointment}), {
+        post(route('appointment.accept', {appointment: appointment}), {
             preserveScroll: true,
             onSuccess: (response) => {
-                console.log('Appointment created successfully:', response);
                 reset();
                 onClose();
             },

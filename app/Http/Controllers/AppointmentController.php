@@ -83,14 +83,14 @@ class AppointmentController extends Controller
 
         $response = logicHelper($technicians, $appointment);
         if ( $response ) {
-            return response()->json(['message' => 'Appointment accepted successfully']);
+            return back()->with('success', 'Appointment accepted successfully!');
         }
 
         $in_queue = DB::table('queues_tech')->delete();
 
         $response = logicHelper($technicians, $appointment);
 
-        return response()->json(['message' => 'Appointment accepted successfully']);
+        return back()->with('success', 'Appointment accepted successfully!');
     }
 
     public function decline(Request $request, $appointment)
