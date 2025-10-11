@@ -92,7 +92,7 @@ function PricingCard({ title, initialPrice, icon, description, onPriceChange }) 
                             <span className="text-lg font-bold text-[#222831] dark:text-white mr-2">₱</span>
                             <Input
                                 type="number"
-                                value={price}
+                                value={initialPrice}
                                 onChange={handlePriceChange}
                                 className="w-32"
                                 min="0"
@@ -127,14 +127,13 @@ export default function Dashboard() {
 
     // const [initialServicePrices, setInitialServicePrices] = useState<{ within: number; outside: number } | null>(null);
 
-    const [cityPrice, setCityPrice] = useState(250);
-    const [outsidePrice, setOutsidePrice] = useState(500);
+    const [cityPrice, setCityPrice] = useState(0);
+    const [outsidePrice, setOutsidePrice] = useState(0);
     const [isSaving, setIsSaving] = useState(false);
 
     const getServicePrices = async () => {
-        try 
-        {
-            const response = await fetch('', {
+       try {
+            const response = await fetch('dashboard/get-service-price', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -174,6 +173,7 @@ export default function Dashboard() {
     console.log("Outside Price:", outsidePrice);
 
     const handleSavePrices = async () => {
+        console.log("Saving prices:", cityPrice, outsidePrice);
         try {
             console.log("working")
             setIsSaving(true);
