@@ -61,7 +61,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('manage-accounts/fetch', [UserController::class, 'fetch']);
         Route::get('manage-appointments/fetch', [AppointmentController::class, 'fetch'])
             ->name('appointment.fetch');
-        Route::post('manage-appointments/accept/{technician}/{appointment}', [AppointmentController::class, 'accept'])
+        Route::post('manage-appointments/accept/{appointment}', [AppointmentController::class, 'accept'])
             ->name('appointment.accept');
         Route::post('manage-appointments/decline/{appointment}', [AppointmentController::class, 'decline'])
             ->name('appointment.decline');

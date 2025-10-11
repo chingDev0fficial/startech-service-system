@@ -46,8 +46,8 @@ interface AppointmentFormData {
 
 const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
 
-function viewAppointment({ isOpen, onClose, appointmentData }) {
-    const [fetchedAppointmentsData, setFetchedAppointmentsData] = useState([]);
+function ViewAppointment({ isOpen, onClose, appointmentData }) {
+    const [appointmentDetails, setAppointmentDetails] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const handleFetchAppointmentsData = async () => {
@@ -65,7 +65,7 @@ function viewAppointment({ isOpen, onClose, appointmentData }) {
             const result = await response.json();
             return result.retrieved;
         } catch(err) {
-            console.error('Error fetching users:', err);
+            console.error('Error fetching appointments:', err);
             throw err instanceof Error ? err : new Error(String(err));
         } finally {
             setLoading(false);
@@ -76,7 +76,8 @@ function viewAppointment({ isOpen, onClose, appointmentData }) {
         const fetchData = async () => {
             try {
                 const appointments = await handleFetchAppointmentsData();
-                setFetchedAppointmentsData(appointments);
+                const details = appointments.find(app => app.id === appointmentData);
+                setAppointmentDetails(details);
             } catch(e) {
                 console.error('Failed to fetch appointments:', e);
             }
@@ -85,13 +86,11 @@ function viewAppointment({ isOpen, onClose, appointmentData }) {
         if (isOpen) {
             fetchData();
         }
-    }, [isOpen]);
+    }, [isOpen, appointmentData]);
 
-    useEffect(() => {
-        console.log(fetchedAppointmentsData);
-    }, [fetchedAppointmentsData]);
+    // console.log('Appointment Details:', appointmentDetails);
 
-    return (
+    return (<>
         <Modal
             keepMounted
             open={isOpen}
@@ -100,21 +99,100 @@ function viewAppointment({ isOpen, onClose, appointmentData }) {
             aria-describedby="keep-mounted-modal-description"
         >
             <Box sx={style}>
-                <Typography id="keep-mounted-modal-title" variant="h6" component="h2" className="flex items-center justify-between">
-                    Available Technicians
+                <Typography variant="h6" component="h2" className="flex items-center justify-between mb-4">
+                    Appointment Details
                     <Button className="text-[#ffffff] !bg-[#393E46]" onClick={onClose}>
                         <X />
                     </Button>
                 </Typography>
-                <Box sx={{ mt: 2 }}>
+                
+                {loading ? (
+                    <div className="flex justify-center items-center p-4">
+                        Loading appointment details...
+                    </div>
+                ) : appointmentDetails ? (
+                    <div className="grid grid-cols-2 gap-4 overflow-y-auto max-h-[70vh] pr-2">
+                        <div className="col-span-2 bg-blue-50 p-4 rounded-lg">
+                            <h3 className="font-semibold text-lg mb-2">Client Information</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <p className="text-sm text-gray-600">Name</p>
+                                    <p className="font-medium">{appointmentDetails.client_name}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Phone</p>
+                                    <p className="font-medium">{appointmentDetails.client_phone}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Email</p>
+                                    <p className="font-medium">{appointmentDetails.client_email}</p>
+                                </div>
+                            </div>
+                        </div>
 
-                    test
-                </Box>
+                        <div className="col-span-2 bg-green-50 p-4 rounded-lg">
+                            <h3 className="font-semibold text-lg mb-2">Service Details</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <p className="text-sm text-gray-600">Schedule</p>
+                                    <p className="font-medium">
+                                        {new Date(appointmentDetails.schedule_at).toLocaleString()}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Service Type</p>
+                                    <p className="font-medium capitalize">{appointmentDetails.service_type}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Location</p>
+                                    <p className="font-medium capitalize">{appointmentDetails.service_location}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Status</p>
+                                    <p className="font-medium capitalize">{appointmentDetails.status}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="col-span-2 bg-yellow-50 p-4 rounded-lg">
+                            <h3 className="font-semibold text-lg mb-2">Device Information</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <p className="text-sm text-gray-600">Device</p>
+                                    <p className="font-medium">{appointmentDetails.item}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Issue Description</p>
+                                    <p className="font-medium">{appointmentDetails.description}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Warranty Receipt</p>
+                                    <div className="font-medium">
+                                        {appointmentDetails.warranty_receipt ? (
+                                            <div className="mt-2">
+                                                <img 
+                                                    src={`/storage/${appointmentDetails.warranty_receipt}`}
+                                                    alt="Warranty Receipt" 
+                                                    className="max-w-full h-auto rounded-lg shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                                    onClick={() => window.open(`/storage/${appointmentDetails.warranty_receipt}`, '_blank')}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-500">No warranty receipt available</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="text-center p-4 text-gray-500">
+                        No appointment details found
+                    </div>
+                )}
             </Box>
         </Modal>
-    );
-
-
+    </>);
 }
 
 function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
@@ -138,70 +216,69 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
         );
     };
 
-    const handleFetchedUsers = async () => {
-        try {
-            setLoading(true);
-            const response = await fetch(`${apiBase}/manage-accounts/fetch`, {
-                method: 'GET',
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
+    // const handleFetchedUsers = async () => {
+    //     try {
+    //         setLoading(true);
+    //         const response = await fetch(`${apiBase}/manage-accounts/fetch`, {
+    //             method: 'GET',
+    //             headers: {
+    //                 "Content-Type": "application/json"
+    //             }
+    //         });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! status: ${response.status}`);
+    //         }
 
-            const result = await response.json();
-            return result.retrieved;
+    //         const result = await response.json();
+    //         return result.retrieved;
 
-        } catch (err) {
-            console.error('Error fetching users:', err);
-            throw err instanceof Error ? err : new Error(String(err));
-        } finally {
-            setLoading(false);
-        }
-    }
+    //     } catch (err) {
+    //         console.error('Error fetching users:', err);
+    //         throw err instanceof Error ? err : new Error(String(err));
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // }
 
-    const fetchUsers = async () => {
-        try {
-            const users = await handleFetchedUsers();
-            setFetchedUsers(users); // Set users to state
-            // console.log('Fetched users:', users);
-            return users;
-        } catch (err) {
-            console.error('Failed to fetch users:', err);
-            setFetchedUsers([]); // Set empty array on error
-        }
-    }
+    // const fetchUsers = async () => {
+    //     try {
+    //         const users = await handleFetchedUsers();
+    //         setFetchedUsers(users); // Set users to state
+    //         // console.log('Fetched users:', users);
+    //         return users;
+    //     } catch (err) {
+    //         console.error('Failed to fetch users:', err);
+    //         setFetchedUsers([]); // Set empty array on error
+    //     }
+    // }
 
-    // Fetch users when modal opens
-    useEffect(() => {
-        if (isOpen) {
-            fetchUsers();
-        }
-    }, [isOpen]);
+    // // Fetch users when modal opens
+    // useEffect(() => {
+    //     if (isOpen) {
+    //         fetchUsers();
+    //     }
+    // }, [isOpen]);
 
-    // Transform fetched users to options format
-    const options = fetchedUsers
-        .filter(user => user.role === 'technician')
-        .map(user => ({
-            value: user.id?.toString() || user.value,
-            title: user.name || user.title || 'Unknown User'
-        }));
+    // // Transform fetched users to options format
+    // const options = fetchedUsers
+    //     .filter(user => user.role === 'technician')
+    //     .map(user => ({
+    //         value: user.id?.toString() || user.value,
+    //         title: user.name || user.title || 'Unknown User'
+    //     }));
 
-    const displayOptions = options;
+    // const displayOptions = options;
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         const appointment = e.target.appointmentId.value;
-        const technician = e.target.userId.value;
+        // const technician = e.target.userId.value;
 
         // Use post instead of patch for appointment creation
-        post(route('appointment.accept', {technician: technician, appointment: appointment}), {
+        post(route('appointment.accept', {appointment: appointment}), {
             preserveScroll: true,
             onSuccess: (response) => {
-                console.log('Appointment created successfully:', response);
                 reset();
                 onClose();
             },
@@ -225,7 +302,7 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
         >
             <Box sx={style}>
                 <Typography id="keep-mounted-modal-title" variant="h6" component="h2" className="flex items-center justify-between">
-                    Available Technicians
+                    Set Appointment Warranty (if available)
                     <Button className="text-[#ffffff] !bg-[#393E46]" onClick={onClose}>
                         <X />
                     </Button>
@@ -235,7 +312,7 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
 
                     <form onSubmit={submit} className="space-y-4">
                         <input type="hidden" name="appointmentId" value={appointmentData} />
-                        <div className="flex flex-col gap-[10px] w-full overflow-x-auto max-h-48 md:max-h-64 lg:max-h-80 overflow-y-auto">
+                        {/* <div className="flex flex-col gap-[10px] w-full overflow-x-auto max-h-48 md:max-h-64 lg:max-h-80 overflow-y-auto">
                             {loading ? (
                                 <div className="text-center py-4">
                                     <span>Loading technicians...</span>
@@ -253,8 +330,14 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
                                 </div>
                             )}
 
-                        </div>
+                        </div> */}
 
+                        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                            <p className='text-[15px]' >Note</p>
+                            <p className='text-[13px]'>Set the date when the warranty expires and the warranty 
+                                status base on the receipt submitted by the client</p>
+                        </div>
+                        
                         <div>
                             <input
                                 type="date"
@@ -285,14 +368,14 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
+                                className="px-4 py-2 text-[#393E46]/600 border rounded hover:bg-[#393E46]/50"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                disabled={processing || loading || !data.userId || options.length === 0}
-                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                                // disabled={processing || loading || !data.userId || options.length === 0}
+                                className="px-4 py-2 bg-[#393E46] text-white rounded hover:bg-[#393E46]/70 disabled:opacity-50"
                             >
                                 {processing ? 'Saving...' : 'Assign Technician'}
                             </button>
@@ -313,6 +396,9 @@ export default function ManageAccount() {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAppointmentData, setSelectedAppointmentData] = useState<number>(0);
+
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [viewAppointmentData, setViewAppointmentData] = useState(null);
 
     const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
 
@@ -358,8 +444,13 @@ export default function ManageAccount() {
     };
 
     const handleView = async ( id: number ) => {
-        viewAppointment(true, true, 1);
-        console.log("clicked view", id);
+        setViewAppointmentData(id);
+        setIsViewModalOpen(true);
+    };
+
+    const handleCloseViewModal = () => {
+        setIsViewModalOpen(false);
+        setViewAppointmentData(null);
     };
 
     const handleAccept = async (appointmentId) => {
@@ -466,6 +557,12 @@ export default function ManageAccount() {
             isOpen={isModalOpen}
             onClose={handleCloseModal}
             appointmentData={selectedAppointmentData}
+        />
+
+        <ViewAppointment
+            isOpen={isViewModalOpen}
+            onClose={handleCloseViewModal}
+            appointmentData={viewAppointmentData}
         />
 
         <AppLayout breadcrumbs={breadcrumbs}>

@@ -13,7 +13,7 @@ import { ToolCase, ClipboardClock, PhilippinePeso, Star, User, LaptopMinimal, Ap
 
 import { CollapsibleWrapper } from "@/components/collapsable-content";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useEcho } from '@laravel/echo-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -71,45 +71,104 @@ function DashboardCard({ icon, iconColor, title, value }) {
 export default function Dashboard() {
     const echo = useEcho();
     const [currentDateTime, setCurrentDateTime] = useState<Date>(new Date());
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const [dataAppointments, setDataAppointments] = useState([]);
-    const [dataTech, setDataTech] = useState([]);
+    const [dataAppointments, setDataAppointments] = useState<Array<any>>([]);
+    const [dataTech, setDataTech] = useState<Array<any>>([]);
     const [activeRepair, setActiveRepair] = useState<number>(0);
     const [pendingAppointments, setPendingAppointments] = useState<number>(0);
     const [totalRevenue, setTotalRevenue] = useState<number>(0);
 
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentDateTime(new Date());
-        }, 1000); // Update every second
+    // Add cache state
+    const [lastFetchTime, setLastFetchTime] = useState<number>(0);
+    const CACHE_DURATION = 10000; // 10 seconds
 
-        return () => clearInterval(timer); // Cleanup
-    }, [echo]);
+    const handleFetchAppointment = useCallback(async () => {
+        // Check cache
+        const now = Date.now();
+        if (now - lastFetchTime < CACHE_DURATION) {
+            return dataAppointments;
+        }
 
-    const handleFetchAppointment = async () => {
-        try
-        {
+        try {
+            setIsLoading(true);
             const response = await fetch(route('fetch.todaysAppoint'), {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                credentials: 'include'
+            });
 
-            if ( !response.ok )
-            {
+            // Check for non-JSON responses
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Server returned non-JSON response');
+            }
+
+            if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
-            return data.retrieved;
+            setLastFetchTime(now);
+            setError(null);
+            return data.retrieved || [];
+        } catch (error) {
+            setError(error.message);
+            return dataAppointments; // Return existing data on error
+        } finally {
+            setIsLoading(false);
         }
-        catch( error )
-        {
-            console.error('Error fetching appointments:', error);
-        }
-    }
+    }, [dataAppointments, lastFetchTime]);
 
+    const handleFetchTech = useCallback(async () => {
+        // Similar cache check
+        const now = Date.now();
+        if (now - lastFetchTime < CACHE_DURATION) {
+            return dataTech;
+        }
+
+        try {
+            setIsLoading(true);
+            const response = await fetch('/dashboard/fetch-technician', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setLastFetchTime(now);
+            setError(null);
+            return data.retrieved || [];
+        } catch (error) {
+            setError(error.message);
+            return dataTech; // Return existing data on error
+        } finally {
+            setIsLoading(false);
+        }
+    }, [dataTech, lastFetchTime]);
+
+    // Update timer interval to 10 seconds
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentDateTime(new Date());
+        }, 10000);
+
+        return () => clearInterval(timer);
+    }, []);
+
+    // Update data fetch effects
     useEffect(() => {
         handleFetchAppointment()
             .then(data => {
@@ -132,7 +191,17 @@ export default function Dashboard() {
             .catch(error => {
                 console.error('Failed to fetch appointments:', error);
             });
-    }, [currentDateTime, echo])
+    }, [currentDateTime, echo, handleFetchAppointment]);
+
+    useEffect(() => {
+        handleFetchTech()
+            .then(data => {
+                setDataTech(data);
+            })
+            .catch(error => {
+                console.error('Failed to fetch appointments:', error);
+            });
+    }, [currentDateTime, echo, handleFetchTech]);
 
     let todaysAppointment = dataAppointments
         .filter(appointment => new Date(appointment?.schedule_at).toLocaleDateString() === currentDateTime.toLocaleDateString())
@@ -153,41 +222,6 @@ export default function Dashboard() {
             status: appointment.status
         }))
 
-    const handleFetchTech = async () => {
-        try
-        {
-            const response = await fetch('dashboard/fetch-technician', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                }
-            })
-
-            if ( !response.ok )
-            {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            return data.retrieved;
-        }
-        catch( error )
-        {
-            console.error('Error fetching appointments:', error);
-        }
-    }
-
-    useEffect(() => {
-        handleFetchTech()
-            .then(data => {
-                setDataTech(data);
-            })
-            .catch(error => {
-                console.error('Failed to fetch appointments:', error);
-            });
-    }, [echo])
-
     let availableStatusTechnician = dataTech
         .filter(tech => tech.role === "technician")
         .map(tech => ({
@@ -206,6 +240,11 @@ export default function Dashboard() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span className="block sm:inline">{error}</span>
+                </div>
+            )}
             <div className="flex h-full flex-1 flex-col gap-[1px] rounded-xl p-4 overflow-x-auto">
                 <div className="grid auto-rows-min gap-[1px] md:grid-cols-4">
                     {statCards.map((card) => (
