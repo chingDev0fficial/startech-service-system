@@ -37,17 +37,18 @@ class AppointmentController extends Controller
 
     public function accept(Request $request, $appointment)
     {
-        function logicHelper($technicians, $appointment)
+        $validated = $request->validate([
+            'warranty' => 'nullable|string',
+            'warrantyStatus' => 'nullable|string|max:10',
+        ]);
+
+        function logicHelper($technicians, $appointment, $validated)
         {
             foreach ( $technicians as $tech ) {
 
                 $inQueues = DB::table('queues_tech')
                     ->where('technician_id', $tech->id)
                     ->get();
-
-
-                Log::info("Data: " . $tech->id);
-                Log::info("In Queues: " . $inQueues);
 
                 if ( $inQueues->isEmpty() ) {
                     DB::table('queues_tech')->insert([
@@ -81,14 +82,14 @@ class AppointmentController extends Controller
             ->where('role', 'technician')
             ->get();
 
-        $response = logicHelper($technicians, $appointment);
+        $response = logicHelper($technicians, $appointment, $validated);
         if ( $response ) {
             return back()->with('success', 'Appointment accepted successfully!');
         }
 
         $in_queue = DB::table('queues_tech')->delete();
 
-        $response = logicHelper($technicians, $appointment);
+        $response = logicHelper($technicians, $appointment, $validated);
 
         return back()->with('success', 'Appointment accepted successfully!');
     }

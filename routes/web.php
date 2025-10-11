@@ -41,6 +41,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('dashboard/fetch-todays-appointment', [DashboardController::class, 'fetchTodaysAppoint'])
             ->name('fetch.todaysAppoint');
         Route::get('dashboard/fetch-technician', [DashboardController::class, 'fetchTech']);
+        Route::post('dashboard/set-service-price', [DashboardController::class, 'updateServicePrice'])
+            ->name('update.service.price');
         Route::get('manage-accounts/fetch', [UserController::class, 'fetch']);
         Route::post('manage-accounts', [RegisteredUserController::class, 'store']);
         Route::delete('manage-accounts/delete/{user}', [UserController::class, 'destroy']);

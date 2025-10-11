@@ -16,6 +16,11 @@ import { CollapsibleWrapper } from "@/components/collapsable-content";
 import { useState, useEffect, useCallback } from 'react';
 import { useEcho } from '@laravel/echo-react';
 
+import { Home, MapPin } from 'lucide-react';
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
@@ -68,6 +73,42 @@ function DashboardCard({ icon, iconColor, title, value }) {
     </>);
 }
 
+function PricingCard({ title, initialPrice, icon, description, onPriceChange }) {
+    const [price, setPrice] = useState(initialPrice);
+
+    const handlePriceChange = (e) => {
+        const newPrice = e.target.value;
+        setPrice(newPrice);
+        onPriceChange(newPrice);
+    };
+
+    return (
+        <Card className="bg-sidebar shadow-lg m-4 border border-sidebar-border p-4">
+            <CardContent className="flex items-center justify-between">
+                <div className="w-full">
+                    <CardTitle className="text-lg font-semibold mb-2">{title}</CardTitle>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-baseline">
+                            <span className="text-lg font-bold text-[#222831] dark:text-white mr-2">₱</span>
+                            <Input
+                                type="number"
+                                value={price}
+                                onChange={handlePriceChange}
+                                className="w-32"
+                                min="0"
+                            />
+                        </div>
+                        <span className="text-sm text-gray-500">{description}</span>
+                    </div>
+                </div>
+                <Avatar className="h-12 w-12 flex items-center justify-center bg-blue-500/30">
+                    <Icon iconNode={icon} className="text-blue-700 dark:text-white" strokeWidth={2} />
+                </Avatar>
+            </CardContent>
+        </Card>
+    );
+}
+
 export default function Dashboard() {
     const echo = useEcho();
     const [currentDateTime, setCurrentDateTime] = useState<Date>(new Date());
@@ -83,6 +124,86 @@ export default function Dashboard() {
     // Add cache state
     const [lastFetchTime, setLastFetchTime] = useState<number>(0);
     const CACHE_DURATION = 10000; // 10 seconds
+
+    // const [initialServicePrices, setInitialServicePrices] = useState<{ within: number; outside: number } | null>(null);
+
+    const [cityPrice, setCityPrice] = useState(250);
+    const [outsidePrice, setOutsidePrice] = useState(500);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const getServicePrices = async () => {
+        try 
+        {
+            const response = await fetch('', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data;
+        }
+        catch (error)
+        {
+            console.error('Error fetching service prices:', error);
+        }
+    }
+
+    useEffect(() => {
+        // Fetch initial service prices on component mount
+        const fetchInitialPrices = async () => {
+            const prices = await getServicePrices();
+            if (prices) {
+                setCityPrice(prices.within);
+                setOutsidePrice(prices.outside);
+            }
+        };
+
+        fetchInitialPrices();
+    }, []);
+
+    console.log("City Price:", cityPrice);
+    console.log("Outside Price:", outsidePrice);
+
+    const handleSavePrices = async () => {
+        try {
+            console.log("working")
+            setIsSaving(true);
+            const response = await fetch('dashboard/set-service-price', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    within  :  cityPrice,
+                    outside :  outsidePrice
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update prices');
+            }
+
+            // Show success message or toast notification
+            alert('Prices updated successfully');
+        } catch (error) {
+            console.error('Error updating prices:', error);
+            alert('Failed to update prices');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
 
     const handleFetchAppointment = useCallback(async () => {
         // Check cache
@@ -110,7 +231,7 @@ export default function Dashboard() {
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            } 
 
             const data = await response.json();
             setLastFetchTime(now);
@@ -252,6 +373,31 @@ export default function Dashboard() {
                             <DashboardCard icon={ card.icon } iconColor={ card.iconColor } title={ card.title } value={ card.value } />
                         </div>
                     ))}
+                </div>
+                <div className="grid md:grid-cols-2 gap-[1px]">
+                    <PricingCard 
+                        title="City Area Service"
+                        initialPrice={cityPrice}
+                        description="base price for home service"
+                        icon={Home}
+                        onPriceChange={setCityPrice}
+                    />
+                    <PricingCard 
+                        title="Outside City Service"
+                        initialPrice={outsidePrice}
+                        description="base price for home service"
+                        icon={MapPin}
+                        onPriceChange={setOutsidePrice}
+                    />
+                    <div className="col-span-2 flex justify-end px-4">
+                        <Button 
+                            onClick={handleSavePrices}
+                            disabled={isSaving}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                            {isSaving ? 'Saving...' : 'Save Prices'}
+                        </Button>
+                    </div>
                 </div>
                 <div className="grid lg:grid-cols-[1fr_400px] gap-1 relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-transparent md:min-h-min">
                     <div className="h-full w-full rounded-xl">
