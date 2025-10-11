@@ -47,7 +47,7 @@ interface AppointmentFormData {
 const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 function ViewAppointment({ isOpen, onClose, appointmentData }) {
-    const [fetchedAppointmentsData, setFetchedAppointmentsData] = useState([]);
+    const [appointmentDetails, setAppointmentDetails] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const handleFetchAppointmentsData = async () => {
@@ -65,7 +65,7 @@ function ViewAppointment({ isOpen, onClose, appointmentData }) {
             const result = await response.json();
             return result.retrieved;
         } catch(err) {
-            console.error('Error fetching users:', err);
+            console.error('Error fetching appointments:', err);
             throw err instanceof Error ? err : new Error(String(err));
         } finally {
             setLoading(false);
@@ -76,7 +76,8 @@ function ViewAppointment({ isOpen, onClose, appointmentData }) {
         const fetchData = async () => {
             try {
                 const appointments = await handleFetchAppointmentsData();
-                setFetchedAppointmentsData(appointments);
+                const details = appointments.find(app => app.id === appointmentData);
+                setAppointmentDetails(details);
             } catch(e) {
                 console.error('Failed to fetch appointments:', e);
             }
@@ -85,13 +86,11 @@ function ViewAppointment({ isOpen, onClose, appointmentData }) {
         if (isOpen) {
             fetchData();
         }
-    }, [isOpen]);
+    }, [isOpen, appointmentData]);
 
-    useEffect(() => {
-        console.log(fetchedAppointmentsData);
-    }, [fetchedAppointmentsData]);
+    // console.log('Appointment Details:', appointmentDetails);
 
-    return (
+    return (<>
         <Modal
             keepMounted
             open={isOpen}
@@ -100,21 +99,100 @@ function ViewAppointment({ isOpen, onClose, appointmentData }) {
             aria-describedby="keep-mounted-modal-description"
         >
             <Box sx={style}>
-                <Typography id="keep-mounted-modal-title" variant="h6" component="h2" className="flex items-center justify-between">
-                    Appointment Data
+                <Typography variant="h6" component="h2" className="flex items-center justify-between mb-4">
+                    Appointment Details
                     <Button className="text-[#ffffff] !bg-[#393E46]" onClick={onClose}>
                         <X />
                     </Button>
                 </Typography>
-                <Box sx={{ mt: 2 }}>
+                
+                {loading ? (
+                    <div className="flex justify-center items-center p-4">
+                        Loading appointment details...
+                    </div>
+                ) : appointmentDetails ? (
+                    <div className="grid grid-cols-2 gap-4 overflow-y-auto max-h-[70vh] pr-2">
+                        <div className="col-span-2 bg-blue-50 p-4 rounded-lg">
+                            <h3 className="font-semibold text-lg mb-2">Client Information</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <p className="text-sm text-gray-600">Name</p>
+                                    <p className="font-medium">{appointmentDetails.client_name}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Phone</p>
+                                    <p className="font-medium">{appointmentDetails.client_phone}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Email</p>
+                                    <p className="font-medium">{appointmentDetails.client_email}</p>
+                                </div>
+                            </div>
+                        </div>
 
-                    test
-                </Box>
+                        <div className="col-span-2 bg-green-50 p-4 rounded-lg">
+                            <h3 className="font-semibold text-lg mb-2">Service Details</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <p className="text-sm text-gray-600">Schedule</p>
+                                    <p className="font-medium">
+                                        {new Date(appointmentDetails.schedule_at).toLocaleString()}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Service Type</p>
+                                    <p className="font-medium capitalize">{appointmentDetails.service_type}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Location</p>
+                                    <p className="font-medium capitalize">{appointmentDetails.service_location}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Status</p>
+                                    <p className="font-medium capitalize">{appointmentDetails.status}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="col-span-2 bg-yellow-50 p-4 rounded-lg">
+                            <h3 className="font-semibold text-lg mb-2">Device Information</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <p className="text-sm text-gray-600">Device</p>
+                                    <p className="font-medium">{appointmentDetails.item}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Issue Description</p>
+                                    <p className="font-medium">{appointmentDetails.description}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Warranty Receipt</p>
+                                    <div className="font-medium">
+                                        {appointmentDetails.warranty_receipt ? (
+                                            <div className="mt-2">
+                                                <img 
+                                                    src={`/storage/${appointmentDetails.warranty_receipt}`}
+                                                    alt="Warranty Receipt" 
+                                                    className="max-w-full h-auto rounded-lg shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                                    onClick={() => window.open(`/storage/${appointmentDetails.warranty_receipt}`, '_blank')}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-500">No warranty receipt available</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="text-center p-4 text-gray-500">
+                        No appointment details found
+                    </div>
+                )}
             </Box>
         </Modal>
-    );
-
-
+    </>);
 }
 
 function SetAppointmentModal({ isOpen, onClose, appointmentData }) {

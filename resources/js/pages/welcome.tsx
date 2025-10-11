@@ -131,40 +131,121 @@ export default function Welcome(){
         );
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const processImage = (file: File): Promise<File> => {
+        return new Promise((resolve, reject) => {
+            const maxSize = 2048 * 1024; // 2048KB or 2MB
+            
+            // If file is already smaller than max size, return it
+            if (file.size <= maxSize) {
+                resolve(file);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Calculate new dimensions while maintaining aspect ratio
+                    const aspectRatio = width / height;
+                    
+                    // Start with original dimensions and gradually reduce
+                    while ((width * height * 4) > maxSize * 2) { // *4 for RGBA channels
+                        width *= 0.9;
+                        height = width / aspectRatio;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx?.drawImage(img, 0, 0, width, height);
+
+                    // Convert to blob
+                    canvas.toBlob(
+                        (blob) => {
+                            if (!blob) {
+                                reject(new Error('Canvas to Blob conversion failed'));
+                                return;
+                            }
+                            
+                            // Create new file from blob
+                            const optimizedFile = new File([blob], file.name, {
+                                type: 'image/jpeg',
+                                lastModified: Date.now(),
+                            });
+
+                            resolve(optimizedFile);
+                        },
+                        'image/jpeg',
+                        0.8 // Quality parameter
+                    );
+                };
+            };
+
+            reader.onerror = (error) => reject(error);
+        });
+    };
+
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
 
-        // ✅ IMPORTANT: Update the form data with the actual file
-        setData('warrantyReceipt', file);
-
-        if (file) {
-            const previewUrl = URL.createObjectURL(file);
-            setPreview(previewUrl);
-            // console.log("File added to form data:", file.name); // Debug line
-        } else {
+        if (!file) {
             setPreview(null);
+            setData('warrantyReceipt', null);
+            return;
         }
+
+        try 
+        {
+            setNotification('Processing image...');
+            
+            // Process the image
+            const processedFile = await processImage(file);
+            
+            // Create preview
+            const previewUrl = URL.createObjectURL(processedFile);
+            setPreview(previewUrl);
+            
+            // Update form data
+            setData('warrantyReceipt', processedFile);
+            
+            setNotification('Image processed successfully');
+            setTimeout(() => setNotification(null), 2000);
+        }
+        catch (error)
+        {
+            console.error('Image processing failed:', error);
+            setNotification('Failed to process image. Please try another file.');
+            setTimeout(() => setNotification(null), 5000);
+        }
+
+        // if (file) {
+        //     const previewUrl = URL.createObjectURL(file);
+        //     setPreview(previewUrl);
+        //     // console.log("File added to form data:", file.name); // Debug line
+        // } else {
+        //     setPreview(null);
+        // }
     };
 
     const handleSubmitAppointment = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        // Add this debug logging
-        console.log("Form data being submitted:", data);
-        console.log("File in form data:", data.warrantyReceipt);
-
-        if (data.warrantyReceipt) {
-            console.log("File details:", {
-                name: data.warrantyReceipt.name,
-                size: data.warrantyReceipt.size,
-                type: data.warrantyReceipt.type
-            });
-        }
-
         setNotification('Sending your booking...');
 
         post(route('client.appoint'), {
             forceFormData: true,
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
             onSuccess: () => {
                 setNotification('Booking sent successfully! We will contact you soon.');
                 setTimeout(() => setNotification(null), 5000);
