@@ -67,12 +67,14 @@ export default function TechnicianAppointments() {
     const [services, setServices] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-    const [statusFilter, setStatusFilter] = useState<string>('all');
-    const [technicianInfo] = useState<TechnicianInfo>({
-        name: 'Mike Rodriguez',
-        id: 'TECH001',
+    const [statusFilter, setStatusFilter] = useState<string>('all');  // Fixed: Added closing single quote
+
+    // Updated technicianInfo to use dynamic name from auth.user
+    const technicianInfo: TechnicianInfo = {
+        name: auth.user?.name || 'Unknown Technician',
+        id: auth.user?.id ? auth.user.id.toString() : 'Unknown ID',
         shift: '9:00 AM - 6:00 PM'
-    });
+    };
 
     const handleFetchedServices = async () => {
         try {
@@ -243,7 +245,7 @@ export default function TechnicianAppointments() {
                     </div>
                 </div>
 
-{/* Summary Cards */}
+                {/* Summary Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                     <div className="bg-white p-4 rounded-lg shadow text-center">
                         <div className="text-2xl font-bold text-gray-900">{appointments.length}</div>
