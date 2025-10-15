@@ -63,4 +63,25 @@ class DashboardController extends Controller
 
         return back()->with('success', 'Service prices updated successfully.');
     }
+
+    public function getServicePrice()
+    {
+        try {
+            $prices = ServicePrice::first();
+            
+            return response()->json([
+                'success' => true,
+                'within' => $prices ? $prices->within : 0,
+                'outside' => $prices ? $prices->outside : 0
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Error fetching service prices: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'within' => 0,
+                'outside' => 0,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
 }

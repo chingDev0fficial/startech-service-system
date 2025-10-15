@@ -29,21 +29,21 @@ export default function ClientTransactions(){
 
     const tabs = [
         {
-            component: client ? "text" : "link",
-            name: client ? `Welcome, ${client.name}` : "Get Started",
-            href: client ? "/" : "#",
+            component: "link",
+            name: `Welcome, ${client.name}`,
+            href: "/client",
             className: "hover:underline transition-colors whitespace-nowrap ml-2"
         },
-        ...(client ? [{
+        {
             component: "text",
             name: "Transactions",
             href: undefined,
             className: `transition-colors whitespace-nowrap ml-2 ${client ? "" : "hover:underline"}`
-        }] : []),
+        },
         {
             component: "link",
-            name: client ? "Logout" : "Login",
-            href: client ? "/client-logout" : "/client-login",
+            name: "Logout",
+            href: "/client-logout",
             className: "hover:underline transition-colors whitespace-nowrap ml-2"
         },
         { component: "link", name: "Contact Us", onClick: () => alert("Contact Us clicked"), className: "hover:underline transition-colors whitespace-nowrap ml-2" }

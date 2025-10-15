@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
 
+    Route::get('/', [ClientAuthController::class, 'create'])
+        ->name('client.login');
+
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
@@ -25,9 +28,6 @@ Route::middleware('guest')->group(function () {
 
     Route::post('client-register', [ClientRegisterController::class, 'store'])
         ->name('client.register.store');
-
-    Route::get('client-login', [ClientAuthController::class, 'create'])
-        ->name('client.login');
 
     Route::get('client-register', [ClientRegisterController::class, 'create'])
         ->name('client.register');

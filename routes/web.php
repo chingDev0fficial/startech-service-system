@@ -10,11 +10,15 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ClientController;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+Route::get('get-service-price', [DashboardController::class, 'getServicePrice'])
+    ->name('client.get.service.price');
 
 Route::middleware(['client'])->group(function () {
+
+    Route::get('/client', function () {
+        return Inertia::render('welcome');
+    })->name('home');
+
     Route::get('/client-transactions', [ClientController::class, 'createHist'])
         ->name('client.appointment.transactions');
 
@@ -40,6 +44,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:super user'])->group(function () {
         Route::get('dashboard/fetch-todays-appointment', [DashboardController::class, 'fetchTodaysAppoint'])
             ->name('fetch.todaysAppoint');
+        Route::get('dashboard/get-service-price', [DashboardController::class, 'getServicePrice'])
+            ->name('get.service.price');
         Route::get('dashboard/fetch-technician', [DashboardController::class, 'fetchTech']);
         Route::post('dashboard/set-service-price', [DashboardController::class, 'updateServicePrice'])
             ->name('update.service.price');

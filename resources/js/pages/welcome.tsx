@@ -11,6 +11,7 @@ import { TimeList } from "@/components/time-list";
 import { CustomFooter } from "@/components/custom-footer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { echo } from '@laravel/echo-react';
 
 type ServiceType = "hardware repair" | "software solution" | "maintenance"
 
@@ -35,6 +36,9 @@ export default function Welcome(){
     const [notification, setNotification] = useState<string | null>(null);
     const [preview, setPreview] = useState(null);
 
+    const [cityPrice, setCityPrice] = useState(0);
+    const [outsidePrice, setOutsidePrice] = useState(0);
+
     const client = auth.client;
 
     const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormData>({
@@ -55,21 +59,21 @@ export default function Welcome(){
 
     const tabs = [
         {
-            component: client ? "text" : "link",
-            name: client ? `Welcome, ${client.name}` : "Get Started",
-            href: client ? undefined : "/client-register",
+            component: "text",
+            name: `Welcome, ${client.name}`,
+            href: "/client",
             className: `transition-colors whitespace-nowrap ml-2 ${client ? "" : "hover:underline"}`
         },
-        ...(client ? [{
+        {
             component: "link",
             name: "Transactions",
             href: "/client-transactions",
             className: "hover:underline transition-colors whitespace-nowrap ml-2"
-        }] : []),
+        },
         {
             component: "link",
-            name: client ? "Logout" : "Login",
-            href: client ? "/client-logout" : "/client-login",
+            name: "Logout",
+            href: "/client-logout",
             className: "hover:underline transition-colors whitespace-nowrap ml-2"
         },
         { component: "link", name: "Contact Us", onClick: () => alert("Contact Us clicked"), className: "hover:underline transition-colors whitespace-nowrap ml-2" }
@@ -95,6 +99,44 @@ export default function Welcome(){
         ]
     }
 
+    const getServicePrices = async () => {
+        try {
+            const response = await fetch('get-service-price', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data;
+        }
+        catch (error)
+        {
+            console.error('Error fetching service prices:', error);
+        }
+    }
+
+    useEffect(() => {
+        // Fetch initial service prices on component mount
+        const fetchInitialPrices = async () => {
+            const prices = await getServicePrices();
+            if (prices) {
+                setCityPrice(prices.within);
+                setOutsidePrice(prices.outside);
+            }
+        };
+
+        fetchInitialPrices();
+    }, []);
+
     const options = [
         { value: "in-store", title: "In-Store Service", sub: "Visit our service center" },
         {
@@ -102,9 +144,9 @@ export default function Welcome(){
             title: "Home Service",
             sub: (
                 <span>
-                    +350Php - City Area
+                    +{cityPrice}Php - City Area
                     <br />
-                    +500Php - Outside City
+                    +{outsidePrice}Php - Outside City
                 </span>
             )
         },
