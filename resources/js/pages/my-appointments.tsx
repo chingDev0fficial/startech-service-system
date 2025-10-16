@@ -27,8 +27,13 @@ interface Service {
     client_name: string;
     client_email: string;
     client_phone: string;
-    technician_name: string;
-    technician_email: string;
+    service_created_at: string;
+    service_status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    appointment_service_type: string;
+    appointment_service_location: string;
+    appointment_item_name: string;
+    appointment_description: string;
+    warranty_status: 'valid' | 'expired' | null;
 }
 
 interface Appointment {
@@ -63,15 +68,20 @@ export default function TechnicianAppointments() {
     const { auth } = usePage<SharedData>().props;
     const currentUserId = auth.user?.id;
 
-    const [appointments, setAppointments] = useState<Appointment[]>([]);
+    // const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [services, setServices] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [technicianInfo] = useState<TechnicianInfo>({
-        name: 'Mike Rodriguez',
+        name: auth.user?.name || 'Technician Name',
         id: 'TECH001',
         shift: '9:00 AM - 6:00 PM'
+    });
+    const [selectedDate, setSelectedDate] = useState<string>(() => {
+        // Create date in Philippines timezone
+        const now = new Date();
+        const philippinesDate = new Date(now.getTime() + (8 * 60 * 60 * 1000)); // Add 8 hours for Philippines
+        return philippinesDate.toISOString().split('T')[0];
     });
 
     const handleFetchedServices = async () => {
@@ -95,56 +105,69 @@ export default function TechnicianAppointments() {
             console.error('Error fetching users:', err);
             throw err instanceof Error ? err : new Error(String(err));
         } finally {
-            // setLoading(false);
-        }
-    }
-
-    const loadServices = async () => {
-        try {
-            const users = await handleFetchedServices();
-            setServices(users);
-        } catch (err) {
-            console.error('Failed to fetch users:', err);
+            setLoading(false);
         }
     }
 
     // Mock data - replace with actual API call
     useEffect(() => {
-        loadServices();
-        const serviceAppointments = services
-        .filter((service: Service) => service.user_id === currentUserId)
-        .map((service: Service) => ({
-            id: service.id.toString(),
-            time: service.appointment_date,
-            serviceType: service.appointment_service_type,
-            location: service.appointment_service_location,
-            status: service.appointment_status,
-            customer: {
-                name: service.client_name,
-                phone: service.client_phone,
-                email: service.client_email,
-            },
-            device: {
-                name: service.appointment_item_name,
-                warranty: service.warranty,
-                warrantyStatus: service.warranty_status
-            },
-            issue: service.appointment_description
-        }));
 
-        const mockAppointments: Appointment[] = [
-            ...serviceAppointments,
-        ];
+        handleFetchedServices()
+        .then(data => {
+            const transformedData = transformServiceData(data);
+            setServices(transformedData);
+        })
+        .catch(err => console.error(err));
 
-        setTimeout(() => {
-            setAppointments(mockAppointments);
-            setLoading(false);
-        }, 1000);
-    }, [selectedDate, echo]);
+        echo.channel('services')
+            .listen('.services.retrieve', (event: any) => {
+                const newServices = event.services || [event]; // Adjust based on your event structure
+                const transformedNewServices = transformServiceData(newServices);
+                
+                // Update state with new services (you might want to merge or replace)
+                setServices(prev => [...prev, ...transformedNewServices]);
+            });
+
+        return () => {
+            echo.leaveChannel('services');
+        };
+    }, [echo]);
+
+    const transformServiceData = (services: any[]) => {
+        return services
+            .filter((service: Service) => {
+                if (!service.service_created_at) return false;
+                
+                const createdDate = new Date(service.service_created_at);
+                const formattedCreatedDate = new Date(createdDate.getTime() - createdDate.getTimezoneOffset() * 60000)
+                    .toISOString()
+                    .split('T')[0];
+                
+                return service.user_id === currentUserId && formattedCreatedDate === selectedDate;
+            })
+            .map((service: Service) => ({
+                id: service.id.toString(),
+                time: service.appointment_date,
+                serviceType: service.appointment_service_type,
+                location: service.appointment_service_location,
+                status: service.service_status,
+                customer: {
+                    name: service.client_name,
+                    phone: service.client_phone,
+                    email: service.client_email,
+                },
+                device: {
+                    name: service.appointment_item_name,
+                    warranty: service.warranty,
+                    warrantyStatus: service.warranty_status
+                },
+                issue: service.appointment_description
+            }));
+    }
 
     // console.log("Appointments: ", appointments);
 
-    const filteredAppointments = appointments.filter(appointment => {
+    const filteredServices = services.filter(appointment => {
         return statusFilter === 'all' || appointment.status.toLowerCase().replace(' ', '') === statusFilter;
     });
 
@@ -194,7 +217,7 @@ export default function TechnicianAppointments() {
                                 </div>
                             </div>
                             <h1 className="text-2xl font-bold text-gray-900">
-                                My Appointments - {new Date(selectedDate).toLocaleDateString('en-US', {
+                                My Appointments - {new Date(selectedDate).toLocaleDateString('en-PH', {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric'
@@ -238,7 +261,7 @@ export default function TechnicianAppointments() {
                         </div>
                         <div className="flex-1"></div>
                         <div className="text-sm text-gray-500">
-                            {filteredAppointments.length} appointments
+                            {filteredServices.length} appointments
                         </div>
                     </div>
                 </div>
@@ -246,24 +269,24 @@ export default function TechnicianAppointments() {
 {/* Summary Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                     <div className="bg-white p-4 rounded-lg shadow text-center">
-                        <div className="text-2xl font-bold text-gray-900">{appointments.length}</div>
+                        <div className="text-2xl font-bold text-gray-900">{services.length}</div>
                         <div className="text-sm text-gray-500">Total Today</div>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow text-center">
                         <div className="text-2xl font-bold text-yellow-600">
-                            {appointments.filter(a => a.status === 'pending').length}
+                            {services.filter(a => a.status === 'pending').length}
                         </div>
                         <div className="text-sm text-gray-500">Pending</div>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow text-center">
                         <div className="text-2xl font-bold text-blue-600">
-                            {appointments.filter(a => a.status === 'in-progress').length}
+                            {services.filter(a => a.status === 'in-progress').length}
                         </div>
                         <div className="text-sm text-gray-500">In Progress</div>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow text-center">
                         <div className="text-2xl font-bold text-green-600">
-                            {appointments.filter(a => a.status === 'completed').length}
+                            {services.filter(a => a.status === 'completed').length}
                         </div>
                         <div className="text-sm text-gray-500">Completed</div>
                     </div>
@@ -277,12 +300,12 @@ export default function TechnicianAppointments() {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                             <p className="text-gray-500 mt-2">Loading appointments...</p>
                         </div>
-                    ) : filteredAppointments.length === 0 ? (
+                    ) : filteredServices.length === 0 ? (
                         <div className="bg-white p-8 rounded-lg shadow text-center">
                             <p className="text-gray-500">No appointments found for the selected criteria.</p>
                         </div>
                     ) : (
-                        filteredAppointments.map((appointment) => (
+                        filteredServices.map((appointment) => (
                             <div key={appointment.id} className="bg-white rounded-lg shadow overflow-hidden">
                                 {/* Appointment Header */}
                                 <div className="p-4 border-b border-gray-200">

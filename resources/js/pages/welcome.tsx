@@ -281,6 +281,8 @@ export default function Welcome(){
     const handleSubmitAppointment = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
+        if (processing) return;
+
         setNotification('Sending your booking...');
 
         post(route('client.appoint'), {
@@ -410,6 +412,7 @@ export default function Welcome(){
                                 value={data.serviceType}
                                 onValueChange={(value: ServiceType) => setData('serviceType', value)}
                                 disabled={processing}
+                                required
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select a service" />
