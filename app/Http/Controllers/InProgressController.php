@@ -19,9 +19,14 @@ class InProgressController extends Controller
         DB::table('appointment')
             ->where('id', $request->id)
             ->update([
-                'status' => $request->status,
                 'price' => $request->price,
                 'updated_at' => now() // or Carbon::now()
+            ]);
+
+        DB::table('service')
+            ->where('appointment_id', $request->id)
+            ->update([
+                'status' => $request->status,
             ]);
 
         DB::table('users')

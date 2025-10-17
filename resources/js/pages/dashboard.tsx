@@ -334,13 +334,13 @@ export default function Dashboard() {
         }))
 
     let recentServiceReq = dataAppointments
-        .map(appointment => ({
-            serviceType: appointment.service_type,
-            itemBrand: appointment.item,
-            purpose: appointment.description,
-            customerName: appointment.name,
-            appointmentId: `#${appointment.id}`,
-            status: appointment.status
+        .map(service => ({
+            serviceType: service.service_type,
+            itemBrand: service.item,
+            purpose: service.description,
+            customerName: service.name,
+            appointmentId: `#${service.id}`,
+            status: service.status
         }))
 
     let availableStatusTechnician = dataTech

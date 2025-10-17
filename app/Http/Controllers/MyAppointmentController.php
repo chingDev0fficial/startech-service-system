@@ -28,12 +28,11 @@ class MyAppointmentController extends Controller
                 'appointment.schedule_at as appointment_date',
                 'appointment.updated_at as completion_date',
                 'appointment.description as appointment_description',
-                'appointment.status as appointment_status',
                 'client.name as client_name',
                 'client.email as client_email',
                 'client.phone_number as client_phone',
-                'users.name as technician_name',
-                'users.email as technician_email'
+                'service.created_at as service_created_at',
+                'service.status as service_status',
             )
             ->get();
 

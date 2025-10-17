@@ -14,7 +14,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-interface Jobs {
+interface Services {
     id: string,
     appointment_id: number,
     customer: string,
@@ -23,6 +23,16 @@ interface Jobs {
     service_type: string,
     description: string,
     appointment_status: string,
+    service_status: string,
+
+    user_id: number,
+    technician: string,
+    appointment_date: string,
+    completion_date: string,
+    client_name: string,
+    client_email: string,
+    client_phone: string,
+    appointment_item_name: string,
 }
 
 export default function CompletedTasks() {
@@ -30,11 +40,18 @@ export default function CompletedTasks() {
     const currentUserId = auth.user?.id;
     const echo = useEcho();
     // const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-    const [jobs, setJobs] = useState<Jobs[]>([]);
+    // const [jobs, setJobs] = useState<Jobs[]>([]);
     const [services, setServices] = useState<any[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    // const [loading, setLoading] = useState<boolean>(true);
 
     const [isLoading, setIsLoading] = useState(true);
+
+    const [selectedDate, setSelectedDate] = useState<string>(() => {
+        // Create date in Philippines timezone
+        const now = new Date();
+        const philippinesDate = new Date(now.getTime() + (8 * 60 * 60 * 1000)); // Add 8 hours for Philippines
+        return philippinesDate.toISOString().split('T')[0];
+    });
 
         // Mock data - replace with actual API call
     const handleFetchedServices = async () => {
@@ -57,24 +74,31 @@ export default function CompletedTasks() {
         } catch (err) {
             console.error('Error fetching users:', err);
             throw err instanceof Error ? err : new Error(String(err));
-        } finally {
-            // setLoading(false);
-        }
-    }
-
-    const loadServices = async () => {
-        try {
-            const fetchedServices = await handleFetchedServices();
-            setServices(fetchedServices);
-        } catch (err) {
-            console.error('failed to fetch services:', err);
         }
     }
 
     // Load services when selectedDate or echo changes
     useEffect(() => {
-        loadServices();
+      handleFetchedServices()
+        .then(data => {
+          const transformedServices = transformServiceData(data);
+          setServices(transformedServices);
+        })
+        .catch(err => console.error(err));
+
+      echo.channel('services')
+          .listen('.services.retrieve', (event: any) => {
+              const newServices = event.services || [event];
+              const transformedServices = transformServiceData(newServices);
+              // Update state with new services (you might want to merge or replace)
+              setServices(prev => [...prev, ...transformedServices]);
+          });
+
+      return () => {
+          echo.leaveChannel('services');
+      };
     }, [echo]);
+
 
     // Calculate duration between appointment_date and completion_date
     const calculateDuration = (startDate, endDate) => {
@@ -102,42 +126,75 @@ export default function CompletedTasks() {
         }
     };
 
+    const transformServiceData = (services: any[]) => {
+      return services
+        .filter((service: Services) => { 
+          // check if the service is completed only today
+          if (!service.completion_date) return false;
+
+          const completionDate = new Date(service.service_created_at);
+          const formattedCompletionDate = new Date(completionDate.getTime() - completionDate.getTimezoneOffset() * 60000)
+              .toISOString()
+              .split('T')[0];
+
+          if (formattedCompletionDate !== selectedDate) return false;
+          return service.user_id === currentUserId && service.service_status === 'completed';
+        })
+        .map((service: Services) => ({
+            id: service.id.toString(),
+            customerName: service.client_name,
+            device: service.appointment_item_name,
+            service: "Screen Replacement",
+            startedTime: new Date(service.appointment_date).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            }),
+            completedTime: new Date(service.completion_date).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            }),
+            duration: calculateDuration(service.appointment_date, service.completion_date),
+            // notes: "Screen replaced successfully, customer satisfied",
+            status: service.service_status
+        }));
+    }
+
     // Filter and set jobs when services data is actually available
-    useEffect(() => {
-        // console.log('Services data:', services[0].appointment_status !== 'completed');
-        // console.log('Current user ID:', currentUserId);
-        if (services.length > 0) {
-            const serviceAppointments = services
-                .filter((service: Jobs) => service.user_id === currentUserId)
-                .filter((service: Jobs) => service.appointment_status === 'completed')
-                .map((service: Jobs) => ({
-                    id: service.id.toString(),
-                    customerName: service.client_name,
-                    device: service.appointment_item_name,
-                    service: "Screen Replacement",
-                    startedTime: new Date(service.appointment_date).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                    }),
-                    completedTime: new Date(service.completion_date).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                    }),
-                    duration: calculateDuration(service.appointment_date, service.completion_date),
-                    // notes: "Screen replaced successfully, customer satisfied",
-                    status: service.appointment_status
-                }));
+    // useEffect(() => {
+    //     if (services.length > 0) {
+    //         const serviceAppointments = services
+    //             .filter((service: Jobs) => service.user_id === currentUserId)
+    //             .filter((service: Jobs) => service.appointment_status === 'completed')
+    //             .map((service: Jobs) => ({
+    //                 id: service.id.toString(),
+    //                 customerName: service.client_name,
+    //                 device: service.appointment_item_name,
+    //                 service: "Screen Replacement",
+    //                 startedTime: new Date(service.appointment_date).toLocaleTimeString('en-US', {
+    //                     hour: '2-digit',
+    //                     minute: '2-digit',
+    //                     hour12: true
+    //                 }),
+    //                 completedTime: new Date(service.completion_date).toLocaleTimeString('en-US', {
+    //                     hour: '2-digit',
+    //                     minute: '2-digit',
+    //                     hour12: true
+    //                 }),
+    //                 duration: calculateDuration(service.appointment_date, service.completion_date),
+    //                 // notes: "Screen replaced successfully, customer satisfied",
+    //                 status: service.appointment_status
+    //             }));
 
-            const jobs = [...serviceAppointments];
+    //         const jobs = [...serviceAppointments];
 
-            setTimeout(() => {
-                setJobs(jobs);
-                setLoading(false);
-            }, 1000);
-        }
-    }, [services, currentUserId]); // This runs when services or currentUserId changes
+    //         setTimeout(() => {
+    //             setJobs(jobs);
+    //             setLoading(false);
+    //         }, 1000);
+    //     }
+    // }, [services, currentUserId]); // This runs when services or currentUserId changes
 
 
     // Sample data - replace with your actual data source
@@ -222,10 +279,10 @@ export default function CompletedTasks() {
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Completed Tasks</h1>
-            <p className="text-gray-600">Jobs completed today - {today}</p>
+            <p className="text-gray-600">Services completed today - {today}</p>
             {!isLoading && (
               <div className="mt-2 text-sm text-gray-500">
-                Total completed: {jobs.length} jobs
+                Total completed: {services.length} services
               </div>
             )}
           </div>
@@ -268,7 +325,7 @@ export default function CompletedTasks() {
           ) : (
             /* Jobs Cards */
             <div className="space-y-4">
-              {jobs.map((job) => (
+              {services.map((job) => (
                 <div key={job.id} className="bg-green-50 border border-green-200 rounded-lg p-6">
                   {/* Header */}
                   <div className="flex justify-between items-start mb-4">
@@ -321,8 +378,8 @@ export default function CompletedTasks() {
             </div>
           )}
 
-          {/* Empty State - Show when no completed jobs */}
-          {!isLoading && jobs.length === 0 && (
+          {/* Empty State - Show when no completed services */}
+          {!isLoading && services.length === 0 && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-12 text-center">
               <div className="text-gray-400 mb-4">
                 <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -330,7 +387,7 @@ export default function CompletedTasks() {
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No Completed Tasks Today</h3>
-              <p className="text-gray-500">Complete some jobs to see them appear here.</p>
+              <p className="text-gray-500">Complete some services to see them appear here.</p>
             </div>
           )}
 
