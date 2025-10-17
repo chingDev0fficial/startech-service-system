@@ -14,9 +14,11 @@ class DashboardController extends Controller
         try {
             $data = DB::table('appointment')
                 ->join('client', 'appointment.client_id', '=', 'client.id')
+                ->join('service', 'appointment.id', '=', 'service.appointment_id')
                 ->select(
                     'appointment.*',
                     'client.name',
+                    'service.status as status'
                 )
                 ->get();
 
