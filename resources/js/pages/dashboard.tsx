@@ -423,7 +423,7 @@ export default function Dashboard() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className={`flex items-center justify-center w-22 text-[0.7rem] ${req.status.toLowerCase() === "in-progress" ? "bg-yellow-500/30 text-yellow-700" : req.status.toLowerCase() === "completed" ? "bg-green-500/30 text-green-700" : "bg-red-500/30 text-red-700"} dark:text-[#ffffff] p-1 rounded-xl`}>
+                                        <div className={`flex items-center justify-center w-22 text-[0.7rem] ${req.status.toLowerCase() === "pending" ? "bg-orange-500/30 text-orange-700" : req.status.toLowerCase() === "in-progress" ? "bg-yellow-500/30 text-yellow-700" : req.status.toLowerCase() === "completed" ? "bg-green-500/30 text-green-700" : "bg-red-500/30 text-red-700"} dark:text-[#ffffff] p-1 rounded-xl`}>
                                             { req.status }
                                         </div>
                                     </div>
