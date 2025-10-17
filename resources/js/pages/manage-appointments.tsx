@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Manage Account',
+        title: 'Manage Appointments',
         href: '#',
     },
 ];
