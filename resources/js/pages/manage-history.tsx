@@ -28,8 +28,9 @@ interface Jobs {
     appointment_item_name: string;
     appointment_date: string;
     appointment_service_type: string;
+    appointment_service_location: string;
     appointment_description: string;
-    appointment_status: string;
+    service_status: string;
     technician_name: string;
     user_id: number;
 }
@@ -60,7 +61,7 @@ export default function ManageHistory() {
         status: [],
         serviceType: '',
         technician: '',
-        amountRange: { min: 0, max: 1000 }
+        amountRange: { min: 0, max: Number.MAX_SAFE_INTEGER }
     });
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
     const [services, setServices] = useState<Jobs[]>([]);
@@ -80,8 +81,31 @@ export default function ManageHistory() {
         : 'Complete record of all home service requests';
 
     // Fetch services function
+    // const handleFetchedServices = async () => {
+    //     try {
+    //         const response = await fetch(route('manage-history.fetch'), {
+    //             method: 'GET',
+    //             headers: {
+    //                 "Content-Type": "application/json"
+    //             }
+    //         });
+
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! status: ${response.status}`);
+    //         }
+
+    //         const result = await response.json();
+    //         return result.retrieved;
+
+    //     } catch (err) {
+    //         console.error('Error fetching services:', err);
+    //         throw err instanceof Error ? err : new Error(String(err));
+    //     }
+    // }
+
     const handleFetchedServices = async () => {
         try {
+            // setLoading(true);
             const response = await fetch(route('manage-history.fetch'), {
                 method: 'GET',
                 headers: {
@@ -97,66 +121,117 @@ export default function ManageHistory() {
             return result.retrieved;
 
         } catch (err) {
-            console.error('Error fetching services:', err);
+            console.error('Error fetching users:', err);
+            setHistory([]);
             throw err instanceof Error ? err : new Error(String(err));
+        } finally {
+            setLoading(false);
         }
     }
 
-    const loadServices = async () => {
-        try {
-            const fetchedServices = await handleFetchedServices();
-            setServices(fetchedServices);
-        } catch (err) {
-            console.error('Failed to fetch services:', err);
-        }
-    }
-
-    // Load services when echo changes
-    useEffect(() => {
-        loadServices();
-    }, [echo]);
+    // const loadServices = async () => {
+    //     try {
+    //         const fetchedServices = await handleFetchedServices();
+    //         setServices(fetchedServices);
+    //     } catch (err) {
+    //         console.error('Failed to fetch services:', err);
+    //         setHistory([]);
+    //         setLoading(false);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // }
 
     // Process services data when services change
-    useEffect(() => {
-        console.log(services);
-        console.log(serviceLocation);
-        if (services.length > 0) {
-            const serviceAppointments = services
-                .filter((service: Jobs) => service.appointment_service_location === serviceLocation) // Only completed services for history
-                .map((service: Jobs) => ({
-                    id: service.id.toString(),
-                    service: `${service.appointment_item_name} - ${service.appointment_service_type}`,
-                    customer: service.client_name,
-                    serviceDate: new Date(service.appointment_date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    }),
-                    completionDate: new Date(service.completion_date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    }),
-                    status: service.appointment_status,
-                    technician: service.technician_name || 'Not Assigned',
-                    amount: service.amount || 0, // You might want to get this from your service data
-                    rating: service.rating || null, // You might want to get this from your service data
-                    serviceType: service.appointment_service_type,
-                    serviceLocation: serviceLocation // Set based on current route
-                }));
+    // useEffect(() => {
+    //     if (services.length > 0) {
+    //         const serviceAppointments = services
+    //             .filter((service: Jobs) => service.appointment_service_location === serviceLocation) // Only completed services for history
+    //             .map((service: Jobs) => ({
+    //                 id: service.id.toString(),
+    //                 service: `${service.appointment_item_name} - ${service.appointment_service_type}`,
+    //                 customer: service.client_name,
+    //                 serviceDate: new Date(service.appointment_date).toLocaleDateString('en-US', {
+    //                     year: 'numeric',
+    //                     month: 'long',
+    //                     day: 'numeric'
+    //                 }),
+    //                 completionDate: new Date(service.completion_date).toLocaleDateString('en-US', {
+    //                     year: 'numeric',
+    //                     month: 'long',
+    //                     day: 'numeric'
+    //                 }),
+    //                 status: service.service_status,
+    //                 technician: service.technician_name || 'Not Assigned',
+    //                 amount: service.amount || 0, // You might want to get this from your service data
+    //                 rating: service.rating || null, // You might want to get this from your service data
+    //                 serviceType: service.appointment_service_type,
+    //                 serviceLocation: serviceLocation // Set based on current route
+    //             }));
 
-            setTimeout(() => {
-                setHistory(serviceAppointments);
-                setLoading(false);
-            }, 1000);
-        } else {
-            // If no services, set empty array and stop loading
-            setTimeout(() => {
-                setHistory([]);
-                setLoading(false);
-            }, 1000);
-        }
-    }, [services, serviceLocation]);
+    //         setTimeout(() => {
+    //             setHistory(serviceAppointments);
+    //             setLoading(false);
+    //         }, 1000);
+    //     } else {
+    //         // If no services, set empty array and stop loading
+    //         setTimeout(() => {
+    //             setHistory([]);
+    //             setLoading(false);
+    //         }, 1000);
+    //     }
+    // }, [services, echo, serviceLocation]);
+
+    const transaformServiceData = (services: Jobs[]) => {
+        return services
+            .filter((service: Jobs) => {
+                return service.appointment_service_location === serviceLocation;
+            }) // Only completed services for history
+            .map((service: Jobs) => ({
+                id: service.id.toString(),
+                service: `${service.appointment_item_name} - ${service.appointment_service_type}`,
+                customer: service.client_name,
+                serviceDate: new Date(service.appointment_date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }),
+                completionDate: new Date(service.completion_date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }),
+                status: service.service_status,
+                technician: service.technician_name || 'Not Assigned',
+                amount: parseInt(service.amount) || 0, // You might want to get this from your service data
+                rating: service.rating || null, // You might want to get this from your service data
+                serviceType: service.appointment_service_type,
+                serviceLocation: serviceLocation // Set based on current route
+            }));
+    }
+
+    useEffect(() => {
+        handleFetchedServices()
+            .then(fetchedServices => {
+                const transformedData = transaformServiceData(fetchedServices);
+                setHistory(transformedData);
+            })
+            .catch(err => console.error(err));
+
+        //     echo.channel('services')
+        //         .listen('.services.retrieve', (event: any) => {
+        //             const newServices = event.services || [event]; // Adjust based on your event structure
+        //             const transformedNewServices = transformServiceData(newServices);
+
+        //             // Update state with new services (you might want to merge or replace)
+        //             setHistory(prev => [...prev, ...transformedNewServices]);
+        //         });
+
+        // return () => {
+        //     echo.leaveChannel('services');
+        // };
+
+    }, [services, echo, serviceLocation]);
 
     // Advanced filtering logic
     const filteredHistory = history.filter(record => {

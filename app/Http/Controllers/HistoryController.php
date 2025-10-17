@@ -33,7 +33,7 @@ class HistoryController extends Controller
                 'appointment.schedule_at as appointment_date',
                 'appointment.updated_at as completion_date',
                 'appointment.description as appointment_description',
-                'appointment.status as appointment_status',
+                // 'appointment.status as appointment_status',
                 'appointment.price as amount',
                 'client.id as client_id',
                 'client.name as client_name',
@@ -43,6 +43,7 @@ class HistoryController extends Controller
                 'users.email as technician_email',
                 'service.rating as rating',
                 'service.user_id',
+                'service.status as service_status'
             )
             ->get();
 
