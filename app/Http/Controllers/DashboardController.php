@@ -18,7 +18,8 @@ class DashboardController extends Controller
                 ->select(
                     'appointment.*',
                     'client.name',
-                    'service.status as status'
+                    'service.status as status',
+                    'service.rating as rating',
                 )
                 ->get();
 
@@ -49,7 +50,6 @@ class DashboardController extends Controller
     
     public function updateServicePrice(Request $request)
     {
-        Log::info("testing");
 
         $validated = $request->validate([
             'within' => 'required|numeric|min:0',
