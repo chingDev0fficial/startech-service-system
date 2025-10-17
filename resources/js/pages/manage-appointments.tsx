@@ -493,10 +493,8 @@ export default function ManageAccount() {
         { id: "device", label: "Device", minWidth: 170 },
         { id: "issue", label: "Issue", minWidth: 170 },
         {
-<<<<<<< HEAD
-=======
-            // key: "actions",
->>>>>>> e410c249c1e0a446f6edd2b98505315ae1be25af
+
+
             id: "actions",
             label: "Actions",
             minWidth: 150,
