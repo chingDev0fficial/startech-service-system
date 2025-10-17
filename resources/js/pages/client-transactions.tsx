@@ -182,7 +182,7 @@ export default function ClientTransactions(){
                         )}
 
                         {/* Summary Statistics */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+                        {/* <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
                             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                                 <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600 mb-1">
                                     {transactions.filter(h => h.status?.toLowerCase() === 'completed').length}
@@ -210,7 +210,7 @@ export default function ClientTransactions(){
                                 </div>
                                 <div className="text-xs sm:text-sm text-gray-500 font-medium">Total</div>
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* Transactions Table/Cards */}
                         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
