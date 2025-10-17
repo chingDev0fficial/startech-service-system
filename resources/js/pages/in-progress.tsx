@@ -34,7 +34,7 @@ const style = {
 };
 
 interface Jobs {
-    id: string,
+    id: number,
     appointmentId: number,
     customer: string,
     device: string,
@@ -171,9 +171,10 @@ export default function InProgress() {
     const [services, setServices] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     // const [, setServices] = useState<string>('all');
-    const [inProgressProcessLoading, setInProgressProcessing] = useState<Set<number>>(new Set());
-    const [completeProcessLoading, setCompleteProcessing] = useState<Set<number>>(new Set());
-    const [cancelProcessLoading, setCancelProcessing] = useState<Set<number>>(new Set());
+    // const [inProgressProcessLoading, setInProgressProcessing] = useState<Set<number>>(new Set());
+    // const [completeProcessLoading, setCompleteProcessing] = useState<Set<number>>(new Set());
+    // const [cancelProcessLoading, setCancelProcessing] = useState<Set<number>>(new Set());
+    const [loadingJobs, setLoadingJobs] = useState<Map<number, string>>(new Map());
 
     const [openCompleteModal, setOpenCompleteModal] = useState<boolean>(false);
     const [isModalSaveClick, setIsModalSaveClick] = useState<boolean>(false);
@@ -209,23 +210,7 @@ export default function InProgress() {
     useEffect(() => {
         handleFetchedServices()
             .then(data => {
-                const transformedData = data
-                    .filter((service: any) => service.user_id === currentUserId)
-                    .filter((service: any) => service.appointment_status === 'pending' || service.appointment_status === 'in-progress')
-                    .map((service: any) => ({
-                        id: service.id.toString(),
-                        appointmentId: service.appointment_id,
-                        customer: service.client_name,
-                        device: service.appointment_item_name,
-                        startTime: new Date(service.appointment_date).toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true
-                        }),
-                        serviceType: service.appointment_service_type,
-                        description: service.appointment_description,
-                        status: service.appointment_status,
-                    }));
+                const transformedData = transformServiceData(data);
                 setJobs(transformedData);
             })
             .catch(err => console.error(err));
@@ -233,23 +218,7 @@ export default function InProgress() {
         echo.channel('services')
             .listen('.services.retrieve', (event: any) => {
                 const newServices = event.services || [event]; // Adjust based on your event structure
-                const transformedNewServices = newServices
-                    .filter((service: any) => service.user_id === currentUserId)
-                    .filter((service: any) => service.appointment_status === 'pending' || service.appointment_status === 'in-progress')
-                    .map((service: any) => ({
-                        id: service.id.toString(),
-                        appointmentId: service.appointment_id,
-                        customer: service.client_name,
-                        device: service.appointment_item_name,
-                        startTime: new Date(service.appointment_date).toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true
-                        }),
-                        serviceType: service.appointment_service_type,
-                        description: service.appointment_description,
-                        status: service.appointment_status,
-                    }));
+                const transformedNewServices = transformServiceData(newServices);
 
                 // Update state with new services (you might want to merge or replace)
                 setJobs(prev => [...prev, ...transformedNewServices]);
@@ -260,6 +229,29 @@ export default function InProgress() {
         };
     }, [echo]);
 
+    const transformServiceData = (services: any[]) => {
+        return services
+            .filter((service: any) => service.user_id === currentUserId)
+            .filter((service: any) => 
+                service.service_status === 'pending' || 
+                service.service_status === 'in-progress'
+            )
+            .map((service: any) => ({
+                id: service.id.toString(),
+                appointmentId: service.appointment_id,
+                customer: service.client_name,
+                device: service.appointment_item_name,
+                startTime: new Date(service.appointment_date).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                }),
+                serviceType: service.appointment_service_type,
+                description: service.appointment_description,
+                status: service.service_status,
+            }));
+    };
+
     const handleCompleteModalClose = () => {
         setOpenCompleteModal(false);
     }
@@ -269,48 +261,52 @@ export default function InProgress() {
             return console.error("No user ID provided");
         }
 
-        if (status === 'in-progress') {
-            setInProgressProcessing(prev => new Set([...prev, jobId]));
-            await makeApiCall(jobId, status);
-            setInProgressProcessing(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(jobId);
-                return newSet;
-            });
-        }
-        else if (status === 'completed') {
-            // Only open modal for completed status, don't set loading state yet
+        console.log('handleMark', jobId, status);
+
+        if (status === 'completed') {
             setJobData(jobId);
             setOpenCompleteModal(true);
-            return; // Exit early, don't make API call yet
+            return; // Exit early
         }
-        else if (status === 'canceled') {
-            setCancelProcessing(prev => new Set([...prev, jobId]));
+
+        setLoadingJobs(prev => new Map(prev).set(jobId, status));
+
+        try {
             await makeApiCall(jobId, status);
-            setCancelProcessing(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(jobId);
-                return newSet;
+            
+            setJobs(prev => prev.filter(job => job.appointmentId !== jobId));
+        } catch (error) {
+            console.error(`Error marking job as ${status}:`, error);
+        } finally {
+            setLoadingJobs(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(jobId);
+                return newMap;
             });
         }
     }
 
     // Update your handleModalSave function to accept amount parameter
     const handleModalSave = async (amount: number) => {
-        setIsModalSaveClick(true);
-        setCompleteProcessing(prev => new Set([...prev, jobData]));
+        const jobId = jobData;
+        setLoadingJobs(prev => new Map(prev).set(jobId, 'completed'));
 
-        await makeApiCallWithAmount(jobData, 'completed', amount);
-
-        // Clean up states
-        setCompleteProcessing(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(jobData);
-            return newSet;
-        });
-        setOpenCompleteModal(false);
-        setIsModalSaveClick(false);
-        setJobData(0);
+        try {
+            await makeApiCallWithAmount(jobId, 'completed', amount);
+            
+            // On success, remove the job from the list
+            setJobs(prev => prev.filter(job => job.appointmentId !== jobId));
+        } catch (error) {
+            console.error('Error marking job as completed:', error);
+        } finally {
+            setLoadingJobs(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(jobId);
+                return newMap;
+            });
+            setOpenCompleteModal(false);
+            setJobData(0);
+        }
     }
 
     // Update your makeApiCall function to handle amount
@@ -320,7 +316,8 @@ export default function InProgress() {
                 id: jobId,
                 currentUserId: currentUserId,
                 status: status,
-                ...(amount && { price: amount }) // Include amount if provided
+                // ...(amount && { price: amount }) // Include amount if provided
+                price: amount,
             };
 
             const response = await fetch(route('in-progress.mark-in-progress'), {
@@ -375,7 +372,7 @@ export default function InProgress() {
                 isOpen={openCompleteModal}
                 onClose={handleCompleteModalClose}
                 onSave={handleModalSave}
-                isLoading={completeProcessLoading.has(jobData)}
+                isLoading={loadingJobs.has(jobData)}
             />
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="In Progress" />
@@ -384,12 +381,12 @@ export default function InProgress() {
 
                     <div className="flex flex-col gap-4">
                         {loading ? (
-                            <div className="bg-white p-8 rounded-lg shadow text-center">
+                            <div key="loading" className="bg-white p-8 rounded-lg shadow text-center">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                                 <p className="text-gray-500 mt-2">Loading appointments...</p>
                             </div>
                         ) : jobs.length === 0 ? (
-                            <div className="bg-white p-8 rounded-lg shadow text-center">
+                            <div key="empty" className="bg-white p-8 rounded-lg shadow text-center">
                                 <p className="text-gray-500">No appointments found for the selected criteria.</p>
                             </div>
                         ) :
@@ -420,65 +417,49 @@ export default function InProgress() {
                                 </div>
 
                                         <div className="mt-3 flex gap-2">
+                                        {/* Show "Mark Progress" only for pending jobs */}
                                         {job.status === "pending" && (
-                                            <>
                                             <button
                                                 onClick={() => handleMark(job.appointmentId, 'in-progress')}
                                                 className="rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-600"
+                                                disabled={loadingJobs.has(job.appointmentId)}
                                             >
-                                                {inProgressProcessLoading.has(job.appointmentId) ? (
+                                                {loadingJobs.get(job.appointmentId) === 'in-progress' ? (
                                                     <LoaderCircle className="h-4 w-4 animate-spin" />
                                                 ) : (
                                                     "Mark Progress"
                                                 )}
                                             </button>
-                                            <button
-                                                onClick={() => handleMark(job.appointmentId, 'completed')}
-                                                className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-                                            >
-                                                {completeProcessLoading.has(job.appointmentId) ? (
-                                                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                                                ) : (
-                                                    "Mark Complete"
-                                                )}
-                                        </button>
-                                        <button
-                                            onClick={() => handleMark(job.appointmentId, 'canceled')}
-                                            className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-                                        >
-                                            {cancelProcessLoading.has(job.appointmentId) ? (
-                                                <LoaderCircle className="h-4 w-4 animate-spin" />
-                                            ) : (
-                                                "Mark Cancel"
-                                            )}
-                                        </button>
-                                    </>
-                                )}
+                                        )}
 
-                                {job.status === "in-progress" && (
-                                    <>
-                                    <button
-                                        onClick={() => handleMark(job.appointmentId, 'completed')}
-                                        className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-                                    >
-                                        {completeProcessLoading.has(job.appointmentId) ? (
-                                            <LoaderCircle className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                            "Mark Complete"
-                                        )}
-                                    </button>
-                                    <button
-                                        onClick={() => handleMark(job.appointment_id, 'canceled')}
-                                        className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-                                    >
-                                        {cancelProcessLoading.has(job.appointment_id) ? (
-                                            <LoaderCircle className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                            "Mark Cancel"
-                                        )}
-                                    </button>
-                                    </>
-                                )}
+                                        {/* Show "Mark Complete" and "Mark Cancel" for both pending and in-progress jobs */}
+                                        {(job.status === "pending" || job.status === "in-progress") && (
+                                            <>
+                                                <button
+                                                    onClick={() => handleMark(job.appointmentId, 'completed')}
+                                                    className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                                                    disabled={loadingJobs.has(job.appointmentId)}
+                                                >
+                                                    {loadingJobs.get(job.appointmentId) === 'completed' ? (
+                                                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        "Mark Complete"
+                                                    )}
+                                                </button>
+
+                                                <button
+                                                    onClick={() => handleMark(job.appointmentId, 'canceled')}
+                                                    className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                                                    disabled={loadingJobs.has(job.appointmentId)}
+                                                >
+                                                    {loadingJobs.get(job.appointmentId) === 'canceled' ? (
+                                                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        "Mark Cancel"
+                                                    )}
+                                                </button>
+                                            </>
+                                    )}
                                 </div>
                             </div>
                         )))}
