@@ -104,7 +104,7 @@ export default function ClientTransactions(){
                         month: 'long',
                         day: 'numeric'
                     }) : null,
-                    status: service.appointment_status,
+                    status: service.service_status,
                     technician: service.technician_name || 'Not Assigned',
                     amount: service.amount || 0,
                     rating: service.rating || null,
