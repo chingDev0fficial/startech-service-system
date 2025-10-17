@@ -71,7 +71,6 @@ export default function TechnicianAppointments() {
     // const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [services, setServices] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-<<<<<<< HEAD
     const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [statusFilter, setStatusFilter] = useState<string>('all');  // Fixed: Added closing single quote
 
@@ -81,20 +80,6 @@ export default function TechnicianAppointments() {
         id: auth.user?.id ? auth.user.id.toString() : 'Unknown ID',
         shift: '9:00 AM - 6:00 PM'
     };
-=======
-    const [statusFilter, setStatusFilter] = useState<string>('all');
-    const [technicianInfo] = useState<TechnicianInfo>({
-        name: auth.user?.name || 'Technician Name',
-        id: 'TECH001',
-        shift: '9:00 AM - 6:00 PM'
-    });
-    const [selectedDate, setSelectedDate] = useState<string>(() => {
-        // Create date in Philippines timezone
-        const now = new Date();
-        const philippinesDate = new Date(now.getTime() + (8 * 60 * 60 * 1000)); // Add 8 hours for Philippines
-        return philippinesDate.toISOString().split('T')[0];
-    });
->>>>>>> e410c249c1e0a446f6edd2b98505315ae1be25af
 
     const handleFetchedServices = async () => {
         try {
