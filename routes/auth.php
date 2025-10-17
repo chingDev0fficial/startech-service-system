@@ -13,15 +13,16 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\ClientController;
 use Illuminate\Support\Facades\Route;
 
+Route::middleware('guest:client')->group(function () {
+    Route::get('/', [ClientAuthController::class, 'create'])
+        ->name('client.login');
+    // other client auth routes...
+});
+
 Route::middleware('guest')->group(function () {
 
     Route::get('/', [ClientAuthController::class, 'create'])
         ->name('client.login');
-
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
-        ->name('login');
-
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
     Route::post('client-login', [ClientAuthController::class, 'store'])
         ->name('client.login.store');
@@ -35,6 +36,10 @@ Route::middleware('guest')->group(function () {
     Route::get('client-logout', [ClientAuthController::class, 'destroy'])
         ->name('client.logout');
 
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])
+        ->name('login');
+
+    Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
     // Route::post('manage-accounts', [RegisteredUserController::class, 'store']);
 

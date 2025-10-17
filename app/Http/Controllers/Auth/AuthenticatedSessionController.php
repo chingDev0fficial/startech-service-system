@@ -45,6 +45,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        session()->forget('auth.password_confirmed_at');
+        
 
         return redirect('/');
     }

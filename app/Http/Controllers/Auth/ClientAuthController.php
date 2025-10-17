@@ -24,6 +24,16 @@ class ClientAuthController extends Controller
             'password' => 'required',
         ]);
 
+        // Force logout any existing session (regardless of guard)
+        // if (Auth::guard('web')->check()) {
+            
+        // }
+
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+
         // Attempt to login using the client guard
         if (Auth::guard('client')->attempt([
             'email' => $request->email,
