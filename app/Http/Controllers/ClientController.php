@@ -90,4 +90,32 @@ class ClientController extends Controller
         Log::info("Data: " . $clientHist);
         return $clientHist;
     }
+
+    public function submitRating(Request $request)
+    {
+
+        // \Log::info("Working");
+        $validated = $request->validate([
+            'appointmentId' => 'required|integer',
+            'rated' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000',
+        ]);
+        // \Log::info("Validated Data: " . json_encode($validated));
+
+        \DB::table('service')
+            ->where('appointment_id', $validated['appointmentId'])
+            ->update([
+                'rating' => $validated['rated'],
+                // 'updated_at' => now(),
+            ]);
+
+        \DB::table('rating_comments')
+            ->where('appointment_id', $validated['appointmentId'])
+            ->update([
+                'comment' => $validated['comment'],
+                'updated_at' => now(),
+            ]);
+
+        return back()->with('success', 'Thank you for your feedback!');
+    }
 }

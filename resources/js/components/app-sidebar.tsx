@@ -44,7 +44,7 @@ const mainNavItems: NavItem[] = [
         accessRole: ['super user', 'staff']
     },
     {
-        title: 'Manage History',
+        title: 'Service Resports',
         href: '/manage-history',
         icon: History,
         accessRole: ['super user', 'staff'],
@@ -69,12 +69,12 @@ const mainNavItems: NavItem[] = [
         icon: Receipt,
         accessRole: ['super user', 'staff']
     },
-    {
-        title: 'Manage Warranty',
-        href: '#',
-        icon: BadgeCheck,
-        accessRole: ['super user', 'staff']
-    },
+    // {
+    //     title: 'Manage Warranty',
+    //     href: '#',
+    //     icon: BadgeCheck,
+    //     accessRole: ['super user', 'staff']
+    // },
     {
         title: 'My Appointments',
         href: '/my-appointments',

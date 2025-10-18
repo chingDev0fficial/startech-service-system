@@ -1,8 +1,21 @@
+import * as React from 'react';
 import {usePage} from '@inertiajs/react';
 import { useState, useEffect } from 'react';
+import { Head, useForm } from '@inertiajs/react';
+import { useEcho } from '@laravel/echo-react';
 import { NavBar } from "@/components/nav-bar";
 import { CustomFooter } from "@/components/custom-footer";
-import { LaptopMinimal } from 'lucide-react';
+import { LaptopMinimal, LoaderCircle } from 'lucide-react';
+import { Rating, Textarea } from "@material-tailwind/react";
+import { Label } from '@/components/ui/label';
+import { FormEventHandler } from 'react';
+
+import { X } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Modal from '@mui/material/Modal';
+import Typography from '@mui/material/Typography';
+import { Button } from '@/components/ui/button';
+// import { CircularProgress } from '@mui/material';
 
 interface HistoryRecord {
     id: string;
@@ -18,12 +31,165 @@ interface HistoryRecord {
     serviceLocation: string;
 }
 
+interface appointmentRating {
+    rated: number;
+    comment: string;
+}
+
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 800,
+    // maxHeight: '75vh',
+    bgcolor: 'background.paper',
+    boxShadow: 24,
+    p: 4,
+};
+
+function RatingsModal({ appointmentId, isOpen, onClose, onRatingSuccess }: { appointmentId: number; isOpen: boolean; onClose: () => void; onRatingSuccess: () => void }) {
+    const { data, setData, post, processing, errors, reset } = useForm<appointmentRating>({
+        appointment_id: appointmentId,
+        rated: 0,
+        comment: '',
+    });
+
+    const [isError, setIsError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    ) => {
+         if (typeof e === 'number') {
+            setData('rated', e);
+        } 
+        // Otherwise it's a regular form event
+        else if (e.target) {
+            const { name, value } = e.target;
+            setData(name as keyof appointmentRating, value);
+        }
+    };
+
+    const handleClose = () => {
+        setIsError(false);
+        setErrorMessage(null);
+        reset();
+        onClose();
+    };
+
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+        // console.log('Rating check:', data.rated);
+        // console.log('Comment check:', data.comment);
+        // Handle form submission
+
+        // console.log('Rated:', rated);
+        // console.log('Comment:', comment);
+        // Close the modal after submission
+        // onClose();
+        setIsLoading(true);
+
+        post(route('client.appointment.rate.submit', {appointmentId: appointmentId, rated: data.rated, comment: data.comment}), {
+            onSuccess: () => {
+                setIsError(false);
+                onRatingSuccess();
+                reset();
+                onClose();
+            },
+            onError: () => {
+                // Handle error
+                setIsError(true);
+                setErrorMessage('Failed to submit rating. Please try again.');
+            },
+            onFinish: () => {
+                setIsLoading(false);
+            }
+        });
+
+        
+    };
+
+    const RatingWithText = () => {
+        return (
+            <div className="flex items-center gap-2 font-bold text-blue-gray-500">
+                {data.rated}
+                <Rating id='rated' name='rated' value={data.rated} onChange={handleChange} />
+                <Typography color="blue-gray" className="font-medium text-blue-gray-500">
+                    Rate the service
+                </Typography>
+            </div>
+        );
+    }
+
+    return (
+        <Modal
+            keepMounted
+            open={isOpen}
+            onClose={onClose}
+            aria-labelledby="keep-mounted-modal-title"
+            aria-describedby="keep-mounted-modal-description"
+        >
+            <Box sx={style}>
+                <Typography id="keep-mounted-modal-title" variant="h6" component="h2" className="flex items-center justify-between">
+                    Rate Service
+                    <Button className="text-[#ffffff] !bg-[#393E46]" onClick={handleClose}>
+                        <X />
+                    </Button>
+                </Typography>
+                <Box sx={{ mt: 2 }}>
+
+                    <form onSubmit={submit} className="space-y-4">
+                        {/* Rating selection */}
+                        {/* I want a clickable star rating and a comment */}
+                        <RatingWithText />
+                        <div className='grid grid-col-1 gap-1'>
+                            <Label htmlFor="comment">Comment</Label>
+                            <Textarea 
+                                className='w-full border-gray-300 focus:border-[#393E46] focus:ring-2 focus:ring-[#393E46]/20 rounded-lg resize-none transition-all duration-200 text-[#222831]'
+                                id="comment"
+                                name="comment"
+                                value={data.comment}
+                                placeholder="Leave a comment..."
+                                rows={4}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        {isError && errorMessage && (
+                            <Typography 
+                                id="error-message"
+                                sx={{ color: 'red', mb: 2 }}
+                                className='p-[15px] text-red-600 font-medium bg-red-100 rounded-lg'
+                            >
+                                {errorMessage}
+                            </Typography>
+                        )}
+
+                        <Button type="submit">
+                            {isLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : "Submit Rating"}
+                        </Button>
+                    </form>
+                </Box>
+            </Box>
+        </Modal>
+    );
+}
+
 export default function ClientTransactions(){
     const { auth } = usePage().props;
+    // const echo = useEcho();
     const [appointments, setAppointments] = useState([])
     const [transactions, setTransactions] = useState<HistoryRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [openRatingModal, setOpenRatingModal] = useState(false);
+    const [appointmentId, setAppointmentId] = useState<number>(0);
+
+    // const [removeRatedButtonId, setRemoveRatedButtonId] = useState<number[]>([]);
 
     const client = auth.client;
 
@@ -147,8 +313,22 @@ export default function ClientTransactions(){
         ? (ratedTransactions.reduce((sum, h) => sum + (h.rating || 0), 0) / ratedTransactions.length).toFixed(1)
         : '0.0';
 
+    const ratingAction = (record: any) => {
+        // Open rating modal or redirect to rating page
+        // alert('Open rating modal or redirect to rating page');
+        setOpenRatingModal(true);
+        setAppointmentId(parseInt(record.id));
+        // console.log('Rating modal opened?: ', openRatingModal);
+    }
+
+    const handleRatingSuccess = () => {
+        // After successful rating submission, reload transactions to reflect the new rating
+        loadTransactions();
+    }
+
     return (
         <>
+            <RatingsModal appointmentId={appointmentId} isOpen={openRatingModal} onClose={() => setOpenRatingModal(false)} onRatingSuccess={handleRatingSuccess} />
             <div className="min-h-screen bg-[#F0F1F2] flex flex-col">
                 <div className="sticky top-0 left-0 right-0 z-50">
                     <NavBar tabs={tabs} />
@@ -180,37 +360,6 @@ export default function ClientTransactions(){
                                 </div>
                             </div>
                         )}
-
-                        {/* Summary Statistics */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
-                            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600 mb-1">
-                                    {transactions.filter(h => h.status?.toLowerCase() === 'completed').length}
-                                </div>
-                                <div className="text-xs sm:text-sm text-gray-500 font-medium">Completed</div>
-                            </div>
-                            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 mb-1 truncate">
-                                    ₱{transactions
-                                    .filter(h => h.status?.toLowerCase() === 'completed')
-                                    .reduce((sum, h) => sum + (Number(h.amount) || 0), 0)
-                                    .toFixed(2)}
-                                </div>
-                                <div className="text-xs sm:text-sm text-gray-500 font-medium">Total Revenue</div>
-                            </div>
-                            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-600 mb-1">
-                                    {avgRating}
-                                </div>
-                                <div className="text-xs sm:text-sm text-gray-500 font-medium">Avg Rating</div>
-                            </div>
-                            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600 mb-1">
-                                    {transactions.length}
-                                </div>
-                                <div className="text-xs sm:text-sm text-gray-500 font-medium">Total</div>
-                            </div>
-                        </div>
 
                         {/* Transactions Table/Cards */}
                         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -322,6 +471,12 @@ export default function ClientTransactions(){
                                                             <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
                                                                 View
                                                             </button>
+
+                                                            {record.status.toLowerCase() === 'completed' && !record.rating && (
+                                                                <button onClick={() => ratingAction(record)} className="ml-4 text-green-600 hover:text-green-900 text-sm font-medium">
+                                                                    Rate
+                                                                </button>
+                                                            )}
                                                         </td>
                                                     </tr>
                                                 ))
@@ -413,6 +568,12 @@ export default function ClientTransactions(){
                                                             <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
                                                                 View
                                                             </button>
+
+                                                            {record.status.toLowerCase() === 'completed' && !record.rating && (
+                                                                <button onClick={() => ratingAction(record)} className="ml-4 text-green-600 hover:text-green-900 text-sm font-medium">
+                                                                    Rate
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -430,3 +591,4 @@ export default function ClientTransactions(){
         </>
     );
 }
+

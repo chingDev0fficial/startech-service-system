@@ -20,6 +20,7 @@ import { Home, MapPin } from 'lucide-react';
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { floated } from "@material-tailwind/react/types/components/card";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -120,6 +121,7 @@ export default function Dashboard() {
     const [activeRepair, setActiveRepair] = useState<number>(0);
     const [pendingAppointments, setPendingAppointments] = useState<number>(0);
     const [totalRevenue, setTotalRevenue] = useState<number>(0);
+    const [satisfaction, setSatisfaction] = useState<number>(0.0);
 
     // Add cache state
     const [lastFetchTime, setLastFetchTime] = useState<number>(0);
@@ -169,8 +171,8 @@ export default function Dashboard() {
         fetchInitialPrices();
     }, []);
 
-    console.log("City Price:", cityPrice);
-    console.log("Outside Price:", outsidePrice);
+    // console.log("City Price:", cityPrice);
+    // console.log("Outside Price:", outsidePrice);
 
     const handleSavePrices = async () => {
         console.log("Saving prices:", cityPrice, outsidePrice);
@@ -296,6 +298,17 @@ export default function Dashboard() {
                 const activeRepairCount = data.filter(appointment => appointment.status === "in-progress").length
                 const pendingAppointmentsCount = data.filter(appointment => appointment.status === "pending").length
 
+                console.log(data)
+                const totalRatings = data.reduce((sum, appointment) => 
+                    appointment.rating !== null && appointment.rating !== undefined 
+                        ? sum + appointment.rating 
+                        : sum, 
+                    0
+                );
+                const numberOfRatings = data.filter(appointment => appointment.rating !== null && appointment.rating !== undefined).length;
+                const averageSatisfaction = numberOfRatings > 0 ? (totalRatings / numberOfRatings) : 0;
+                setSatisfaction(parseFloat(averageSatisfaction.toFixed(2)));
+
                 const formatter = new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: 'PHP',
@@ -355,8 +368,8 @@ export default function Dashboard() {
         {icon: ToolCase, iconColor: "blue", title: "Active Repairs", value: activeRepair},
         {icon: ClipboardClock, iconColor: "orange", title: "pending Appointments", value: pendingAppointments},
         {icon: PhilippinePeso, iconColor: "green", title: "Today's Revenue", value: totalRevenue},
-        {icon: Star, iconColor: "purple", title: "Satisfaction", value: "4.9/5"},
-    ]
+        {icon: Star, iconColor: "purple", title: "Satisfaction", value: `${satisfaction}/5`},
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

@@ -24,6 +24,9 @@ Route::middleware(['client'])->group(function () {
 
     Route::get('/client-transactions/fetch', [ClientController::class, 'fetchTransactions'])
         ->name('client.appointment.transactions.fetch');
+
+    Route::post('/client-transactions/rate/submit', [ClientController::class, 'submitRating'])
+        ->name('client.appointment.rate.submit');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
