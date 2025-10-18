@@ -39,11 +39,11 @@ class HistoryController extends Controller
                 'client.name as client_name',
                 'client.email as client_email',
                 'client.phone_number as client_phone',
-                'users.name as technician_name',
-                'users.email as technician_email',
+                DB::raw('COALESCE(users.name, "Technician Removed") as technician_name'),
+                DB::raw('COALESCE(users.email, "") as technician_email'),
                 'service.rating as rating',
                 'service.user_id',
-                'service.status as service_status'
+                DB::raw('COALESCE(service.status, "unknown") as service_status')
             )
             ->get();
 

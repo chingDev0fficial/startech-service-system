@@ -142,7 +142,7 @@ export default function TechnicianAppointments() {
                 const formattedCreatedDate = new Date(createdDate.getTime() - createdDate.getTimezoneOffset() * 60000)
                     .toISOString()
                     .split('T')[0];
-                
+
                 return service.user_id === currentUserId && formattedCreatedDate === selectedDate;
             })
             .map((service: Service) => ({

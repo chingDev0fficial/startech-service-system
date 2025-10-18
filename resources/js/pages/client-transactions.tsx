@@ -41,7 +41,7 @@ const style = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 800,
+    width: '100%',
     // maxHeight: '75vh',
     bgcolor: 'background.paper',
     boxShadow: 24,
@@ -326,6 +326,8 @@ export default function ClientTransactions(){
         loadTransactions();
     }
 
+    console.log('Transactions:', transactions);
+
     return (
         <>
             <RatingsModal appointmentId={appointmentId} isOpen={openRatingModal} onClose={() => setOpenRatingModal(false)} onRatingSuccess={handleRatingSuccess} />
@@ -472,7 +474,7 @@ export default function ClientTransactions(){
                                                                 View
                                                             </button>
 
-                                                            {record.status.toLowerCase() === 'completed' && !record.rating && (
+                                                            {record.status === 'completed' && !record.rating && (
                                                                 <button onClick={() => ratingAction(record)} className="ml-4 text-green-600 hover:text-green-900 text-sm font-medium">
                                                                     Rate
                                                                 </button>
