@@ -32,6 +32,7 @@ class MyAppointmentController extends Controller
                 'client.email as client_email',
                 'client.phone_number as client_phone',
                 'service.created_at as service_created_at',
+                'service.updated_at as service_updated_at',
                 'service.status as service_status',
             )
             ->get();
