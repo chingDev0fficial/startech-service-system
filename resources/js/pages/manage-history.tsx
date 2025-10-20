@@ -196,17 +196,6 @@ export default function ManageHistory() {
         }));
     };
 
-    const clearAllFilters = () => {
-        setSearchFilters({
-            globalSearch: '',
-            dateRange: { from: '', to: '' },
-            status: [],
-            serviceType: '',
-            technician: '',
-            amountRange: { min: 0, max: 1000 }
-        });
-    };
-
     const activeFiltersCount = Object.values(searchFilters).filter(value =>
         value && (Array.isArray(value) ? value.length > 0 : value !== '' && value !== 0)
     ).length;
@@ -239,50 +228,8 @@ export default function ManageHistory() {
                                     className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg relative"
                                 >
                                     Advanced Filters
-                                    {activeFiltersCount > 0 && (
-                                        <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                            {activeFiltersCount}
-                                        </span>
-                                    )}
                                 </button>
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Summary Statistics */}
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div className="bg-white p-4 rounded-lg shadow text-center">
-                            <div className="text-2xl font-bold text-gray-900">{history.length}</div>
-                            <div className="text-sm text-gray-500">
-                                Total {serviceLocation === 'in-store' ? 'In-Store' : 'Home'} Services
-                            </div>
-                        </div>
-                        <div className="bg-white p-4 rounded-lg shadow text-center">
-                            <div className="text-2xl font-bold text-green-600">
-                                {history.filter(h => h.status.toLowerCase() === 'completed').length}
-                            </div>
-                            <div className="text-sm text-gray-500">Completed</div>
-                        </div>
-                        <div className="bg-white p-4 rounded-lg shadow text-center">
-                            <div className="text-2xl font-bold text-blue-600">
-                                ₱{history.filter(h => h.status.toLowerCase() === 'completed').reduce((sum, h) => sum + h.amount, 0).toFixed(2)}
-                            </div>
-                            <div className="text-sm text-gray-500">Total Revenue</div>
-                        </div>
-                        <div className="bg-white p-4 rounded-lg shadow text-center">
-                            <div className="text-2xl font-bold text-yellow-600">
-                                {history.filter(h => h.rating).length > 0
-                                    ? (history.filter(h => h.rating).reduce((sum, h) => sum + (h.rating || 0), 0) / history.filter(h => h.rating).length).toFixed(1)
-                                    : '0.0'
-                                }
-                            </div>
-                            <div className="text-sm text-gray-500">Avg Rating</div>
-                        </div>
-                        <div className="bg-white p-4 rounded-lg shadow text-center">
-                            <div className="text-2xl font-bold text-purple-600">
-                                {filteredHistory.length}
-                            </div>
-                            <div className="text-sm text-gray-500">Filtered Results</div>
                         </div>
                     </div>
 
@@ -298,14 +245,6 @@ export default function ManageHistory() {
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
-                            {activeFiltersCount > 0 && (
-                                <button
-                                    onClick={clearAllFilters}
-                                    className="text-red-600 hover:text-red-800 text-sm font-medium"
-                                >
-                                    Clear All ({activeFiltersCount})
-                                </button>
-                            )}
                             <div className="text-sm text-gray-500">
                                 {filteredHistory.length} results
                             </div>
@@ -352,11 +291,9 @@ export default function ManageHistory() {
                                         className="w-full px-3 py-2 border rounded-md text-sm"
                                     >
                                         <option value="">All Types</option>
-                                        <option value="Screen Repair">Screen Repair</option>
-                                        <option value="Battery Repair">Battery Repair</option>
-                                        <option value="Hardware Repair">Hardware Repair</option>
-                                        <option value="Software">Software</option>
-                                        <option value="Water Damage">Water Damage</option>
+                                        <option value="hardware repair">Hardware Repair</option>
+                                        <option value="software solution">Software Solution</option>
+                                        <option value="maintenance">Maintenance</option>
                                     </select>
                                 </div>
 

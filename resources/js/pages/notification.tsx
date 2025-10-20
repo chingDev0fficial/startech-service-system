@@ -26,7 +26,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function notification() {
     const echo = useEcho();
     // Sample notification data
-    const [notifications, setNotifications] = useState([]);
+    const [notifications, setNotifications] = useState<any[]>([]);
 
     const handleFetchedNotif = async () => {
         try {
@@ -64,7 +64,7 @@ export default function notification() {
                     }));
 
                 // Fixed: Do something with transform (set state, etc.)
-                setNotifications(transform);
+                setNotifications(transform.reverse());
 
                 // Fixed: Echo setup moved outside of .then()
             })
@@ -101,27 +101,87 @@ export default function notification() {
 
     const notif = notifications;
 
-    console.log(notif);
+    const markAllAsRead = async () => {
+        // setNotifications(prev =>
+        //     prev.map(notif => ({ ...notif, isRead: true }))
+        // );
 
-    const markAllAsRead = () => {
-        setNotifications(prev =>
-            prev.map(notif => ({ ...notif, isRead: true }))
-        );
+        console.log('Marking all as read');
+
+        try {
+
+            const response = await fetch(route('notification.markAllAsRead'), {
+                method: 'POST',
+                headers: {
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    "Content-Type": "application/json",
+                }
+            })
+
+            console.log(response);
+
+            if ( !response.ok ) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            setNotifications(prev =>
+                prev.map(notif => ({ ...notif, isRead: true }))
+            );
+
+        } catch (error) {
+            console.error(error);
+        };
+
+        console.log('All notifications marked as read');
     };
 
-    const clearAllNotifications = () => {
+    const clearAllNotifications = async () => {
+
+        try {
+
+            const response = await fetch(route('notification.clearAll'), {
+                method: 'POST',
+                headers: {
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    "Content-Type": "application/json",
+                }
+            });
+
+            if ( !response.ok ) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+
         setNotifications([]);
     };
 
     const markAsRead = (id: number) => {
         setNotifications(prev =>
-            prev.map(notif =>
-                notif.id === id ? { ...notif, isRead: true } : notif
-            )
+            prev.map(notif => notif.id === id ? { ...notif, isRead: true } : notif)
         );
     };
 
-    const removeNotification = (id: number) => {
+    const removeNotification = async (id: number) => {
+        try {
+            const reposonse = await fetch(route('notification.clear'), {
+                method: 'POST',
+                headers: {
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({id: id}),
+            });
+
+            if ( !reposonse.ok ) {
+                throw new Error(`HTTP error! status: ${reposonse.status}`);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+
         setNotifications(prev => prev.filter(notif => notif.id !== id));
     };
 

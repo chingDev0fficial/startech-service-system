@@ -44,7 +44,7 @@ const mainNavItems: NavItem[] = [
         accessRole: ['super user', 'staff']
     },
     {
-        title: 'Service Resports',
+        title: 'Service Reports',
         href: '/manage-history',
         icon: History,
         accessRole: ['super user', 'staff'],
