@@ -21,7 +21,7 @@ export default function ManageBillings() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [fetchedAppointments, setFetchedAppointments] = useState([]);
+    const [fetchedAppointments, setFetchedAppointments] = useState<any[]>([]);
 
     const handleFetchedAppointments = async () => {
         try {

@@ -95,6 +95,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('notif');
         Route::get('notification/fetch', [NotificationController::class, 'fetch'])
             ->name('notification.fetch');
+        Route::post('notification/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])
+            ->name('notification.markAllAsRead');
+        Route::post('notification/clear-all', [NotificationController::class, 'clearAll'])
+            ->name('notification.clearAll');
+        Route::post('notification/clear', [NotificationController::class, 'clear'])
+            ->name('notification.clear');
         /* Route::get('my-appointments/fetch', [App\Http\Controllers\MyAppointmentController::class, 'fetch']) */
         /*     ->name('my-appointments.fetch'); */
 

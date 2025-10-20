@@ -20,11 +20,13 @@ class AppointmentController extends Controller
         // Get appointments
         $appointments = DB::table('appointment')
             ->join('client', 'appointment.client_id', '=', 'client.id')
+            ->leftJoin('service', 'appointment.id', '=', 'service.appointment_id')
             ->select(
                 'appointment.*',
                 'client.name as client_name',
                 'client.email as client_email',
-                'client.phone_number as client_phone'
+                'client.phone_number as client_phone',
+                DB::raw('COALESCE(service.status, "unknown") as status'),
             )
             ->get();
 

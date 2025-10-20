@@ -359,7 +359,9 @@ export default function Welcome(){
 
         <div className="grid grid-rows-1 bg-[#F0F1F2] min-h-screen">
             <div className="sticky top-0 left-0 right-0 z-50">
-                <NavBar tabs={tabs} />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <NavBar tabs={tabs} />
+                </div>
             </div>
 
              <div className="grid content-center justify-items-center p-[20px]">
