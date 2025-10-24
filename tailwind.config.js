@@ -1,4 +1,5 @@
 module.exports = {
+  darckMode: 'class',
   content: [
     "./resources/**/*.blade.php",
     "./resources/**/*.js",

@@ -41,7 +41,7 @@ const style = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: '100%',
+    width: '80%',
     // maxHeight: '75vh',
     bgcolor: 'background.paper',
     boxShadow: 24,
@@ -326,7 +326,7 @@ export default function ClientTransactions(){
         loadTransactions();
     }
 
-    console.log('Transactions:', transactions);
+    // console.log('Transactions:', transactions);
 
     return (
         <>
