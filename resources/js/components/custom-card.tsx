@@ -11,7 +11,7 @@ function CustomCard({icon, iconColor, title, content, buttonText, onButtonClick}
     };
 
     return (
-        <Card className="lg:w-[400px] w-full bg-white shadow-lg m-4 border border-transparent">
+        <Card className="w-full bg-white shadow-lg m-4 border border-transparent">
             <CardHeader>
                 <Avatar className={`h-12 w-12 text-black flex items-center justify-center ${colorClasses[iconColor][0]}`}>
                     <Icon iconNode={icon} className={colorClasses[iconColor][1]} strokeWidth={2} />
