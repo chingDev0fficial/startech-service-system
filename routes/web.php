@@ -95,6 +95,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('notif');
         Route::get('notification/fetch', [NotificationController::class, 'fetch'])
             ->name('notification.fetch');
+        Route::post('notification/mark-as-read', [NotificationController::class, 'markAsRead'])
+            ->name('notification.markAsRead');
         Route::post('notification/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])
             ->name('notification.markAllAsRead');
         Route::post('notification/clear-all', [NotificationController::class, 'clearAll'])

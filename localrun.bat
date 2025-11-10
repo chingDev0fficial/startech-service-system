@@ -9,7 +9,7 @@ REM =========================
 REM Set localhost configuration
 REM =========================
 set LOCAL_HOST=localhost
-set LOCAL_IP=127.0.0.1
+set LOCAL_IP=0.0.0.0
 set APP_PORT=8000
 set VITE_PORT=5173
 set REVERB_PORT=8080
