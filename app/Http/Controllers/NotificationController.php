@@ -16,29 +16,76 @@ class NotificationController extends Controller
 
     public function fetch()
     {
-        $notification = DB::table('notification')->get();
-        return response()->json(['success' => true, 'retrieved' => $notification]);
+        try {
+            $notification = DB::table('notification')
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            return response()->json(['success' => true, 'retrieved' => $notification]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching notifications: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to fetch notifications.'], 500);
+        }
+    }
+
+    public function markAsRead(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|integer|exists:notification,id',
+            ]);
+
+            DB::table('notification')
+                ->where('id', $validated['id'])
+                ->update(['status' => 'read', 'updated_at' => now()]);
+            
+            return response()->json(['success' => true, 'message' => 'Notification marked as read.']);
+        } catch (\Exception $e) {
+            Log::error('Error marking notification as read: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to mark notification as read.'], 500);
+        }
     }
 
     public function markAllAsRead()
     {
-        DB::table('notification')->update(['status' => 'read']);
-        return response()->json(['success' => true, 'message' => 'All notifications marked as read.']);
+        try {
+            DB::table('notification')
+                ->where('status', '!=', 'read')
+                ->update(['status' => 'read', 'updated_at' => now()]);
+            
+            return response()->json(['success' => true, 'message' => 'All notifications marked as read.']);
+        } catch (\Exception $e) {
+            Log::error('Error marking all notifications as read: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to mark all notifications as read.'], 500);
+        }
     }
 
     public function clearAll()
     {
-        DB::table('notification')->delete();
-        return response()->json(['success' => true, 'message' => 'All notifications cleared.']);
+        try {
+            DB::table('notification')->delete();
+            return response()->json(['success' => true, 'message' => 'All notifications cleared.']);
+        } catch (\Exception $e) {
+            Log::error('Error clearing all notifications: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to clear all notifications.'], 500);
+        }
     }
 
     public function clear(Request $request)
     {
-        $validated = $request->validate([
-            'id' => 'required|integer|exists:notification,id',
-        ]);
+        try {
+            $validated = $request->validate([
+                'id' => 'required|integer|exists:notification,id',
+            ]);
 
-        DB::table('notification')->where('id', $validated['id'])->delete();
-        return response()->json(['success' => true, 'message' => 'Read notifications cleared.']);
+            DB::table('notification')
+                ->where('id', $validated['id'])
+                ->delete();
+            
+            return response()->json(['success' => true, 'message' => 'Notification cleared.']);
+        } catch (\Exception $e) {
+            Log::error('Error clearing notification: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to clear notification.'], 500);
+        }
     }
 }

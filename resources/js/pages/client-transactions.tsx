@@ -48,6 +48,133 @@ const style = {
     p: 4,
 };
 
+function TransactionDetailModal({ transaction, isOpen, onClose }: { transaction: HistoryRecord | null; isOpen: boolean; onClose: () => void }) {
+    const handleClose = () => {
+        onClose();
+    };
+
+    if (!transaction) {
+        return null;
+    }
+
+    return (
+        <Modal
+            open={isOpen}
+            onClose={handleClose}
+            aria-labelledby="transaction-detail-modal"
+            aria-describedby="transaction-detail-description"
+        >
+            <Box sx={style}>
+                <Typography id="transaction-detail-modal" variant="h6" component="h2" className="flex items-center justify-between mb-4">
+                    Transaction Details
+                    <Button 
+                        type="button"
+                        className="text-[#ffffff] !bg-[#393E46]" 
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleClose();
+                        }}
+                    >
+                        <X />
+                    </Button>
+                </Typography>
+                <Box sx={{ mt: 2, maxHeight: '70vh', overflowY: 'auto' }}>
+                    <div className="space-y-4">
+                        {/* Transaction ID */}
+                        <div className="border-b pb-3">
+                            <p className="text-xs text-gray-500 mb-1">Transaction ID</p>
+                            <p className="text-sm font-semibold text-gray-900">{transaction.id}</p>
+                        </div>
+
+                        {/* Service Information */}
+                        <div className="border-b pb-3">
+                            <p className="text-xs text-gray-500 mb-1">Service</p>
+                            <p className="text-sm font-medium text-gray-900">{transaction.service}</p>
+                            <div className="flex gap-2 mt-2">
+                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700">
+                                    {transaction.serviceType}
+                                </span>
+                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                                    {transaction.serviceLocation}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Customer Information */}
+                        <div className="border-b pb-3">
+                            <p className="text-xs text-gray-500 mb-1">Customer</p>
+                            <p className="text-sm font-medium text-gray-900">{transaction.customer}</p>
+                        </div>
+
+                        {/* Technician Information */}
+                        <div className="border-b pb-3">
+                            <p className="text-xs text-gray-500 mb-1">Assigned Technician</p>
+                            <p className="text-sm font-medium text-gray-900">{transaction.technician}</p>
+                        </div>
+
+                        {/* Dates */}
+                        <div className="border-b pb-3">
+                            <p className="text-xs text-gray-500 mb-1">Service Date</p>
+                            <p className="text-sm font-medium text-gray-900">{transaction.serviceDate}</p>
+                            {transaction.completionDate && (
+                                <>
+                                    <p className="text-xs text-gray-500 mt-2 mb-1">Completion Date</p>
+                                    <p className="text-sm font-medium text-gray-900">{transaction.completionDate}</p>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Status */}
+                        <div className="border-b pb-3">
+                            <p className="text-xs text-gray-500 mb-2">Status</p>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                transaction.status.toLowerCase() === 'completed' ? 'bg-green-100 text-green-800' :
+                                transaction.status.toLowerCase() === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                transaction.status.toLowerCase() === 'in-progress' || transaction.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+                                transaction.status.toLowerCase() === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-gray-100 text-gray-800'
+                            }`}>
+                                {transaction.status}
+                            </span>
+                        </div>
+
+                        {/* Amount */}
+                        <div className="border-b pb-3">
+                            <p className="text-xs text-gray-500 mb-1">Amount</p>
+                            <p className="text-2xl font-bold text-gray-900">
+                                ₱{(Number(transaction.amount) || 0)?.toFixed(2) || '0.00'}
+                            </p>
+                        </div>
+
+                        {/* Rating */}
+                        <div className="pb-3">
+                            <p className="text-xs text-gray-500 mb-2">Rating</p>
+                            {transaction.rating ? (
+                                <div className="flex items-center gap-1">
+                                    {[...Array(5)].map((_, i) => (
+                                        <span
+                                            key={i}
+                                            className={`text-2xl ${i < transaction.rating! ? 'text-yellow-400' : 'text-gray-300'}`}
+                                        >
+                                            ★
+                                        </span>
+                                    ))}
+                                    <span className="text-sm text-gray-500 ml-2">
+                                        ({transaction.rating} out of 5)
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className="text-sm text-gray-400">No rating yet</span>
+                            )}
+                        </div>
+                    </div>
+                </Box>
+            </Box>
+        </Modal>
+    );
+}
+
 function RatingsModal({ appointmentId, isOpen, onClose, onRatingSuccess }: { appointmentId: number; isOpen: boolean; onClose: () => void; onRatingSuccess: () => void }) {
     const { data, setData, post, processing, errors, reset } = useForm<appointmentRating>({
         appointment_id: appointmentId,
@@ -188,6 +315,9 @@ export default function ClientTransactions(){
 
     const [openRatingModal, setOpenRatingModal] = useState(false);
     const [appointmentId, setAppointmentId] = useState<number>(0);
+    
+    const [openDetailModal, setOpenDetailModal] = useState(false);
+    const [selectedTransaction, setSelectedTransaction] = useState<HistoryRecord | null>(null);
 
     // const [removeRatedButtonId, setRemoveRatedButtonId] = useState<number[]>([]);
 
@@ -326,11 +456,22 @@ export default function ClientTransactions(){
         loadTransactions();
     }
 
+    const handleViewTransaction = (record: HistoryRecord) => {
+        setSelectedTransaction(record);
+        setOpenDetailModal(true);
+    }
+
+    const handleCloseDetailModal = () => {
+        setOpenDetailModal(false);
+        setSelectedTransaction(null);
+    }
+
     // console.log('Transactions:', transactions);
 
     return (
         <>
             <RatingsModal appointmentId={appointmentId} isOpen={openRatingModal} onClose={() => setOpenRatingModal(false)} onRatingSuccess={handleRatingSuccess} />
+            <TransactionDetailModal transaction={selectedTransaction} isOpen={openDetailModal} onClose={handleCloseDetailModal} />
             <div className="min-h-screen bg-[#F0F1F2] flex flex-col">
                 <div className="sticky top-0 left-0 right-0 z-50">
                     <NavBar tabs={tabs} />
@@ -470,7 +611,10 @@ export default function ClientTransactions(){
                                                             )}
                                                         </td>
                                                         <td className="px-4 xl:px-6 py-4 text-right">
-                                                            <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
+                                                            <button 
+                                                                onClick={() => handleViewTransaction(record)}
+                                                                className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                                                            >
                                                                 View
                                                             </button>
 
@@ -567,7 +711,10 @@ export default function ClientTransactions(){
                                                             ) : (
                                                                 <span className="text-xs text-gray-400">No rating</span>
                                                             )}
-                                                            <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
+                                                            <button 
+                                                                onClick={() => handleViewTransaction(record)}
+                                                                className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                                                            >
                                                                 View
                                                             </button>
 

@@ -1,5 +1,5 @@
 module.exports = {
-  darckMode: 'class',
+  darkMode: 'class', // Fixed typo: darckMode -> darkMode (though not needed for light-only mode)
   content: [
     "./resources/**/*.blade.php",
     "./resources/**/*.js",

@@ -1,20 +1,8 @@
 import AppLayout from '@/layouts/app-layout';
-import AppTable, { Column } from '@/components/table';
 import { type BreadcrumbItem, type SharedData } from '@/types';
-import { useEcho } from '@laravel/echo-react';
 import { useEffect, useState } from 'react';
 import { Bell, Check, Clock, AlertTriangle, Info, CheckCircle, User, Calendar, Settings, Eye, X } from 'lucide-react';
-import { FormEventHandler } from 'react';
-import { CustomRadio } from "@/components/custom-radio";
-import { Head, useForm, usePage } from '@inertiajs/react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Modal from '@mui/material/Modal';
-import Typography from '@mui/material/Typography';
-import { Button } from '@/components/ui/button';
+import { Head, usePage } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -23,10 +11,46 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// Helper function to format timestamp
+const formatTimestamp = (createdAt: string): string => {
+    const now = new Date();
+    const notifDate = new Date(createdAt);
+    const diffMs = now.getTime() - notifDate.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    return notifDate.toLocaleDateString();
+};
+
+// Helper function to get icon based on notification type
+const getIconByType = (type: string) => {
+    switch (type.toLowerCase()) {
+        case 'success':
+            return CheckCircle;
+        case 'warning':
+            return AlertTriangle;
+        case 'error':
+            return AlertTriangle;
+        case 'info':
+            return Info;
+        case 'appointment':
+            return Calendar;
+        case 'settings':
+            return Settings;
+        default:
+            return Bell;
+    }
+};
+
 export default function notification() {
-    const echo = useEcho();
-    // Sample notification data
+    const { auth } = usePage<SharedData>().props;
     const [notifications, setNotifications] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const handleFetchedNotif = async () => {
         try {
@@ -35,9 +59,9 @@ export default function notification() {
                 headers: {
                     "Content-Type": "application/json"
                 }
-            })
+            });
 
-            if ( !response.ok ) {
+            if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
@@ -45,144 +69,181 @@ export default function notification() {
             return result.retrieved;
 
         } catch (error) {
-            console.error(error);
+            console.error('Error fetching notifications:', error);
+            return [];
         }
-    }
+    };
 
     useEffect(() => {
+        setIsLoading(true);
+        
         handleFetchedNotif()
-            .then(data => { // Fixed: 'data' parameter instead of 'notific'
-                const transform = data
-                    .map((notif: any) => ({
+            .then(data => {
+                if (data && Array.isArray(data)) {
+                    const transform = data.map((notif: any) => ({
                         id: notif.id,
-                        type: notif.type,
-                        title: notif.title,
-                        message: notif.message,
-                        timestamp: '2 hours ago',
+                        type: notif.type || 'info',
+                        title: notif.title || 'Notification',
+                        message: notif.message || '',
+                        timestamp: notif.created_at ? formatTimestamp(notif.created_at) : 'Just now',
                         isRead: notif.status === 'read',
-                        icon: User
+                        icon: getIconByType(notif.type || 'info')
                     }));
 
-                // Fixed: Do something with transform (set state, etc.)
-                setNotifications(transform.reverse());
-
-                // Fixed: Echo setup moved outside of .then()
+                    setNotifications(transform.reverse());
+                }
             })
             .catch(error => {
                 console.error('Error fetching notifications:', error);
+            })
+            .finally(() => {
+                setIsLoading(false);
             });
 
-        // Fixed: Echo channel setup outside of .then()
-        const channel = echo.channel('notif')
-            .listen('.notif.retrieve', (event: any) => {
-                const newServices = event.services || [event];
-                const transformedNewServices = newServices
-                    .filter((service: any) => service.user_id === currentUserId)
-                    .filter((service: any) => service.appointment_status === 'pending' || service.appointment_status === 'in-progress')
-                    .map((service: any) => ({
+        // Optional: Set up polling for new notifications if Echo is not available
+        const pollInterval = setInterval(() => {
+            handleFetchedNotif().then(data => {
+                if (data && Array.isArray(data)) {
+                    const transform = data.map((notif: any) => ({
                         id: notif.id,
-                        type: notif.type,
-                        title: notif.title,
-                        message: notif.message,
-                        timestamp: '2 hours ago',
+                        type: notif.type || 'info',
+                        title: notif.title || 'Notification',
+                        message: notif.message || '',
+                        timestamp: notif.created_at ? formatTimestamp(notif.created_at) : 'Just now',
                         isRead: notif.status === 'read',
-                        icon: User
+                        icon: getIconByType(notif.type || 'info')
                     }));
 
-                // Fixed: Do something with transformedNewServices
-                setNotifications(prev => [...transformedNewServices, ...prev]);
+                    setNotifications(transform.reverse());
+                }
             });
+        }, 30000); // Poll every 30 seconds
 
-        // Fixed: Cleanup function
+        // Cleanup function
         return () => {
-            echo.leaveChannel('notif'); // Fixed: Use correct channel name
+            clearInterval(pollInterval);
         };
-    }, [echo]); // Fixed: Added missing semicolon
-
-    const notif = notifications;
+    }, []);
 
     const markAllAsRead = async () => {
-        // setNotifications(prev =>
-        //     prev.map(notif => ({ ...notif, isRead: true }))
-        // );
-
-        console.log('Marking all as read');
-
         try {
-
+            const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
+            
             const response = await fetch(route('notification.markAllAsRead'), {
                 method: 'POST',
                 headers: {
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    "X-CSRF-TOKEN": csrfToken,
                     "Content-Type": "application/json",
                 }
-            })
+            });
 
-            console.log(response);
-
-            if ( !response.ok ) {
+            if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            setNotifications(prev =>
-                prev.map(notif => ({ ...notif, isRead: true }))
-            );
+            const result = await response.json();
+            
+            if (result.success) {
+                setNotifications(prev =>
+                    prev.map(notif => ({ ...notif, isRead: true }))
+                );
+            }
 
         } catch (error) {
-            console.error(error);
-        };
-
-        console.log('All notifications marked as read');
+            console.error('Error marking all as read:', error);
+        }
     };
 
     const clearAllNotifications = async () => {
-
         try {
-
+            const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
+            
             const response = await fetch(route('notification.clearAll'), {
                 method: 'POST',
                 headers: {
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    "X-CSRF-TOKEN": csrfToken,
                     "Content-Type": "application/json",
                 }
             });
 
-            if ( !response.ok ) {
+            if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-        } catch (error) {
-            console.error(error);
-        }
+            const result = await response.json();
+            
+            if (result.success) {
+                setNotifications([]);
+            }
 
-        setNotifications([]);
+        } catch (error) {
+            console.error('Error clearing all notifications:', error);
+        }
     };
 
-    const markAsRead = (id: number) => {
+    const markAsRead = async (id: number) => {
+        // Optimistically update UI
         setNotifications(prev =>
             prev.map(notif => notif.id === id ? { ...notif, isRead: true } : notif)
         );
+
+        try {
+            const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
+            
+            // You may need to add this route to the backend if it doesn't exist
+            const response = await fetch(route('notification.markAsRead'), {
+                method: 'POST',
+                headers: {
+                    "X-CSRF-TOKEN": csrfToken,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ id }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+            // Revert on error
+            setNotifications(prev =>
+                prev.map(notif => notif.id === id ? { ...notif, isRead: false } : notif)
+            );
+        }
     };
 
     const removeNotification = async (id: number) => {
+        // Optimistically remove from UI
+        const originalNotifications = notifications;
+        setNotifications(prev => prev.filter(notif => notif.id !== id));
+
         try {
-            const reposonse = await fetch(route('notification.clear'), {
+            const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
+            
+            const response = await fetch(route('notification.clear'), {
                 method: 'POST',
                 headers: {
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    "X-CSRF-TOKEN": csrfToken,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({id: id}),
+                body: JSON.stringify({ id }),
             });
 
-            if ( !reposonse.ok ) {
-                throw new Error(`HTTP error! status: ${reposonse.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (!result.success) {
+                // Revert if backend operation failed
+                setNotifications(originalNotifications);
             }
         } catch (error) {
-            console.error(error);
+            console.error('Error removing notification:', error);
+            // Revert on error
+            setNotifications(originalNotifications);
         }
-
-        setNotifications(prev => prev.filter(notif => notif.id !== id));
     };
 
     const unreadCount = notifications.filter(notif => !notif.isRead).length;
@@ -217,49 +278,64 @@ export default function notification() {
 
     return (
         <>
+            <Head title="Notifications" />
             <AppLayout breadcrumbs={breadcrumbs}>
                 <div className="min-h-screen bg-gray-50 p-6">
                     <div className="max-w-5xl mx-auto">
                         {/* Header */}
                         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between flex-wrap gap-4">
                                 <div className="flex items-center space-x-3">
                                     <Bell className="w-8 h-8 text-blue-600" />
                                     <div>
                                         <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
                                         <p className="text-gray-600">
-                                            {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All notifications read'}
+                                            {isLoading ? 'Loading...' : unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All notifications read'}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="flex space-x-2">
                                     <button
                                         onClick={markAllAsRead}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                        disabled={unreadCount === 0}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                                        disabled={unreadCount === 0 || isLoading}
+                                        title="Mark all notifications as read"
                                     >
-                                        Mark All Read
+                                        <Check className="w-4 h-4" />
+                                        <span className="hidden sm:inline">Mark All Read</span>
                                     </button>
                                     <button
                                         onClick={clearAllNotifications}
-                                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                        disabled={notifications.length === 0}
+                                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                                        disabled={notifications.length === 0 || isLoading}
+                                        title="Clear all notifications"
                                     >
-                                        Clear All
+                                        <X className="w-4 h-4" />
+                                        <span className="hidden sm:inline">Clear All</span>
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Notifications List */}
-                        <div className="bg-white rounded-lg shadow-sm">
-                            {notifications.length === 0 ? (
-                                <div className="p-12 text-center">
-                                    <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                    <h3 className="text-lg font-medium text-gray-900 mb-2">No notifications</h3>
-                                    <p className="text-gray-500">You're all caught up! Check back later for new notifications.</p>
+                        {/* Loading State */}
+                        {isLoading ? (
+                            <div className="bg-white rounded-lg shadow-sm p-12">
+                                <div className="flex flex-col items-center justify-center">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                                    <p className="text-gray-500">Loading notifications...</p>
                                 </div>
-                            ) : (
+                            </div>
+                        ) : (
+                            <>
+                                {/* Notifications List */}
+                                <div className="bg-white rounded-lg shadow-sm">
+                                    {notifications.length === 0 ? (
+                                        <div className="p-12 text-center">
+                                            <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                                            <h3 className="text-lg font-medium text-gray-900 mb-2">No notifications</h3>
+                                            <p className="text-gray-500">You're all caught up! Check back later for new notifications.</p>
+                                        </div>
+                                    ) : (
                                 <div className="divide-y divide-gray-200">
                                     {notifications.map((notification) => {
                                         const IconComponent = notification.icon;
@@ -327,26 +403,28 @@ export default function notification() {
                             )}
                         </div>
 
-                        {/* Notification Stats */}
-                        {notifications.length > 0 && (
-                            <div className="mt-6 bg-white rounded-lg shadow-sm p-6">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="text-center">
-                                        <div className="text-2xl font-bold text-blue-600">{notifications.length}</div>
-                                        <div className="text-sm text-gray-500">Total Notifications</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-2xl font-bold text-orange-600">{unreadCount}</div>
-                                        <div className="text-sm text-gray-500">Unread</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-2xl font-bold text-green-600">
-                                            {notifications.length - unreadCount}
+                                {/* Notification Stats */}
+                                {notifications.length > 0 && (
+                                    <div className="mt-6 bg-white rounded-lg shadow-sm p-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div className="text-center">
+                                                <div className="text-2xl font-bold text-blue-600">{notifications.length}</div>
+                                                <div className="text-sm text-gray-500">Total Notifications</div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-2xl font-bold text-orange-600">{unreadCount}</div>
+                                                <div className="text-sm text-gray-500">Unread</div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-2xl font-bold text-green-600">
+                                                    {notifications.length - unreadCount}
+                                                </div>
+                                                <div className="text-sm text-gray-500">Read</div>
+                                            </div>
                                         </div>
-                                        <div className="text-sm text-gray-500">Read</div>
                                     </div>
-                                </div>
-                            </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
