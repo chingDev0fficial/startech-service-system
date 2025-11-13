@@ -39,8 +39,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
         });
     };
 
-    const handleGoHome = () => {
-        router.visit('/'); // or navigate('/home')
+    const loginAsAdmin = () => {
+        router.visit('/login'); // or navigate('/home')
         // setProcessing(false); // Optional: reset after navigation
     };
 
@@ -115,7 +115,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 </div>
             </form>
 
-            <SecondaryButton onClick={handleGoHome} text="Back to home page" processing={undefined} />
+            <SecondaryButton onClick={loginAsAdmin} text="Login as Admin" processing={undefined} />
             {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
         </AuthLayout>
     );

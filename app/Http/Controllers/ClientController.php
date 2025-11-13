@@ -87,7 +87,6 @@ class ClientController extends Controller
     {
         $histController = new HistoryController();
         $clientHist = $histController->fetch();
-        Log::info("Data: " . $clientHist);
         return $clientHist;
     }
 

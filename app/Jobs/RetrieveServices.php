@@ -57,8 +57,6 @@ class RetrieveAppointmentJob implements ShouldQueue
             )
             ->get();
 
-        Log::info("Retrieved appointments count: " . $services);
-
         // Broadcast the data
         broadcast(new RetrieveServices($services))->toOthers();
     }

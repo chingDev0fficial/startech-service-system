@@ -39,7 +39,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
         });
     };
 
-    const handleGoHome = () => {
+    const loginAsClient = () => {
         router.visit('/'); // or navigate('/home')
         // setProcessing(false); // Optional: reset after navigation
     };
@@ -115,7 +115,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 {/* </div> */}
             </form>
 
-            <SecondaryButton onClick={handleGoHome} text="Back to home page" />
+            <SecondaryButton onClick={loginAsClient} text="Login as Client" />
             {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
         </AuthLayout>
     );
