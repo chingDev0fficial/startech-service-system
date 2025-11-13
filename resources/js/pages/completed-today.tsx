@@ -132,7 +132,7 @@ export default function CompletedTasks() {
           // check if the service is completed only today
           if (!service.completion_date) return false;
 
-          const completionDate = new Date(service.updated_created_at);
+          const completionDate = new Date(service.completion_date);
           const formattedCompletionDate = new Date(completionDate.getTime() - completionDate.getTimezoneOffset() * 60000)
               .toISOString()
               .split('T')[0];

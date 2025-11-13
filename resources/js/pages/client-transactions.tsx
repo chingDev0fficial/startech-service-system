@@ -307,7 +307,7 @@ function RatingsModal({ appointmentId, isOpen, onClose, onRatingSuccess }: { app
 
 export default function ClientTransactions(){
     const { auth } = usePage().props;
-    // const echo = useEcho();
+    const echo = useEcho();
     const [appointments, setAppointments] = useState([])
     const [transactions, setTransactions] = useState<HistoryRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -375,53 +375,123 @@ export default function ClientTransactions(){
         }
     };
 
-    const loadTransactions = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const fetchedAppointments = await handleFetchTransactions();
-            setAppointments(fetchedAppointments);
+    // const loadTransactions = async () => {
+    //     setLoading(true);
+    //     setError(null);
+    //     try {
+    //         const fetchedAppointments = await handleFetchTransactions();
+    //         setAppointments(fetchedAppointments);
 
-            // Transform data immediately after fetching
-            if (fetchedAppointments.length > 0) {
-                const clientTransactions = fetchedAppointments
-                    .filter((service: Jobs) => service.client_id === client.id) // Only completed services for history
-                    .map((service: any) => ({
-                    id: service.id.toString(),
-                    service: `${service.appointment_item_name} - ${service.appointment_service_type}`,
-                    customer: service.client_name,
-                    serviceDate: new Date(service.appointment_date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    }),
-                    completionDate: service.completion_date ? new Date(service.completion_date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    }) : null,
-                    status: service.service_status,
-                    technician: service.technician_name || 'Not Assigned',
-                    amount: service.amount || 0,
-                    rating: service.rating || null,
-                    serviceType: service.appointment_service_type,
-                    serviceLocation: service.appointment_service_location
-                }));
+    //         // Transform data immediately after fetching
+    //         if (fetchedAppointments.length > 0) {
+    //             const clientTransactions = fetchedAppointments
+    //                 .filter((service: Jobs) => service.client_id === client.id) // Only completed services for history
+    //                 .map((service: any) => ({
+    //                 id: service.id.toString(),
+    //                 service: `${service.appointment_item_name} - ${service.appointment_service_type}`,
+    //                 customer: service.client_name,
+    //                 serviceDate: new Date(service.appointment_date).toLocaleDateString('en-US', {
+    //                     year: 'numeric',
+    //                     month: 'long',
+    //                     day: 'numeric'
+    //                 }),
+    //                 completionDate: service.completion_date ? new Date(service.completion_date).toLocaleDateString('en-US', {
+    //                     year: 'numeric',
+    //                     month: 'long',
+    //                     day: 'numeric'
+    //                 }) : null,
+    //                 status: service.service_status,
+    //                 technician: service.technician_name || 'Not Assigned',
+    //                 amount: service.amount || 0,
+    //                 rating: service.rating || null,
+    //                 serviceType: service.appointment_service_type,
+    //                 serviceLocation: service.appointment_service_location
+    //             }))
+    //             .reverse();
 
-                setTransactions(clientTransactions);
-            }
-        } catch (err) {
-            console.error('Failed to fetch services:', err);
-            setError('Failed to load transactions');
-        } finally {
-            setLoading(false);
-        }
-    };
+    //             setTransactions(clientTransactions);
+    //         }
+    //     } catch (err) {
+    //         console.error('Failed to fetch services:', err);
+    //         setError('Failed to load transactions');
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
 // Only run once on mount
     useEffect(() => {
-        loadTransactions();
-    }, []);
+        // loadTransactions();
+        handleFetchTransactions()
+            .then(data => {
+                const clientTransactions = data
+                    .filter((service: any) => service.client_id === client.id)
+                    .map((service: any) => ({
+                        id: service.id.toString(),
+                        service: `${service.appointment_item_name} - ${service.appointment_service_type}`,
+                        customer: service.client_name,
+                        serviceDate: new Date(service.appointment_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }),
+                        completionDate: service.completion_date ? new Date(service.completion_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }) : null,
+                        status: service.service_status,
+                        technician: service.technician_name || 'Not Assigned',
+                        amount: service.amount || 0,
+                        rating: service.rating || null,
+                        serviceType: service.appointment_service_type,
+                        serviceLocation: service.appointment_service_location
+                    }))
+                    .reverse();
+                
+                setTransactions(clientTransactions);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error('Failed to fetch transactions:', err);
+                setError('Failed to load transactions');
+                setLoading(false);
+            });
+
+        console.log(transactions)
+
+        echo.channel("transactions")
+            .listen(".transactions.retrieve", (event: any) => {
+                setTransactions(prev => 
+                    prev.filter((service: Jobs) => service.client_id === client.id)
+                        .map((service: any) => ({
+                            id: service.id.toString(),
+                            service: `${service.appointment_item_name} - ${service.appointment_service_type}`,
+                            customer: service.client_name,
+                            serviceDate: new Date(service.appointment_date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            }),
+                            completionDate: service.completion_date ? new Date(service.completion_date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            }) : null,
+                            status: service.service_status,
+                            technician: service.technician_name || 'Not Assigned',
+                            amount: service.amount || 0,
+                            rating: service.rating || null,
+                            serviceType: service.appointment_service_type,
+                            serviceLocation: service.appointment_service_location
+                        }))
+                        .reverse());
+            })
+        // Cleanup listener on unmount
+        return () => {
+            echo.leaveChannel('transactions');
+        };
+    }, [echo]);
 
     const getStatusBadge = (status: string) => {
         const statusClasses: Record<string, string> = {
@@ -442,6 +512,45 @@ export default function ClientTransactions(){
     const avgRating = ratedTransactions.length > 0
         ? (ratedTransactions.reduce((sum, h) => sum + (h.rating || 0), 0) / ratedTransactions.length).toFixed(1)
         : '0.0';
+
+    const loadTransactions = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await handleFetchTransactions();
+            const clientTransactions = data
+                .filter((service: any) => service.client_id === client.id)
+                .map((service: any) => ({
+                    id: service.id.toString(),
+                    service: `${service.appointment_item_name} - ${service.appointment_service_type}`,
+                    customer: service.client_name,
+                    serviceDate: new Date(service.appointment_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }),
+                    completionDate: service.completion_date ? new Date(service.completion_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }) : null,
+                    status: service.service_status,
+                    technician: service.technician_name || 'Not Assigned',
+                    amount: service.amount || 0,
+                    rating: service.rating || null,
+                    serviceType: service.appointment_service_type,
+                    serviceLocation: service.appointment_service_location
+                }))
+                .reverse();
+            
+            setTransactions(clientTransactions);
+        } catch (err) {
+            console.error('Failed to fetch transactions:', err);
+            setError('Failed to load transactions');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const ratingAction = (record: any) => {
         // Open rating modal or redirect to rating page
