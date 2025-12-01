@@ -28,7 +28,7 @@ interface Services {
     user_id: number,
     technician: string,
     appointment_date: string,
-    completion_date: string,
+    service_updated_at: string,
     client_name: string,
     client_email: string,
     client_phone: string,
@@ -60,7 +60,8 @@ export default function CompletedTasks() {
             const response = await fetch(route('my-appointments.fetch'), {
                 method: 'GET',
                 headers: {
-                    "Content-Type": "application/json"
+                    // "Content-Type": "application/json",
+                    "Accept": "application/json"
                 }
             });
 
@@ -130,12 +131,14 @@ export default function CompletedTasks() {
       return services
         .filter((service: Services) => { 
           // check if the service is completed only today
-          if (!service.completion_date) return false;
+          if (!service.service_updated_at) return false;
 
-          const completionDate = new Date(service.completion_date);
+          const completionDate = new Date(service.service_updated_at);
           const formattedCompletionDate = new Date(completionDate.getTime() - completionDate.getTimezoneOffset() * 60000)
               .toISOString()
               .split('T')[0];
+
+          console.log("Date: ", formattedCompletionDate, selectedDate)
 
           if (formattedCompletionDate !== selectedDate) return false;
           return service.user_id === currentUserId && service.service_status === 'completed';
@@ -150,100 +153,16 @@ export default function CompletedTasks() {
                 minute: '2-digit',
                 hour12: true
             }),
-            completedTime: new Date(service.completion_date).toLocaleTimeString('en-US', {
+            completedTime: new Date(service.service_updated_at).toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: true
             }),
-            duration: calculateDuration(service.appointment_date, service.completion_date),
+            duration: calculateDuration(service.appointment_date, service.service_updated_at),
             // notes: "Screen replaced successfully, customer satisfied",
             status: service.service_status
         }));
     }
-
-    // Filter and set jobs when services data is actually available
-    // useEffect(() => {
-    //     if (services.length > 0) {
-    //         const serviceAppointments = services
-    //             .filter((service: Jobs) => service.user_id === currentUserId)
-    //             .filter((service: Jobs) => service.appointment_status === 'completed')
-    //             .map((service: Jobs) => ({
-    //                 id: service.id.toString(),
-    //                 customerName: service.client_name,
-    //                 device: service.appointment_item_name,
-    //                 service: "Screen Replacement",
-    //                 startedTime: new Date(service.appointment_date).toLocaleTimeString('en-US', {
-    //                     hour: '2-digit',
-    //                     minute: '2-digit',
-    //                     hour12: true
-    //                 }),
-    //                 completedTime: new Date(service.completion_date).toLocaleTimeString('en-US', {
-    //                     hour: '2-digit',
-    //                     minute: '2-digit',
-    //                     hour12: true
-    //                 }),
-    //                 duration: calculateDuration(service.appointment_date, service.completion_date),
-    //                 // notes: "Screen replaced successfully, customer satisfied",
-    //                 status: service.appointment_status
-    //             }));
-
-    //         const jobs = [...serviceAppointments];
-
-    //         setTimeout(() => {
-    //             setJobs(jobs);
-    //             setLoading(false);
-    //         }, 1000);
-    //     }
-    // }, [services, currentUserId]); // This runs when services or currentUserId changes
-
-
-    // Sample data - replace with your actual data source
-    // const completedJobs = [
-    //     {
-    //         id: 1,
-    //         customerName: "Michael Chen",
-    //         device: "iPhone 13 Pro",
-    //         service: "Screen Replacement",
-    //         startedTime: "8:00 AM",
-    //         completedTime: "9:30 AM",
-    //         duration: "1h 30m",
-    //         notes: "Screen replaced successfully, customer satisfied",
-    //         status: "Completed"
-    //     },
-    //     {
-    //         id: 2,
-    //         customerName: "Lisa Rodriguez",
-    //         device: "Samsung Galaxy A54",
-    //         service: "Charging Port Repair",
-    //         startedTime: "9:45 AM",
-    //         completedTime: "10:15 AM",
-    //         duration: "30m",
-    //         notes: "Charging port cleaned and repaired, tested working",
-    //         status: "Completed"
-    //     },
-    //     {
-    //         id: 3,
-    //         customerName: "David Thompson",
-    //         device: "MacBook Air M2",
-    //         service: "Keyboard Replacement",
-    //         startedTime: "7:30 AM",
-    //         completedTime: "8:45 AM",
-    //         duration: "1h 15m",
-    //         notes: "Full keyboard assembly replaced, all keys functional",
-    //         status: "Completed"
-    //     },
-    //     {
-    //         id: 4,
-    //         customerName: "Anna Williams",
-    //         device: "iPad Air",
-    //         service: "Battery Replacement",
-    //         startedTime: "11:00 AM",
-    //         completedTime: "12:30 PM",
-    //         duration: "1h 30m",
-    //         notes: "Battery replacement completed, device fully tested",
-    //         status: "Completed"
-    //     }
-    // ];
 
     // Simulate loading effect
     useEffect(() => {

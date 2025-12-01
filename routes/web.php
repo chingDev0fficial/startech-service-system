@@ -120,6 +120,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('my-appointments/fetch', [App\Http\Controllers\MyAppointmentController::class, 'fetch'])
             ->name('my-appointments.fetch');
+        Route::get('my-appointments/availability/status', [App\Http\Controllers\MyAppointmentController::class, 'fetchAvailability'])
+            ->name('my-appointments.availability.status');
+        Route::post('my-appointments/availability/update', [App\Http\Controllers\MyAppointmentController::class, 'updateAvailability'])
+            ->name('my-appointments.availability.update');
         Route::post('in-progress', [App\Http\Controllers\InProgressController::class, 'update'])
             ->name('in-progress.mark-in-progress');
     });

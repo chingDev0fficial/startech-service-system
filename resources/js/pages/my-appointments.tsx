@@ -68,9 +68,9 @@ export default function TechnicianAppointments() {
     const { auth } = usePage<SharedData>().props;
     const currentUserId = auth.user?.id;
 
-    // const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [services, setServices] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+<<<<<<< HEAD
     const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [statusFilter, setStatusFilter] = useState<string>('all');  // Fixed: Added closing single quote
 
@@ -80,10 +80,121 @@ export default function TechnicianAppointments() {
         id: auth.user?.id ? auth.user.id.toString() : 'Unknown ID',
         shift: '9:00 AM - 6:00 PM'
     };
+=======
+    const [statusFilter, setStatusFilter] = useState<string>('all');
+    // Changed: Initialize as null to prevent flash of wrong status
+    const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'unavailable' | null>(null);
+    const [updatingAvailability, setUpdatingAvailability] = useState<boolean>(false);
+    
+    const [technicianInfo] = useState<TechnicianInfo>({
+        name: auth.user?.name || 'Technician Name',
+        id: 'TECH001',
+        shift: '9:00 AM - 6:00 PM'
+    });
+    
+    const [selectedDate, setSelectedDate] = useState<string>(() => {
+        const now = new Date();
+        const philippinesDate = new Date(now.getTime() + (8 * 60 * 60 * 1000));
+        return philippinesDate.toISOString().split('T')[0];
+    });
+>>>>>>> 714f28af258d78dd3909ea23ca2ca4868f003187
+
+    // Fetch current availability status on mount
+    useEffect(() => {
+        fetchAvailabilityStatus();
+    }, []);
+
+    const fetchAvailabilityStatus = async () => {
+        try {
+            const response = await fetch(route('my-appointments.availability.status'), {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    // Added: Include CSRF token for POST request
+                    // "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            // Debug: Log the entire response to see what we're getting
+            console.log('Availability status response:', result);
+            
+            // Handle different possible response structures
+            let status = null;
+            
+            if (result.status) {
+                status = result.status;
+            } else if (result.data && result.data.status) {
+                status = result.data.status;
+            } else if (result.availability_status) {
+                status = result.availability_status;
+            } else if (typeof result === 'string') {
+                status = result;
+            }
+            
+            // Ensure status is either 'available' or 'unavailable'
+            if (status === 'available' || status === 'unavailable') {
+                console.log('Setting availability status to:', status);
+                setAvailabilityStatus(status);
+            } else {
+                console.warn('Unexpected status format:', result);
+                // Fallback to available if status format is unexpected
+                setAvailabilityStatus('available');
+            }
+        } catch (err) {
+            console.error('Error fetching availability status:', err);
+            // Fallback to available on error
+            setAvailabilityStatus('available');
+        }
+    };
+
+    const handleAvailabilityChange = async (newStatus: 'available' | 'unavailable') => {
+        setUpdatingAvailability(true);
+        
+        try {
+            const response = await fetch(route('my-appointments.availability.update'), {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                setAvailabilityStatus(newStatus);
+                // Optional: Show success notification
+                console.log('Availability updated successfully');
+            } else {
+                // Handle case where server returns success: false
+                throw new Error(result.message || 'Failed to update availability');
+            }
+        } catch (err) {
+            console.error('Error updating availability:', err);
+            // Revert to previous status by fetching from server
+            await fetchAvailabilityStatus();
+            // Optional: Show error notification
+            alert('Failed to update availability status. Please try again.');
+        } finally {
+            setUpdatingAvailability(false);
+        }
+    };
 
     const handleFetchedServices = async () => {
         try {
-            // setLoading(true);
             const response = await fetch(route('my-appointments.fetch'), {
                 method: 'GET',
                 headers: {
@@ -106,9 +217,7 @@ export default function TechnicianAppointments() {
         }
     }
 
-    // Mock data - replace with actual API call
     useEffect(() => {
-
         handleFetchedServices()
         .then(data => {
             const transformedData = transformServiceData(data);
@@ -118,17 +227,16 @@ export default function TechnicianAppointments() {
 
         echo.channel('services')
             .listen('.services.retrieve', (event: any) => {
-                const newServices = event.services || [event]; // Adjust based on your event structure
+                const newServices = event.services || [event];
                 const transformedNewServices = transformServiceData(newServices);
                 
-                // Update state with new services (you might want to merge or replace)
                 setServices(prev => [...prev, ...transformedNewServices]);
             });
 
         return () => {
             echo.leaveChannel('services');
         };
-    }, [echo]);
+    }, [echo, selectedDate]);
 
     const transformServiceData = (services: any[]) => {
         return services
@@ -162,8 +270,6 @@ export default function TechnicianAppointments() {
             }));
     }
 
-    // console.log("Appointments: ", appointments);
-
     const filteredServices = services.filter(appointment => {
         return statusFilter === 'all' || appointment.status.toLowerCase().replace(' ', '') === statusFilter;
     });
@@ -179,16 +285,6 @@ export default function TechnicianAppointments() {
         return `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusClasses[status as keyof typeof statusClasses] || 'bg-gray-100 text-gray-800 border-gray-200'}`;
     };
 
-    const getCustomerTypeBadge = (type: string) => {
-        const typeClasses = {
-            'Premium': 'bg-purple-100 text-purple-800',
-            'VIP': 'bg-yellow-100 text-yellow-800',
-            'Standard': 'bg-gray-100 text-gray-800'
-        };
-
-        return `inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${typeClasses[type as keyof typeof typeClasses]}`;
-    };
-
     const getWarrantyStatus = (status: string) => {
         const statusClasses = {
             'valid': 'text-green-600',
@@ -199,7 +295,10 @@ export default function TechnicianAppointments() {
         return statusClasses[status as keyof typeof statusClasses] || 'text-gray-500';
     };
 
-    return (<>
+    // Added: Show loading state while fetching availability status
+    const isLoadingStatus = availabilityStatus === null;
+
+    return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="My Appointments" />
             <div className="flex h-full flex-1 flex-col gap-[1px] rounded-xl p-4 overflow-x-auto">
@@ -207,7 +306,7 @@ export default function TechnicianAppointments() {
                 {/* Header */}
                 <div className="bg-white p-6 rounded-lg shadow mb-4">
                     <div className="flex justify-between items-start">
-                        <div>
+                        <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                                     My Appointments
@@ -220,7 +319,38 @@ export default function TechnicianAppointments() {
                                     day: 'numeric'
                                 })}
                             </h1>
-                            <p className="text-gray-600 mt-1">Assigned to {technicianInfo.name}</p>
+                            <div className='flex justify-between items-center mt-2'>
+                                <p className="text-gray-600">Assigned to {technicianInfo.name}</p>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm text-gray-600">Status:</span>
+                                    {availabilityStatus === null ? (
+                                        <div className="flex items-center gap-2 px-4 py-2">
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                                            <span className="text-sm text-gray-500">Loading...</span>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <select 
+                                                name="technician_status" 
+                                                value={availabilityStatus}
+                                                onChange={(e) => handleAvailabilityChange(e.target.value as 'available' | 'unavailable')}
+                                                disabled={updatingAvailability}
+                                                className={`px-4 py-2 rounded-lg border-2 font-medium text-sm transition-all ${
+                                                    availabilityStatus === 'available' 
+                                                        ? 'bg-green-50 border-green-300 text-green-700 hover:bg-green-100' 
+                                                        : 'bg-red-50 border-red-300 text-red-700 hover:bg-red-100'
+                                                } ${updatingAvailability ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                            >
+                                                <option value="available">✓ Available</option>
+                                                <option value="unavailable">✗ Unavailable</option>
+                                            </select>
+                                            {updatingAvailability && (
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                         <div className="text-right">
                             <div className="text-sm text-gray-500">Shift: {technicianInfo.shift}</div>
@@ -229,6 +359,23 @@ export default function TechnicianAppointments() {
                     </div>
                 </div>
 
+                {/* Availability Warning Banner */}
+                {availabilityStatus === 'unavailable' && (
+                    <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4 rounded-lg">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-red-700">
+                                    You are currently marked as <strong>Unavailable</strong>. You will not receive new appointment assignments.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Filters */}
                 <div className="bg-white p-4 rounded-lg shadow mb-4">
@@ -289,7 +436,6 @@ export default function TechnicianAppointments() {
                     </div>
                 </div>
 
-
                 {/* Appointments List */}
                 <div className="space-y-4">
                     {loading ? (
@@ -331,12 +477,7 @@ export default function TechnicianAppointments() {
                                             <div className="space-y-2 text-sm">
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600">Name:</span>
-                                                    <div className="flex items-center">
-                                                        <span className="font-medium">{appointment.customer.name}</span>
-                                                        {/* <span className={getCustomerTypeBadge(appointment.customer.type)}> */}
-                                                        {/*     {appointment.customer.type} */}
-                                                        {/* </span> */}
-                                                    </div>
+                                                    <span className="font-medium">{appointment.customer.name}</span>
                                                 </div>
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600">Phone:</span>
@@ -360,7 +501,7 @@ export default function TechnicianAppointments() {
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600">Warranty:</span>
                                                     <span className={`font-medium ${getWarrantyStatus(appointment.device.warrantyStatus)}`}>
-                                                        {appointment.device.warranty}
+                                                        {appointment.device.warrantyStatus == "valid" ? "Warranty" : appointment.device.warrantyStatus == "expired" ? "No Warranty" : null}
                                                     </span>
                                                 </div>
                                             </div>
@@ -376,26 +517,6 @@ export default function TechnicianAppointments() {
                                             </p>
                                         </div>
                                     </div>
-
-                                    {/* Action Buttons */}
-                                    <div className="flex gap-3 mt-6">
-                                        {/* {appointment.status === 'Pending' && ( */}
-                                        {/*     <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"> */}
-                                        {/*         Start Job */}
-                                        {/*     </button> */}
-                                        {/* )} */}
-                                        {/* {appointment.status === 'In Progress' && ( */}
-                                        {/*     <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"> */}
-                                        {/*         Update Status */}
-                                        {/*     </button> */}
-                                        {/* )} */}
-                                        {/* <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"> */}
-                                        {/*     View History */}
-                                        {/* </button> */}
-                                        <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium">
-                                            Contact Customer
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
                         ))
@@ -404,5 +525,5 @@ export default function TechnicianAppointments() {
 
             </div>
         </AppLayout>
-    </>);
+    );
 }
