@@ -10,7 +10,7 @@ import { Rating, Textarea } from "@material-tailwind/react";
 import { Label } from '@/components/ui/label';
 import { FormEventHandler } from 'react';
 
-import { X } from 'lucide-react';
+import { X, ArrowLeft } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
@@ -327,8 +327,8 @@ export default function ClientTransactions(){
         {
             component: "link",
             name: `Welcome, ${client.name}`,
-            href: "/client",
-            className: "hover:underline transition-colors whitespace-nowrap ml-2"
+            href: null,
+            className: "transition-colors whitespace-nowrap ml-2"
         },
         {
             component: "text",
@@ -575,6 +575,10 @@ export default function ClientTransactions(){
         setSelectedTransaction(null);
     }
 
+    const handleBackToHomeClient = () => {
+        window.location.href = "/client";   
+    }
+
     // console.log('Transactions:', transactions);
 
     return (
@@ -584,6 +588,22 @@ export default function ClientTransactions(){
             <div className="min-h-screen bg-[#F0F1F2] flex flex-col">
                 <div className="sticky top-0 left-0 right-0 z-50">
                     <NavBar tabs={tabs} />
+                </div>
+
+                <div className='w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8'>
+                    <Button
+                        type="button"
+                        className="text-[#ffffff] !bg-[#393E46]" 
+                        // href="/client"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // handleClose();
+                            handleBackToHomeClient();
+                        }}
+                    >
+                        <ArrowLeft />
+                    </Button>
                 </div>
 
                 <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">

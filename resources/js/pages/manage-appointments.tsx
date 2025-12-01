@@ -3,7 +3,7 @@ import AppTable, { Column } from '@/components/table';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { useEcho } from '@laravel/echo-react';
 import { useEffect, useState } from 'react';
-import { Eye, Check, X } from 'lucide-react';
+import { Eye, Check, X, AlertCircle, CheckCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
 import { CustomRadio } from "@/components/custom-radio";
 import { Head, useForm, usePage } from '@inertiajs/react';
@@ -11,6 +11,7 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import * as React from 'react';
 import Box from '@mui/material/Box';
@@ -31,7 +32,6 @@ const style = {
     left: '50%',
     transform: 'translate(-50%, -50%)',
     width: 800,
-    // maxHeight: '75vh',
     bgcolor: 'background.paper',
     boxShadow: 24,
     p: 4,
@@ -88,9 +88,7 @@ function ViewAppointment({ isOpen, onClose, appointmentData }) {
         }
     }, [isOpen, appointmentData]);
 
-    // console.log('Appointment Details:', appointmentDetails);
-
-    return (<>
+    return (
         <Modal
             keepMounted
             open={isOpen}
@@ -192,7 +190,7 @@ function ViewAppointment({ isOpen, onClose, appointmentData }) {
                 )}
             </Box>
         </Modal>
-    </>);
+    );
 }
 
 function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
@@ -202,9 +200,6 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
         warranty: '',
         warrantyStatus: '',
     });
-
-    const [fetchedUsers, setFetchedUsers] = useState([]);
-    const [loading, setLoading] = useState(false);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -216,66 +211,10 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
         );
     };
 
-    // const handleFetchedUsers = async () => {
-    //     try {
-    //         setLoading(true);
-    //         const response = await fetch(`${apiBase}/manage-accounts/fetch`, {
-    //             method: 'GET',
-    //             headers: {
-    //                 "Content-Type": "application/json"
-    //             }
-    //         });
-
-    //         if (!response.ok) {
-    //             throw new Error(`HTTP error! status: ${response.status}`);
-    //         }
-
-    //         const result = await response.json();
-    //         return result.retrieved;
-
-    //     } catch (err) {
-    //         console.error('Error fetching users:', err);
-    //         throw err instanceof Error ? err : new Error(String(err));
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // }
-
-    // const fetchUsers = async () => {
-    //     try {
-    //         const users = await handleFetchedUsers();
-    //         setFetchedUsers(users); // Set users to state
-    //         // console.log('Fetched users:', users);
-    //         return users;
-    //     } catch (err) {
-    //         console.error('Failed to fetch users:', err);
-    //         setFetchedUsers([]); // Set empty array on error
-    //     }
-    // }
-
-    // // Fetch users when modal opens
-    // useEffect(() => {
-    //     if (isOpen) {
-    //         fetchUsers();
-    //     }
-    // }, [isOpen]);
-
-    // // Transform fetched users to options format
-    // const options = fetchedUsers
-    //     .filter(user => user.role === 'technician')
-    //     .map(user => ({
-    //         value: user.id?.toString() || user.value,
-    //         title: user.name || user.title || 'Unknown User'
-    //     }));
-
-    // const displayOptions = options;
-
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         const appointment = e.target.appointmentId.value;
-        // const technician = e.target.userId.value;
 
-        // Use post instead of patch for appointment creation
         post(route('appointment.accept', {appointment: appointment}), {
             preserveScroll: true,
             onSuccess: (response) => {
@@ -288,7 +227,6 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
             onFinish: () => {
                 reset();
             },
-
         });
     };
 
@@ -308,44 +246,13 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
                     </Button>
                 </Typography>
                 <Box sx={{ mt: 2 }}>
-
-
                     <form onSubmit={submit} className="space-y-4">
                         <input type="hidden" name="appointmentId" value={appointmentData} />
-                        {/* <div className="flex flex-col gap-[10px] w-full overflow-x-auto max-h-48 md:max-h-64 lg:max-h-80 overflow-y-auto">
-                            {loading ? (
-                                <div className="text-center py-4">
-                                    <span>Loading technicians...</span>
-                                </div>
-                            ) : options.length > 0 ? (
-                                <CustomRadio
-                                    options={options}
-                                    name="userId"
-                                    value={data.userId}
-                                    onChange={(option) => setData('userId', option)}
-                                />
-                            ) : (
-                                <div className="text-center py-8 text-gray-500">
-                                    <p>No technicians available at the moment</p>
-                                </div>
-                            )}
-
-                        </div> */}
 
                         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
                             <p className='text-[15px]' >Note</p>
                             <p className='text-[13px]'>Set the date when the warranty expires and the warranty 
                                 status base on the receipt submitted by the client</p>
-                        </div>
-                        
-                        <div>
-                            <input
-                                type="date"
-                                name="warranty"
-                                value={data.warranty}
-                                onChange={handleChange}
-                                className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0"
-                            />
                         </div>
 
                         <div>
@@ -358,8 +265,8 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
                                     <SelectValue placeholder="Select Warranty Status" />
                                 </SelectTrigger>
                                 <SelectContent className="z-[9999]">
-                                    <SelectItem value="valid">Valid</SelectItem>
-                                    <SelectItem value="expired">Expired</SelectItem>
+                                    <SelectItem value="valid">Warranty</SelectItem>
+                                    <SelectItem value="expired">No Warranty</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -374,7 +281,6 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
                             </button>
                             <button
                                 type="submit"
-                                // disabled={processing || loading || !data.userId || options.length === 0}
                                 className="px-4 py-2 bg-[#393E46] text-white rounded hover:bg-[#393E46]/70 disabled:opacity-50"
                             >
                                 {processing ? 'Saving...' : 'Assign Technician'}
@@ -400,6 +306,12 @@ export default function ManageAccount() {
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [viewAppointmentData, setViewAppointmentData] = useState(null);
 
+    // Notification state
+    const [notification, setNotification] = useState<{
+        type: 'success' | 'error';
+        message: string;
+    } | null>(null);
+
     const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
 
     const handleFetchedAppointments = async () => {
@@ -412,7 +324,6 @@ export default function ManageAccount() {
             });
 
             const result = await response.json();
-
             return result.retrieved;
 
         } catch ( err ) {
@@ -432,7 +343,6 @@ export default function ManageAccount() {
                 setFetchedAppointments(prev => prev.filter(appointment => appointment.mark_as === 'null' ));
             });
 
-        // Cleanup listener on unmount
         return () => {
             echo.leaveChannel('appointments');
         };
@@ -458,6 +368,8 @@ export default function ManageAccount() {
         setIsModalOpen(true);
     };
 
+    const { flash } = usePage().props;
+
     const handleDecline = async (appointmentId) => {
         setDeclineProcessing(prev => new Set([...prev, appointmentId]))
         if (!appointmentId) {
@@ -470,9 +382,8 @@ export default function ManageAccount() {
         }
 
         try {
-            // console.log("id:", appointmentId);
             const res = await fetch(`${apiBase}/manage-appointments/decline/${appointmentId}`, {
-                method: 'POST', // RESTful method
+                method: 'POST',
                 headers: {
                     "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || '',
                     "Content-Type": "application/json"
@@ -493,7 +404,6 @@ export default function ManageAccount() {
         { id: "device", label: "Device", minWidth: 170 },
         { id: "issue", label: "Issue", minWidth: 170 },
         {
-            // key: "actions",
             id: "actions",
             label: "Actions",
             minWidth: 150,
@@ -513,12 +423,7 @@ export default function ManageAccount() {
                     <button
                         className="text-[#222831] text-[#ffffff] bg-red-700 p-2 rounded-md transform hover:scale-105 transition-transform duration-300 cursor-pointer"
                         onClick={() => handleDecline(row.appointmentId)}>
-                            <X className="w-4 h-4" />
-                        {/* {deleteProcessLoading.has(row.userId) ? ( */}
-                        {/*     <LoaderCircle className="h-4 w-4 animate-spin" /> */}
-                        {/* ) : ( */}
-                        {/*     <X className="w-4 h-4" /> */}
-                        {/* )} */}
+                        <X className="w-4 h-4" />
                     </button>
                 </div>
             ),
@@ -533,7 +438,6 @@ export default function ManageAccount() {
         issue: string;
     };
 
-
     function createData(
         appointmentId: number,
         schedule: string,
@@ -544,38 +448,72 @@ export default function ManageAccount() {
         return { appointmentId, schedule, customer, device, issue };
     }
 
-    // console.log("Appointments: ", fetchedAppointments);
-
     const rows = fetchedAppointments
         .filter(appointment => appointment.mark_as === null)
         .map( appointment =>
             createData( appointment.id, appointment.schedule_at, appointment.client_name, appointment.item, appointment.description)
         );
 
-    return (<>
+    return (
+        <>
+            // Display the message
+            {flash.success && (
+                <div className="alert alert-success">
+                    {flash.success}
+                </div>
+            )}
+            <SetAppointmentModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                appointmentData={selectedAppointmentData}
+            />
 
-        <SetAppointmentModal
-            isOpen={isModalOpen}
-            onClose={handleCloseModal}
-            appointmentData={selectedAppointmentData}
-        />
+            <ViewAppointment
+                isOpen={isViewModalOpen}
+                onClose={handleCloseViewModal}
+                appointmentData={viewAppointmentData}
+            />
 
-        <ViewAppointment
-            isOpen={isViewModalOpen}
-            onClose={handleCloseViewModal}
-            appointmentData={viewAppointmentData}
-        />
+            <AppLayout breadcrumbs={breadcrumbs}>
+                <Head title="Manage Accounts" />
+                
+                {/* Notification Alert */}
+                {notification && (
+                    <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-5">
+                        <Alert 
+                            className={`min-w-[300px] ${
+                                notification.type === 'success' 
+                                    ? 'bg-green-50 border-green-500 text-green-900' 
+                                    : 'bg-red-50 border-red-500 text-red-900'
+                            }`}
+                        >
+                            {notification.type === 'success' ? (
+                                <CheckCircle className="h-4 w-4" />
+                            ) : (
+                                <AlertCircle className="h-4 w-4" />
+                            )}
+                            <AlertDescription className="ml-2">
+                                {notification.message}
+                            </AlertDescription>
+                            <button
+                                onClick={() => setNotification(null)}
+                                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </Alert>
+                    </div>
+                )}
 
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Manage Accounts" />
-            <div className="flex h-full flex-1 flex-col gap-[1px] rounded-xl p-4 overflow-x-auto">
-                <AppTable
-                    columns={columns}
-                    rows={ rows }
-                    isLoading={fetchLoading} // Pass loading state
-                    rowsPerPageOptions={[5, 10, 25]}
-                />
-            </div>
-        </AppLayout>
-    </>);
+                <div className="flex h-full flex-1 flex-col gap-[1px] rounded-xl p-4 overflow-x-auto">
+                    <AppTable
+                        columns={columns}
+                        rows={rows}
+                        isLoading={fetchLoading}
+                        rowsPerPageOptions={[5, 10, 25]}
+                    />
+                </div>
+            </AppLayout>
+        </>
+    );
 }

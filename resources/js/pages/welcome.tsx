@@ -61,7 +61,7 @@ export default function Welcome(){
         {
             component: "text",
             name: `Welcome, ${client.name}`,
-            href: "/client",
+            href: null,
             className: `transition-colors whitespace-nowrap ml-2 ${client ? "" : "hover:underline"}`
         },
         {
