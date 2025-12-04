@@ -70,17 +70,6 @@ export default function TechnicianAppointments() {
 
     const [services, setServices] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-<<<<<<< HEAD
-    const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-    const [statusFilter, setStatusFilter] = useState<string>('all');  // Fixed: Added closing single quote
-
-    // Updated technicianInfo to use dynamic name from auth.user
-    const technicianInfo: TechnicianInfo = {
-        name: auth.user?.name || 'Unknown Technician',
-        id: auth.user?.id ? auth.user.id.toString() : 'Unknown ID',
-        shift: '9:00 AM - 6:00 PM'
-    };
-=======
     const [statusFilter, setStatusFilter] = useState<string>('all');
     // Changed: Initialize as null to prevent flash of wrong status
     const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'unavailable' | null>(null);
@@ -97,7 +86,6 @@ export default function TechnicianAppointments() {
         const philippinesDate = new Date(now.getTime() + (8 * 60 * 60 * 1000));
         return philippinesDate.toISOString().split('T')[0];
     });
->>>>>>> 714f28af258d78dd3909ea23ca2ca4868f003187
 
     // Fetch current availability status on mount
     useEffect(() => {
