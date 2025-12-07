@@ -343,20 +343,6 @@ export default function ManageHistory() {
                                             <p className="text-gray-500 italic">No warranty information</p>
                                         )}
                                     </div>
-                                    <div>
-                                        <p className="text-sm text-gray-600">Warranty Expiration</p>
-                                        {selectedRecord.warranty ? (
-                                            <p className="font-medium">
-                                                {new Date(selectedRecord.warranty).toLocaleDateString('en-US', {
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric'
-                                                })}
-                                            </p>
-                                        ) : (
-                                            <p className="text-gray-500 italic">Not specified</p>
-                                        )}
-                                    </div>
                                 </div>
                             </div>
 
