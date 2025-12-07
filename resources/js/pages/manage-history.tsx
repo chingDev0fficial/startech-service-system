@@ -337,7 +337,7 @@ export default function ManageHistory() {
                                                 selectedRecord.warrantyStatus.toLowerCase() === 'expired' ? 'bg-red-200 text-red-800' :
                                                 'bg-gray-200 text-gray-800'
                                             } px-3 py-1 rounded-full text-sm font-medium inline-block capitalize`}>
-                                                {selectedRecord.warrantyStatus}
+                                                {selectedRecord.warrantyStatus == 'valid' ? "valid" : "No Warranty"}
                                             </span>
                                         ) : (
                                             <p className="text-gray-500 italic">No warranty information</p>
