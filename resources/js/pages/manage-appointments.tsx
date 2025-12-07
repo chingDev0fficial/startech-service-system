@@ -213,6 +213,13 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        
+        // Validate warranty status is selected
+        if (!data.warrantyStatus) {
+            alert('Please select a warranty status before assigning a technician.');
+            return;
+        }
+        
         const appointment = e.target.appointmentId.value;
 
         post(route('appointment.accept', {appointment: appointment}), {
@@ -281,7 +288,8 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 bg-[#393E46] text-white rounded hover:bg-[#393E46]/70 disabled:opacity-50"
+                                disabled={processing || !data.warrantyStatus}
+                                className="px-4 py-2 bg-[#393E46] text-white rounded hover:bg-[#393E46]/70 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {processing ? 'Saving...' : 'Assign Technician'}
                             </button>
