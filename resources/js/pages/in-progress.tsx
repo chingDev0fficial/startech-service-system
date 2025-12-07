@@ -274,7 +274,10 @@ export default function InProgress() {
         setLoadingJobs(prev => new Map(prev).set(jobId, status));
 
         try {
-            await makeApiCall(jobId, status);
+            // Determine technician status based on job status
+            const technicianStatus = status === 'in-progress' ? 'unavailable' : 'available';
+            
+            await makeApiCall(jobId, status, undefined, technicianStatus);
             
             // Only update state after successful API call
             if (status === 'canceled') {
@@ -305,7 +308,8 @@ export default function InProgress() {
         setLoadingJobs(prev => new Map(prev).set(jobId, 'completed'));
 
         try {
-            await makeApiCallWithAmount(jobId, 'completed', amount);
+            // Set technician status to available when completing
+            await makeApiCallWithAmount(jobId, 'completed', amount, 'available');
             
             // Only remove after successful API call
             setJobs(prev => prev.filter(job => job.appointmentId !== jobId));
@@ -325,12 +329,13 @@ export default function InProgress() {
     }
 
     // Update your makeApiCall function to handle amount
-    const makeApiCallWithAmount = async (jobId: number, status: string, amount?: number) => {
+    const makeApiCallWithAmount = async (jobId: number, status: string, amount?: number, technicianStatus?: string) => {
         const body = {
             id: jobId,
             currentUserId: currentUserId,
             status: status,
             price: amount,
+            technicianStatus: technicianStatus,
         };
 
         const response = await fetch(route('in-progress.mark-in-progress'), {
@@ -351,11 +356,12 @@ export default function InProgress() {
     }
 
     // Or update your existing makeApiCall function:
-    const makeApiCall = async (jobId: number, status: string, amount?: number) => {
+    const makeApiCall = async (jobId: number, status: string, amount?: number, technicianStatus?: string) => {
         const body = {
             id: jobId,
             currentUserId: currentUserId,
             status: status,
+            technicianStatus: technicianStatus,
             ...(amount && { amount: amount })
         };
 
