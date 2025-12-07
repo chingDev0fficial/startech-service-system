@@ -126,6 +126,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('my-appointments.availability.update');
         Route::post('my-appointments/transfer', [App\Http\Controllers\MyAppointmentController::class, 'transfer'])
             ->name('appointment.transfer');
+        Route::post('my-appointments/send-note', [App\Http\Controllers\MyAppointmentController::class, 'sendNote'])
+            ->name('appointment.note.send');
         Route::post('in-progress', [App\Http\Controllers\InProgressController::class, 'update'])
             ->name('in-progress.mark-in-progress');
     });

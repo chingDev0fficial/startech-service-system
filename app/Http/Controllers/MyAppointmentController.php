@@ -316,4 +316,107 @@ class MyAppointmentController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Send a note from technician to client about an appointment
+     */
+    public function sendNote(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'appointmentId' => 'required|integer|exists:service,id',
+                'note' => 'required|string|max:1000'
+            ]);
+
+            $serviceId = $validated['appointmentId'];
+            $noteText = $validated['note'];
+            $technicianId = Auth::id();
+
+            if (!$technicianId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            // Get service details with appointment and client information
+            $serviceDetails = DB::table('service')
+                ->join('appointment', 'service.appointment_id', '=', 'appointment.id')
+                ->join('client', 'appointment.client_id', '=', 'client.id')
+                ->join('users', 'service.user_id', '=', 'users.id')
+                ->where('service.id', $serviceId)
+                ->where('service.user_id', $technicianId)
+                ->select(
+                    'service.id as service_id',
+                    'service.appointment_id',
+                    'appointment.item',
+                    'appointment.service_type',
+                    'client.name as client_name',
+                    'client.email as client_email',
+                    'users.name as technician_name'
+                )
+                ->first();
+
+            if (!$serviceDetails) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Service not found or you are not assigned to this appointment'
+                ], 404);
+            }
+
+            DB::beginTransaction();
+
+            try {
+                // Update service record with the note
+                DB::table('service')
+                    ->where('id', $serviceId)
+                    ->update([
+                        'technician_note' => $noteText,
+                        'note_sent_at' => now(),
+                        'updated_at' => now()
+                    ]);
+
+                // Create notification for client, staff, and super users
+                $notificationMessage = "{$serviceDetails->technician_name} added a note to appointment for {$serviceDetails->item} ({$serviceDetails->service_type})";
+
+                DB::table('notification')->insert([
+                    'type' => 'technician_note',
+                    'title' => 'Technician Note Added',
+                    'message' => $notificationMessage,
+                    'status' => 'unread',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                DB::commit();
+
+                Log::info("Technician {$technicianId} sent note for service {$serviceId}");
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Note sent successfully! Client, staff, and admins have been notified.'
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('Error sending note: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send note',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
