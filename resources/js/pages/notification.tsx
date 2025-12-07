@@ -39,7 +39,10 @@ const getIconByType = (type: string) => {
         case 'info':
             return Info;
         case 'appointment':
+        case 'client_req':
             return Calendar;
+        case 'technician_note':
+            return Bell;
         case 'settings':
             return Settings;
         default:
@@ -128,6 +131,12 @@ export default function notification() {
     }, []);
 
     const markAllAsRead = async () => {
+        if (unreadCount === 0) return;
+
+        // Optimistically update UI
+        const originalNotifications = notifications;
+        setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
+
         try {
             const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
             
@@ -145,18 +154,30 @@ export default function notification() {
 
             const result = await response.json();
             
-            if (result.success) {
-                setNotifications(prev =>
-                    prev.map(notif => ({ ...notif, isRead: true }))
-                );
+            if (!result.success) {
+                // Revert if backend operation failed
+                setNotifications(originalNotifications);
             }
 
         } catch (error) {
             console.error('Error marking all as read:', error);
+            // Revert on error
+            setNotifications(originalNotifications);
+            alert('Failed to mark all notifications as read. Please try again.');
         }
     };
 
     const clearAllNotifications = async () => {
+        if (notifications.length === 0) return;
+
+        if (!confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
+            return;
+        }
+
+        // Optimistically update UI
+        const originalNotifications = notifications;
+        setNotifications([]);
+
         try {
             const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
             
@@ -174,17 +195,23 @@ export default function notification() {
 
             const result = await response.json();
             
-            if (result.success) {
-                setNotifications([]);
+            if (!result.success) {
+                // Revert if backend operation failed
+                setNotifications(originalNotifications);
+                alert('Failed to clear all notifications. Please try again.');
             }
 
         } catch (error) {
             console.error('Error clearing all notifications:', error);
+            // Revert on error
+            setNotifications(originalNotifications);
+            alert('Failed to clear all notifications. Please try again.');
         }
     };
 
     const markAsRead = async (id: number) => {
         // Optimistically update UI
+        const originalNotifications = notifications;
         setNotifications(prev =>
             prev.map(notif => notif.id === id ? { ...notif, isRead: true } : notif)
         );
@@ -192,7 +219,6 @@ export default function notification() {
         try {
             const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
             
-            // You may need to add this route to the backend if it doesn't exist
             const response = await fetch(route('notification.markAsRead'), {
                 method: 'POST',
                 headers: {
@@ -205,12 +231,17 @@ export default function notification() {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+
+            const result = await response.json();
+            
+            if (!result.success) {
+                // Revert if backend operation failed
+                setNotifications(originalNotifications);
+            }
         } catch (error) {
             console.error('Error marking notification as read:', error);
             // Revert on error
-            setNotifications(prev =>
-                prev.map(notif => notif.id === id ? { ...notif, isRead: false } : notif)
-            );
+            setNotifications(originalNotifications);
         }
     };
 
@@ -251,13 +282,17 @@ export default function notification() {
     const unreadCount = notifications.filter(notif => !notif.isRead).length;
 
     const getNotificationStyle = (type: string) => {
-        switch (type) {
+        switch (type.toLowerCase()) {
             case 'success':
                 return 'border-l-green-500 bg-green-50';
             case 'warning':
                 return 'border-l-yellow-500 bg-yellow-50';
             case 'error':
                 return 'border-l-red-500 bg-red-50';
+            case 'technician_note':
+                return 'border-l-purple-500 bg-purple-50';
+            case 'client_req':
+                return 'border-l-indigo-500 bg-indigo-50';
             case 'info':
             default:
                 return 'border-l-blue-500 bg-blue-50';
@@ -265,13 +300,17 @@ export default function notification() {
     };
 
     const getIconStyle = (type: string) => {
-        switch (type) {
+        switch (type.toLowerCase()) {
             case 'success':
                 return 'text-green-600';
             case 'warning':
                 return 'text-yellow-600';
             case 'error':
                 return 'text-red-600';
+            case 'technician_note':
+                return 'text-purple-600';
+            case 'client_req':
+                return 'text-indigo-600';
             case 'info':
             default:
                 return 'text-blue-600';
@@ -404,6 +443,28 @@ export default function notification() {
                                 </div>
                             )}
                         </div>
+
+                                {/* Notification Stats */}
+                                {notifications.length > 0 && (
+                                    <div className="mt-6 bg-white rounded-lg shadow-sm p-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div className="text-center">
+                                                <div className="text-2xl font-bold text-blue-600">{notifications.length}</div>
+                                                <div className="text-sm text-gray-500">Total Notifications</div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-2xl font-bold text-orange-600">{unreadCount}</div>
+                                                <div className="text-sm text-gray-500">Unread</div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-2xl font-bold text-green-600">
+                                                    {notifications.length - unreadCount}
+                                                </div>
+                                                <div className="text-sm text-gray-500">Read</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </>
                         )}
                     </div>
