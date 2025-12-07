@@ -80,6 +80,9 @@ export default function TechnicianAppointments() {
     const [isTransferModalOpen, setIsTransferModalOpen] = useState<boolean>(false);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<number | null>(null);
     const [transferring, setTransferring] = useState<boolean>(false);
+    const [isNoteModalOpen, setIsNoteModalOpen] = useState<boolean>(false);
+    const [noteText, setNoteText] = useState<string>('');
+    const [sendingNote, setSendingNote] = useState<boolean>(false);
     
     const [technicianInfo] = useState<TechnicianInfo>({
         name: auth.user?.name || 'Technician Name',
@@ -269,6 +272,54 @@ export default function TechnicianAppointments() {
         setIsTransferModalOpen(true);
     };
 
+    const handleOpenNoteModal = (appointmentId: number) => {
+        setSelectedAppointmentId(appointmentId);
+        setNoteText('');
+        setIsNoteModalOpen(true);
+    };
+
+    const handleSendNote = async () => {
+        if (!selectedAppointmentId || !noteText.trim()) {
+            alert('Please enter a note before sending.');
+            return;
+        }
+
+        setSendingNote(true);
+        try {
+            const response = await fetch(route('appointment.note.send'), {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    appointmentId: selectedAppointmentId,
+                    note: noteText
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                setIsNoteModalOpen(false);
+                setSelectedAppointmentId(null);
+                setNoteText('');
+                alert('Note sent successfully! Client, staff, and admins have been notified.');
+            } else {
+                throw new Error(result.message || 'Failed to send note');
+            }
+        } catch (err) {
+            console.error('Error sending note:', err);
+            alert('Failed to send note. Please try again.');
+        } finally {
+            setSendingNote(false);
+        }
+    };
+
     const handleTransferSubmit = async () => {
         if (!selectedAppointmentId) return;
 
@@ -342,6 +393,79 @@ export default function TechnicianAppointments() {
 
     return (
         <>
+            {/* Note Modal */}
+            <Modal
+                open={isNoteModalOpen}
+                onClose={() => !sendingNote && setIsNoteModalOpen(false)}
+                aria-labelledby="note-modal-title"
+            >
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 600,
+                    bgcolor: 'background.paper',
+                    boxShadow: 24,
+                    p: 4,
+                    borderRadius: 2
+                }}>
+                    <Typography id="note-modal-title" variant="h6" component="h2" className="mb-4">
+                        Send Note to Client
+                    </Typography>
+                    <div className="mb-6">
+                        <p className="text-gray-700 mb-4">
+                            Add a note about this appointment. The client will be notified, and staff/admins can view this in the system.
+                        </p>
+                        <div className="bg-blue-50 border-l-4 border-blue-400 p-3 mb-4">
+                            <p className="text-sm text-blue-700">
+                                <strong>Note:</strong> This note will be visible to the client in their transaction history and will create notifications for staff and administrators.
+                            </p>
+                        </div>
+                        <textarea
+                            value={noteText}
+                            onChange={(e) => setNoteText(e.target.value)}
+                            placeholder="Enter your note here..."
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            rows={6}
+                            disabled={sendingNote}
+                            maxLength={1000}
+                        />
+                        <p className="text-sm text-gray-500 mt-2 text-right">
+                            {noteText.length}/1000 characters
+                        </p>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                        <button
+                            onClick={() => setIsNoteModalOpen(false)}
+                            disabled={sendingNote}
+                            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleSendNote}
+                            disabled={sendingNote || !noteText.trim()}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                        >
+                            {sendingNote ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    Sending...
+                                </>
+                            ) : (
+                                <>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                                    </svg>
+                                    Send Note
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </Box>
+            </Modal>
+
             {/* Transfer Appointment Modal */}
             <Modal
                 open={isTransferModalOpen}
@@ -617,8 +741,17 @@ export default function TechnicianAppointments() {
                                         </div>
                                     </div>
 
-                                    {/* Transfer Button */}
-                                    <div className="mt-6 flex justify-end">
+                                    {/* Action Buttons */}
+                                    <div className="mt-6 flex justify-end gap-3">
+                                        <button
+                                            onClick={() => handleOpenNoteModal(parseInt(appointment.id))}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                            </svg>
+                                            Send Note
+                                        </button>
                                         <button
                                             onClick={() => handleTransferAppointment(parseInt(appointment.id))}
                                             className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2"

@@ -29,6 +29,8 @@ interface HistoryRecord {
     rating: 5;
     serviceType: string;
     serviceLocation: string;
+    technicianNote?: string | null;
+    noteSentAt?: string | null;
 }
 
 interface appointmentRating {
@@ -168,6 +170,34 @@ function TransactionDetailModal({ transaction, isOpen, onClose }: { transaction:
                                 <span className="text-sm text-gray-400">No rating yet</span>
                             )}
                         </div>
+
+                        {/* Technician Note */}
+                        {transaction.technicianNote && (
+                            <div className="border-t pt-3">
+                                <p className="text-xs text-gray-500 mb-2">Technician Note</p>
+                                <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded">
+                                    <div className="flex items-start gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                        </svg>
+                                        <div className="flex-1">
+                                            <p className="text-sm text-blue-900 whitespace-pre-wrap">{transaction.technicianNote}</p>
+                                            {transaction.noteSentAt && (
+                                                <p className="text-xs text-blue-700 mt-2">
+                                                    Sent: {new Date(transaction.noteSentAt).toLocaleString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </Box>
             </Box>
@@ -445,7 +475,9 @@ export default function ClientTransactions(){
                         amount: service.amount || 0,
                         rating: service.rating || null,
                         serviceType: service.appointment_service_type,
-                        serviceLocation: service.appointment_service_location
+                        serviceLocation: service.appointment_service_location,
+                        technicianNote: service.technician_note || null,
+                        noteSentAt: service.note_sent_at || null
                     }))
                     .reverse();
                 
@@ -685,8 +717,16 @@ export default function ClientTransactions(){
                                                     <tr key={record.id} className="hover:bg-gray-50 transition-colors">
                                                         <td className="px-4 xl:px-6 py-4">
                                                             <div>
-                                                                <div className="text-sm font-medium text-gray-900">
+                                                                <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
                                                                     {record.service}
+                                                                    {record.technicianNote && (
+                                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800" title="Technician has left a note">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                                                            </svg>
+                                                                            <span className="ml-1">Note</span>
+                                                                        </span>
+                                                                    )}
                                                                 </div>
                                                                 <div className="text-xs text-gray-500 mt-1">
                                                                     {record.id}

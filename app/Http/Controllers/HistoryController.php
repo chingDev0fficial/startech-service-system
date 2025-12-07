@@ -45,6 +45,8 @@ class HistoryController extends Controller
                 'service.user_id',
                 'service.warranty as warranty',
                 'service.warranty_status as warranty_status',
+                'service.technician_note as technician_note',
+                'service.note_sent_at as note_sent_at',
                 DB::raw('COALESCE(service.status, "unknown") as service_status')
             )
             ->get();
