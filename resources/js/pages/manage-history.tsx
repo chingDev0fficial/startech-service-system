@@ -198,6 +198,8 @@ export default function ManageHistory() {
         return globalMatch && dateMatch && statusMatch && serviceTypeMatch && technicianMatch && amountMatch;
     });
 
+    const reversedHistory = [...filteredHistory].reverse();
+
     const getStatusBadge = (status: string) => {
         const statusClasses = {
             'completed': 'bg-green-100 text-green-800',
@@ -616,7 +618,7 @@ export default function ManageHistory() {
                                                 </td>
                                             </tr>
                                         ) : (
-                                            filteredHistory.map((record) => (
+                                            reversedHistory.map((record) => (
                                                 <tr key={record.id} className="hover:bg-gray-50">
                                                     <td className="px-6 py-4">
                                                         <div>
