@@ -404,28 +404,6 @@ export default function notification() {
                                 </div>
                             )}
                         </div>
-
-                                {/* Notification Stats */}
-                                {notifications.length > 0 && (
-                                    <div className="mt-6 bg-white rounded-lg shadow-sm p-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <div className="text-center">
-                                                <div className="text-2xl font-bold text-blue-600">{notifications.length}</div>
-                                                <div className="text-sm text-gray-500">Total Notifications</div>
-                                            </div>
-                                            <div className="text-center">
-                                                <div className="text-2xl font-bold text-orange-600">{unreadCount}</div>
-                                                <div className="text-sm text-gray-500">Unread</div>
-                                            </div>
-                                            <div className="text-center">
-                                                <div className="text-2xl font-bold text-green-600">
-                                                    {notifications.length - unreadCount}
-                                                </div>
-                                                <div className="text-sm text-gray-500">Read</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
                             </>
                         )}
                     </div>
