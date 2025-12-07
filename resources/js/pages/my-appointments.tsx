@@ -272,54 +272,6 @@ export default function TechnicianAppointments() {
         setIsTransferModalOpen(true);
     };
 
-    const handleOpenNoteModal = (appointmentId: number) => {
-        setSelectedAppointmentId(appointmentId);
-        setNoteText('');
-        setIsNoteModalOpen(true);
-    };
-
-    const handleSendNote = async () => {
-        if (!selectedAppointmentId || !noteText.trim()) {
-            alert('Please enter a note before sending.');
-            return;
-        }
-
-        setSendingNote(true);
-        try {
-            const response = await fetch(route('appointment.note.send'), {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                },
-                body: JSON.stringify({
-                    appointmentId: selectedAppointmentId,
-                    note: noteText
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            
-            if (result.success) {
-                setIsNoteModalOpen(false);
-                setSelectedAppointmentId(null);
-                setNoteText('');
-                alert('Note sent successfully! Client, staff, and admins have been notified.');
-            } else {
-                throw new Error(result.message || 'Failed to send note');
-            }
-        } catch (err) {
-            console.error('Error sending note:', err);
-            alert('Failed to send note. Please try again.');
-        } finally {
-            setSendingNote(false);
-        }
-    };
-
     const handleTransferSubmit = async () => {
         if (!selectedAppointmentId) return;
 

@@ -377,7 +377,9 @@ class MyAppointmentController extends Controller
                     ]);
 
                 // Create notification for client, staff, and super users
-                $notificationMessage = "{$serviceDetails->technician_name} added a note to appointment for {$serviceDetails->item} ({$serviceDetails->service_type})";
+                // Truncate note if too long for notification preview
+                $notePreview = strlen($noteText) > 100 ? substr($noteText, 0, 100) . '...' : $noteText;
+                $notificationMessage = "{$serviceDetails->technician_name} sent a note to {$serviceDetails->client_name} about {$serviceDetails->item} ({$serviceDetails->service_type}): \"{$notePreview}\"";
 
                 DB::table('notification')->insert([
                     'type' => 'technician_note',
