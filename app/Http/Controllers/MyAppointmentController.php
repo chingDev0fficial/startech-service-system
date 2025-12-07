@@ -158,4 +158,162 @@ class MyAppointmentController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Transfer appointment to another technician
+     */
+    public function transfer(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'appointmentId' => 'required|integer|exists:service,id'
+            ]);
+
+            $serviceId = $validated['appointmentId'];
+            $currentUserId = Auth::id();
+
+            if (!$currentUserId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            // Get the service record to retrieve appointment_id, warranty info
+            $service = DB::table('service')
+                ->where('id', $serviceId)
+                ->where('user_id', $currentUserId)
+                ->first();
+
+            if (!$service) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Service not found or you are not assigned to this appointment'
+                ], 404);
+            }
+
+            $appointmentId = $service->appointment_id;
+            $warranty = $service->warranty;
+            $warrantyStatus = $service->warranty_status;
+
+            DB::beginTransaction();
+
+            try {
+                // Delete the current service record
+                DB::table('service')
+                    ->where('id', $serviceId)
+                    ->delete();
+
+                // Remove current technician from queues
+                DB::table('queues_tech')
+                    ->where('technician_id', $currentUserId)
+                    ->delete();
+
+                // Set current technician to available
+                DB::table('users')
+                    ->where('id', $currentUserId)
+                    ->update([
+                        'status' => 'available',
+                        'updated_at' => now()
+                    ]);
+
+                // Get only available technicians (excluding current technician)
+                $availableTechnicians = DB::table('users')
+                    ->where('role', 'technician')
+                    ->where('status', 'available')
+                    ->where('id', '!=', $currentUserId)
+                    ->get();
+
+                if ($availableTechnicians->isEmpty()) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No available technicians at the moment. Please try again later.'
+                    ], 400);
+                }
+
+                // Try to assign to a technician without queue
+                $assigned = false;
+                foreach ($availableTechnicians as $tech) {
+                    $inQueues = DB::table('queues_tech')
+                        ->where('technician_id', $tech->id)
+                        ->exists();
+
+                    if (!$inQueues) {
+                        DB::table('queues_tech')->insert([
+                            'technician_id' => $tech->id,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+
+                        DB::table('service')->insert([
+                            'appointment_id' => $appointmentId,
+                            'user_id' => $tech->id,
+                            'warranty' => $warranty,
+                            'warranty_status' => $warrantyStatus,
+                            'status' => 'pending',
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+
+                        $assigned = true;
+                        break;
+                    }
+                }
+
+                // If all available technicians have queues, clear queues and reassign
+                if (!$assigned) {
+                    DB::table('queues_tech')->delete();
+
+                    // Assign to first available technician
+                    $tech = $availableTechnicians->first();
+                    
+                    DB::table('queues_tech')->insert([
+                        'technician_id' => $tech->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    DB::table('service')->insert([
+                        'appointment_id' => $appointmentId,
+                        'user_id' => $tech->id,
+                        'warranty' => $warranty,
+                        'warranty_status' => $warrantyStatus,
+                        'status' => 'pending',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+
+                DB::commit();
+
+                Log::info("Appointment {$appointmentId} transferred from technician {$currentUserId}");
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Appointment transferred successfully!'
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('Error transferring appointment: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to transfer appointment',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
