@@ -302,7 +302,7 @@ export default function TechnicianAppointments() {
             }
         } catch (err) {
             console.error('Error transferring appointment:', err);
-            alert('Failed to transfer appointment. Please try again.');
+            alert('Failed to transfer appointment. No available technicians.');
         } finally {
             setTransferring(false);
         }
