@@ -5,6 +5,24 @@ import { type BreadcrumbItem, type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
 import { useEcho } from '@laravel/echo-react';
 import { useState, useEffect } from 'react';
+import Modal from '@mui/material/Modal';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { Button } from '@/components/ui/button';
+import { X, Eye } from 'lucide-react';
+
+const modalStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 800,
+    bgcolor: 'background.paper',
+    boxShadow: 24,
+    p: 4,
+    maxHeight: '90vh',
+    overflow: 'auto',
+};
 
 interface HistoryRecord {
     id: string;
@@ -18,6 +36,8 @@ interface HistoryRecord {
     rating: number | null;
     serviceType: string;
     serviceLocation: string;
+    warranty: string | null;
+    warrantyStatus: string | null;
 }
 
 interface Jobs {
@@ -33,6 +53,8 @@ interface Jobs {
     service_status: string;
     technician_name: string;
     user_id: number;
+    warranty: string;
+    warranty_status: string;
 }
 
 interface SearchFilters {
@@ -65,6 +87,8 @@ export default function ManageHistory() {
     });
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
     const [services, setServices] = useState<Jobs[]>([]);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [selectedRecord, setSelectedRecord] = useState<HistoryRecord | null>(null);
 
     // Dynamic breadcrumbs based on service location
     const breadcrumbs: BreadcrumbItem[] = [
@@ -130,7 +154,9 @@ export default function ManageHistory() {
                 amount: parseInt(service.amount) || 0, // You might want to get this from your service data
                 rating: service.rating || null, // You might want to get this from your service data
                 serviceType: service.appointment_service_type,
-                serviceLocation: serviceLocation // Set based on current route
+                serviceLocation: serviceLocation, // Set based on current route
+                warranty: service.warranty || null,
+                warrantyStatus: service.warranty_status || null
             }));
     }
 
@@ -200,8 +226,172 @@ export default function ManageHistory() {
         value && (Array.isArray(value) ? value.length > 0 : value !== '' && value !== 0)
     ).length;
 
+    const handleViewDetails = (record: HistoryRecord) => {
+        setSelectedRecord(record);
+        setIsViewModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsViewModalOpen(false);
+        setSelectedRecord(null);
+    };
+
     return (
         <>
+            {/* View Details Modal */}
+            <Modal
+                open={isViewModalOpen}
+                onClose={handleCloseModal}
+                aria-labelledby="appointment-details-modal"
+            >
+                <Box sx={modalStyle}>
+                    <Typography variant="h6" component="h2" className="flex items-center justify-between mb-4">
+                        Appointment Details
+                        <Button className="text-[#ffffff] !bg-[#393E46]" onClick={handleCloseModal}>
+                            <X />
+                        </Button>
+                    </Typography>
+
+                    {selectedRecord && (
+                        <div className="grid grid-cols-1 gap-4">
+                            {/* Service Information */}
+                            <div className="bg-blue-50 p-4 rounded-lg">
+                                <h3 className="font-semibold text-lg mb-3 text-blue-900">Service Information</h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <p className="text-sm text-gray-600">Appointment ID</p>
+                                        <p className="font-medium">{selectedRecord.id}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600">Service Type</p>
+                                        <p className="font-medium capitalize">{selectedRecord.serviceType}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600">Service Location</p>
+                                        <p className="font-medium capitalize">{selectedRecord.serviceLocation.replace('-', ' ')}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600">Service Details</p>
+                                        <p className="font-medium">{selectedRecord.service}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Customer Information */}
+                            <div className="bg-green-50 p-4 rounded-lg">
+                                <h3 className="font-semibold text-lg mb-3 text-green-900">Customer Information</h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <p className="text-sm text-gray-600">Customer Name</p>
+                                        <p className="font-medium">{selectedRecord.customer}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Technician Information */}
+                            <div className="bg-purple-50 p-4 rounded-lg">
+                                <h3 className="font-semibold text-lg mb-3 text-purple-900">Technician Information</h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <p className="text-sm text-gray-600">Assigned Technician</p>
+                                        <p className="font-medium">{selectedRecord.technician}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Date & Status Information */}
+                            <div className="bg-yellow-50 p-4 rounded-lg">
+                                <h3 className="font-semibold text-lg mb-3 text-yellow-900">Date & Status Information</h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <p className="text-sm text-gray-600">Service Date</p>
+                                        <p className="font-medium">{selectedRecord.serviceDate}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600">Completion Date</p>
+                                        <p className="font-medium">{selectedRecord.completionDate || 'Not completed'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600">Status</p>
+                                        <span className={`${
+                                            selectedRecord.status.toLowerCase() === 'completed' ? 'bg-green-200 text-green-800' :
+                                            selectedRecord.status.toLowerCase() === 'in-progress' ? 'bg-blue-200 text-blue-800' :
+                                            selectedRecord.status.toLowerCase() === 'cancelled' ? 'bg-red-200 text-red-800' :
+                                            'bg-yellow-200 text-yellow-800'
+                                        } px-3 py-1 rounded-full text-sm font-medium inline-block capitalize`}>
+                                            {selectedRecord.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Warranty Information */}
+                            <div className="bg-orange-50 p-4 rounded-lg">
+                                <h3 className="font-semibold text-lg mb-3 text-orange-900">Warranty Information</h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <p className="text-sm text-gray-600">Warranty Status</p>
+                                        {selectedRecord.warrantyStatus ? (
+                                            <span className={`${
+                                                selectedRecord.warrantyStatus.toLowerCase() === 'valid' ? 'bg-green-200 text-green-800' :
+                                                selectedRecord.warrantyStatus.toLowerCase() === 'expired' ? 'bg-red-200 text-red-800' :
+                                                'bg-gray-200 text-gray-800'
+                                            } px-3 py-1 rounded-full text-sm font-medium inline-block capitalize`}>
+                                                {selectedRecord.warrantyStatus}
+                                            </span>
+                                        ) : (
+                                            <p className="text-gray-500 italic">No warranty information</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600">Warranty Expiration</p>
+                                        {selectedRecord.warranty ? (
+                                            <p className="font-medium">
+                                                {new Date(selectedRecord.warranty).toLocaleDateString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric'
+                                                })}
+                                            </p>
+                                        ) : (
+                                            <p className="text-gray-500 italic">Not specified</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Payment Information */}
+                            <div className="bg-indigo-50 p-4 rounded-lg">
+                                <h3 className="font-semibold text-lg mb-3 text-indigo-900">Payment Information</h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <p className="text-sm text-gray-600">Amount</p>
+                                        <p className="font-medium text-xl text-indigo-700">₱{selectedRecord.amount.toFixed(2)}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600">Customer Rating</p>
+                                        {selectedRecord.rating ? (
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <span key={i} className={`text-lg ${i < selectedRecord.rating! ? 'text-yellow-400' : 'text-gray-300'}`}>
+                                                            ★
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                <span className="font-medium text-gray-700">({selectedRecord.rating}/5)</span>
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-500 italic">No rating yet</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </Box>
+            </Modal>
+
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title={pageTitle} />
                 <div className="flex h-full flex-1 flex-col gap-[1px] rounded-xl p-4 overflow-x-auto">
@@ -495,7 +685,11 @@ export default function ManageHistory() {
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
                                                         <div className="flex justify-end gap-2">
-                                                            <button className="text-blue-600 hover:text-blue-900 text-sm">
+                                                            <button 
+                                                                onClick={() => handleViewDetails(record)}
+                                                                className="text-blue-600 hover:text-blue-900 text-sm flex items-center gap-1"
+                                                            >
+                                                                <Eye className="w-4 h-4" />
                                                                 View
                                                             </button>
                                                         </div>
