@@ -643,7 +643,7 @@ export default function ManageHistory() {
                                                         <div className="text-sm text-gray-900">
                                                             {record.serviceDate}
                                                         </div>
-                                                        {record.completionDate && (
+                                                        {record.status.toLowerCase() === 'completed' && record.completionDate && (
                                                             <div className="text-xs text-gray-500">
                                                                 Completed: {record.completionDate}
                                                             </div>
