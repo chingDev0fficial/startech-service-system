@@ -366,7 +366,7 @@ export default function TechnicianAppointments() {
                 )}
 
                 {/* Filters */}
-                <div className="bg-white p-4 rounded-lg shadow mb-4">
+                {/* <div className="bg-white p-4 rounded-lg shadow mb-4">
                     <div className="flex gap-4 items-center">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
@@ -396,7 +396,7 @@ export default function TechnicianAppointments() {
                             {filteredServices.length} appointments
                         </div>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Summary Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">

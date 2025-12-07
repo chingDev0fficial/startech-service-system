@@ -347,6 +347,16 @@ export default function Dashboard() {
         }))
 
     let recentServiceReq = dataAppointments
+    /**
+     * this filter is being addded at 12/7/2025
+     * this will reset the Recent Service Request every 24 hours
+     * 
+     */
+        .filter(service => {
+            const serviceDate = new Date(service.created_at);
+            const twentyFourHoursAgo = new Date(currentDateTime.getTime() - 24 * 60 * 60 * 1000);
+            return serviceDate >= twentyFourHoursAgo;
+        })
         .map(service => ({
             serviceType: service.service_type,
             itemBrand: service.item,
