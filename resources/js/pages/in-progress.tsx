@@ -217,17 +217,19 @@ export default function InProgress() {
 
         echo.channel('services')
             .listen('.services.retrieve', (event: any) => {
-                const newServices = event.services || [event]; // Adjust based on your event structure
-                const transformedNewServices = transformServiceData(newServices);
-
-                // Update state with new services (you might want to merge or replace)
-                setJobs(prev => [...prev, ...transformedNewServices]);
+                // Fetch fresh data instead of appending to prevent duplicates
+                handleFetchedServices()
+                    .then(data => {
+                        const transformedData = transformServiceData(data);
+                        setJobs(transformedData);
+                    })
+                    .catch(err => console.error(err));
             });
 
         return () => {
             echo.leaveChannel('services');
         };
-    }, [echo]);
+    }, [echo, currentUserId]);
 
     const transformServiceData = (services: any[]) => {
         return services
@@ -274,9 +276,19 @@ export default function InProgress() {
         try {
             await makeApiCall(jobId, status);
             
-            setJobs(prev => prev.filter(job => job.appointmentId !== jobId));
+            // Only update state after successful API call
+            if (status === 'canceled') {
+                setJobs(prev => prev.filter(job => job.appointmentId !== jobId));
+            } else if (status === 'in-progress') {
+                setJobs(prev => prev.map(job => 
+                    job.appointmentId === jobId 
+                        ? { ...job, status: 'in-progress' }
+                        : job
+                ));
+            }
         } catch (error) {
             console.error(`Error marking job as ${status}:`, error);
+            alert(`Failed to mark job as ${status}. Please try again.`);
         } finally {
             setLoadingJobs(prev => {
                 const newMap = new Map(prev);
@@ -289,81 +301,79 @@ export default function InProgress() {
     // Update your handleModalSave function to accept amount parameter
     const handleModalSave = async (amount: number) => {
         const jobId = jobData;
+        setIsModalSaveClick(true);
         setLoadingJobs(prev => new Map(prev).set(jobId, 'completed'));
 
         try {
             await makeApiCallWithAmount(jobId, 'completed', amount);
             
-            // On success, remove the job from the list
+            // Only remove after successful API call
             setJobs(prev => prev.filter(job => job.appointmentId !== jobId));
+            setOpenCompleteModal(false);
+            setJobData(0);
         } catch (error) {
             console.error('Error marking job as completed:', error);
+            alert('Failed to mark job as completed. Please try again.');
         } finally {
             setLoadingJobs(prev => {
                 const newMap = new Map(prev);
                 newMap.delete(jobId);
                 return newMap;
             });
-            setOpenCompleteModal(false);
-            setJobData(0);
+            setIsModalSaveClick(false);
         }
     }
 
     // Update your makeApiCall function to handle amount
     const makeApiCallWithAmount = async (jobId: number, status: string, amount?: number) => {
-        try {
-            const body = {
-                id: jobId,
-                currentUserId: currentUserId,
-                status: status,
-                // ...(amount && { price: amount }) // Include amount if provided
-                price: amount,
-            };
+        const body = {
+            id: jobId,
+            currentUserId: currentUserId,
+            status: status,
+            price: amount,
+        };
 
-            const response = await fetch(route('in-progress.mark-in-progress'), {
-                method: 'POST',
-                body: JSON.stringify(body),
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        const response = await fetch(route('in-progress.mark-in-progress'), {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
             }
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || `HTTP error! status: ${response.status}`);
         }
-        catch(error) {
-            console.error('Error marking job:', error);
-        }
+
+        return await response.json();
     }
 
     // Or update your existing makeApiCall function:
     const makeApiCall = async (jobId: number, status: string, amount?: number) => {
-        try {
-            const body = {
-                id: jobId,
-                currentUserId: currentUserId,
-                status: status,
-                ...(amount && { amount: amount })
-            };
+        const body = {
+            id: jobId,
+            currentUserId: currentUserId,
+            status: status,
+            ...(amount && { amount: amount })
+        };
 
-            const response = await fetch(route('in-progress.mark-in-progress'), {
-                method: 'POST',
-                body: JSON.stringify(body),
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        const response = await fetch(route('in-progress.mark-in-progress'), {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
             }
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || `HTTP error! status: ${response.status}`);
         }
-        catch(error) {
-            console.error('Error marking job:', error);
-        }
+
+        return await response.json();
     }
 
     return (
