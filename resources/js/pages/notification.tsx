@@ -90,7 +90,9 @@ export default function notification() {
                         icon: getIconByType(notif.type || 'info')
                     }));
 
-                    setNotifications(transform.reverse());
+                    // Sort by ID in descending order to show newest first
+                    const sortedNotifications = transform.sort((a: any, b: any) => b.id - a.id);
+                    setNotifications(sortedNotifications);
                 }
             })
             .catch(error => {
@@ -114,7 +116,7 @@ export default function notification() {
                         icon: getIconByType(notif.type || 'info')
                     }));
 
-                    setNotifications(transform.reverse());
+                    setNotifications(transform.sort((a: any, b: any) => b.id - a.id));
                 }
             });
         }, 30000); // Poll every 30 seconds
