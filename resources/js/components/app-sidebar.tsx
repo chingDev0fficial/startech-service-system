@@ -3,7 +3,7 @@ import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, User, Bell, ClipboardClock, History, BanknoteArrowUp, BadgeCheck } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, User, Bell, ClipboardClock, History, BanknoteArrowUp, BadgeCheck, Phone } from 'lucide-react';
 import AppLogo from './app-logo';
 import { Check } from 'lucide-react';
 import { Loader } from 'lucide-react';
@@ -92,6 +92,12 @@ const mainNavItems: NavItem[] = [
         href: '/completed-today',
         icon: Check,
         accessRole: ['technician']
+    },
+    {
+        title: 'Contact Us',
+        href: '/contact-us',
+        icon: Phone,
+        accessRole: ['super user', 'staff', 'technician']
     },
 
 ];

@@ -60,14 +60,21 @@ export function NavBar({ tabs }: NavBarProps){
                 {/* Desktop Menu */}
                 <div className="lg:flex hidden items-center gap-[20px] text-[#ffffff] text-[1rem]">
                     {tabs.map((tab) => (
-                        tab.component === "link" || tab.component === "text" ? (
+                        tab.component === "link" ? (
                             <a
                                 key={tab.name}
                                 href={tab.href}
-                                className={tab.className}
+                                className={`${tab.className} cursor-pointer`}
                             >
                                 {tab.name}
                             </a>
+                        ) : tab.component === "text" ? (
+                            <span
+                                key={tab.name}
+                                className={tab.className}
+                            >
+                                {tab.name}
+                            </span>
                         ) : tab.component === "button" ? (
                             <button
                                 key={tab.name}
@@ -125,7 +132,7 @@ export function NavBar({ tabs }: NavBarProps){
                             <a
                                 key={tab.name}
                                 href={tab.href}
-                                className="text-[#222831] text-[1rem] p-[15px] rounded-[8px] hover:bg-gray-100 transition-colors font-medium border-b border-gray-200 last:border-b-0"
+                                className="text-[#222831] text-[1rem] p-[15px] rounded-[8px] hover:bg-gray-100 transition-colors font-medium border-b border-gray-200 last:border-b-0 cursor-pointer"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 {tab.name}
