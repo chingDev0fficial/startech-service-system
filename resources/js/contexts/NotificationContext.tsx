@@ -57,9 +57,16 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         // Poll every 30 seconds
         const interval = setInterval(refreshUnreadCount, 30000);
 
+        // Listen for custom event from notification page
+        const handleRefresh = () => {
+            refreshUnreadCount();
+        };
+        window.addEventListener('refreshNotificationCount', handleRefresh);
+
         return () => {
             clearTimeout(timer);
             clearInterval(interval);
+            window.removeEventListener('refreshNotificationCount', handleRefresh);
         };
     }, []);
 
