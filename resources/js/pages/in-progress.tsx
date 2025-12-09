@@ -298,7 +298,7 @@ export default function InProgress() {
                 setIsNoteModalOpen(false);
                 setSelectedJobId(null);
                 setNoteText('');
-                alert('Note sent successfully! Client, staff, and admins have been notified.');
+                alert('Note sent successfully!');
             } else {
                 throw new Error(result.message || 'Failed to send note');
             }

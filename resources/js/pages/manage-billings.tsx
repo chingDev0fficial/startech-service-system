@@ -3,6 +3,10 @@ import { Head } from '@inertiajs/react';
 import AppTable, { Column } from '@/components/table';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { useEcho } from '@laravel/echo-react';
+import Modal from '@mui/material/Modal';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { X } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -22,6 +26,8 @@ export default function ManageBillings() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [fetchedAppointments, setFetchedAppointments] = useState<any[]>([]);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [selectedBilling, setSelectedBilling] = useState<any>(null);
 
     const handleFetchedAppointments = async () => {
         try {
@@ -48,10 +54,24 @@ export default function ManageBillings() {
                     .map(appointment => ({
                         id: appointment.id,
                         service: `${appointment.item} - ${appointment.service_type}`,
+                        item: appointment.item,
+                        serviceType: appointment.service_type,
+                        serviceLocation: appointment.service_location,
                         customer: appointment.client_name,
+                        customerEmail: appointment.client_email,
+                        customerPhone: appointment.phone_number,
+                        address: appointment.address,
                         status: appointment.status,
                         amount: parseInt(appointment.price),
-                        date: '2024-08-25',
+                        description: appointment.description,
+                        scheduleAt: appointment.schedule_at,
+                        createdAt: appointment.created_at,
+                        updatedAt: appointment.updated_at,
+                        date: new Date(appointment.schedule_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }),
                     }))
 
             ))
@@ -97,6 +117,16 @@ export default function ManageBillings() {
         return matchesSearch && matchesStatus;
     });
 
+    const handleViewBilling = (billing: any) => {
+        setSelectedBilling(billing);
+        setIsViewModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsViewModalOpen(false);
+        setSelectedBilling(null);
+    };
+
     const getStatusBadge = (status) => {
         const statusClasses = {
             'completed': 'bg-green-100 text-green-800',
@@ -108,6 +138,175 @@ export default function ManageBillings() {
     };
 
     return (<>
+        {/* View Details Modal */}
+        <Modal
+            open={isViewModalOpen}
+            onClose={handleCloseModal}
+            aria-labelledby="billing-details-modal"
+        >
+            <Box sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: { xs: '90%', sm: '80%', md: 700 },
+                maxHeight: '85vh',
+                bgcolor: 'background.paper',
+                boxShadow: 24,
+                borderRadius: 2,
+                overflow: 'hidden'
+            }}>
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 flex justify-between items-center">
+                    <Typography variant="h5" component="h2" className="text-white font-bold">
+                        Billing Details
+                    </Typography>
+                    <button
+                        onClick={handleCloseModal}
+                        className="text-white hover:bg-blue-800 rounded-full p-2 transition-colors"
+                    >
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
+
+                {selectedBilling && (
+                    <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 88px)' }}>
+                        {/* Billing ID and Status */}
+                        <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <p className="text-xs text-gray-500 mb-1">Billing ID</p>
+                                    <p className="text-lg font-bold text-gray-900">#{selectedBilling.id}</p>
+                                </div>
+                                <span className={getStatusBadge(selectedBilling.status)}>
+                                    {selectedBilling.status}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Service Information */}
+                        <div className="mb-6">
+                            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                                <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                                Service Information
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-xs text-gray-500">Item</p>
+                                    <p className="text-sm font-medium text-gray-900">{selectedBilling.item}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-500">Service Type</p>
+                                    <p className="text-sm font-medium text-gray-900">{selectedBilling.serviceType}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-500">Service Location</p>
+                                    <p className="text-sm font-medium text-gray-900">{selectedBilling.serviceLocation}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-500">Scheduled Date</p>
+                                    <p className="text-sm font-medium text-gray-900">{selectedBilling.date}</p>
+                                </div>
+                            </div>
+                            {selectedBilling.description && (
+                                <div className="mt-4">
+                                    <p className="text-xs text-gray-500 mb-1">Description</p>
+                                    <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg">{selectedBilling.description}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Customer Information */}
+                        <div className="mb-6">
+                            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                                <span className="w-2 h-2 bg-green-600 rounded-full"></span>
+                                Customer Information
+                            </h3>
+                            <div className="grid grid-cols-1 gap-3">
+                                <div>
+                                    <p className="text-xs text-gray-500">Name</p>
+                                    <p className="text-sm font-medium text-gray-900">{selectedBilling.customer}</p>
+                                </div>
+                                {selectedBilling.customerEmail && (
+                                    <div>
+                                        <p className="text-xs text-gray-500">Email</p>
+                                        <p className="text-sm font-medium text-gray-900">{selectedBilling.customerEmail}</p>
+                                    </div>
+                                )}
+                                {selectedBilling.customerPhone && (
+                                    <div>
+                                        <p className="text-xs text-gray-500">Phone</p>
+                                        <p className="text-sm font-medium text-gray-900">{selectedBilling.customerPhone}</p>
+                                    </div>
+                                )}
+                                {selectedBilling.address && (
+                                    <div>
+                                        <p className="text-xs text-gray-500">Address</p>
+                                        <p className="text-sm font-medium text-gray-900">{selectedBilling.address}</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Payment Information */}
+                        <div className="mb-6">
+                            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                                <span className="w-2 h-2 bg-purple-600 rounded-full"></span>
+                                Payment Information
+                            </h3>
+                            <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
+                                <p className="text-xs text-gray-600 mb-1">Total Amount</p>
+                                <p className="text-3xl font-bold text-green-700">₱{selectedBilling.amount.toFixed(2)}</p>
+                            </div>
+                        </div>
+
+                        {/* Timeline */}
+                        <div>
+                            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                                <span className="w-2 h-2 bg-orange-600 rounded-full"></span>
+                                Timeline
+                            </h3>
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-600">Created:</span>
+                                    <span className="font-medium text-gray-900">
+                                        {new Date(selectedBilling.createdAt).toLocaleString('en-US', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-600">Last Updated:</span>
+                                    <span className="font-medium text-gray-900">
+                                        {new Date(selectedBilling.updatedAt).toLocaleString('en-US', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Close Button */}
+                        {/* <div className="mt-6 pt-4 border-t flex justify-end">
+                            <button
+                                onClick={handleCloseModal}
+                                className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div> */}
+                    </div>
+                )}
+            </Box>
+        </Modal>
+
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manage Billings" />
             <div className="flex h-full flex-1 flex-col gap-[1px] rounded-xl p-4 overflow-x-auto">
@@ -233,10 +432,12 @@ export default function ManageBillings() {
                                             </td>
 
                                             <td className="px-6 py-4 text-right">
-                                                <button className="text-blue-600 hover:text-blue-900 text-sm mr-3">
-                                                    View
+                                                <button 
+                                                    onClick={() => handleViewBilling(billing)}
+                                                    className="text-blue-600 hover:text-blue-900 text-sm font-medium hover:underline"
+                                                >
+                                                    View Details
                                                 </button>
-
                                             </td>
                                         </tr>
                                     ))
