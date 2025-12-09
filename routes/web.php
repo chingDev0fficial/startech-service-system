@@ -27,9 +27,18 @@ Route::middleware(['client'])->group(function () {
 
     Route::post('/client-transactions/rate/submit', [ClientController::class, 'submitRating'])
         ->name('client.appointment.rate.submit');
+    
+    Route::get('/contact-us', function () {
+        return Inertia::render('contact-us-client');
+    })->name('contact-us.client');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
+
+    // Contact Us Page
+    // Route::get('contact-us', function () {
+    //     return Inertia::render('contact-us');
+    // })->name('contact-us');
 
     // Dashboard with role-based redirect
     Route::get('dashboard', function () {

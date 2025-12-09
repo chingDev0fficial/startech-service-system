@@ -76,7 +76,12 @@ export default function Welcome(){
             href: "/client-logout",
             className: "hover:underline transition-colors whitespace-nowrap ml-2"
         },
-        { component: "link", name: "Contact Us", onClick: () => alert("Contact Us clicked"), className: "hover:underline transition-colors whitespace-nowrap ml-2" }
+        {
+            component: "link",
+            name: "Contact Us",
+            href: "/contact-us",
+            className: "hover:underline transition-colors whitespace-nowrap ml-2 cursor-pointer"
+        }
     ];
 
     const cardsContent = {
