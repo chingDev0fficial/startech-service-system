@@ -16,7 +16,7 @@ import { BsDribbble, BsFacebook, BsGithub, BsInstagram, BsTwitter } from "react-
 
 export function CustomFooter() {
   return (
-    <Footer container className="!rounded-none bg-gradient-to-b from-[#fc1304] via-[#f32d2d] to-[#fdc700 ] text-[#ffffff]">
+    <Footer container className="!rounded-none bg-gradient-to-b from-[#fc1304] via-[#f32d2d] to-[#fdc700] text-[#ffffff]">
       <div className="w-full">
         <div className="grid grid-cols-1 w-full justify-between sm:flex sm:justify-between md:flex md:grid-cols-1">
           <div className="lg:mb-[0] mb-5">
