@@ -2,13 +2,13 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, User, Bell, ClipboardClock, History, BanknoteArrowUp, BadgeCheck } from 'lucide-react';
 import AppLogo from './app-logo';
 import { Check } from 'lucide-react';
 import { Loader } from 'lucide-react';
 import { Receipt } from 'lucide-react';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 export interface NavItem {
     title: string;
@@ -110,6 +110,8 @@ const mainNavItems: NavItem[] = [
 // ];
 
 export function AppSidebar() {
+    const { unreadCount } = useNotifications();
+    
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -127,7 +129,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={mainNavItems} unreadCount={unreadCount} />
             </SidebarContent>
 
             <SidebarFooter>

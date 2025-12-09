@@ -3,6 +3,7 @@ import { type BreadcrumbItem, type SharedData } from '@/types';
 import { useEffect, useState } from 'react';
 import { Bell, Check, Clock, AlertTriangle, Info, CheckCircle, User, Calendar, Settings, Eye, X } from 'lucide-react';
 import { Head, usePage } from '@inertiajs/react';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -52,6 +53,7 @@ const getIconByType = (type: string) => {
 
 export default function notification() {
     const { auth } = usePage<SharedData>().props;
+    const { refreshUnreadCount } = useNotifications();
     const [notifications, setNotifications] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -157,6 +159,9 @@ export default function notification() {
             if (!result.success) {
                 // Revert if backend operation failed
                 setNotifications(originalNotifications);
+            } else {
+                // Refresh unread count in sidebar
+                refreshUnreadCount();
             }
 
         } catch (error) {
@@ -199,6 +204,9 @@ export default function notification() {
                 // Revert if backend operation failed
                 setNotifications(originalNotifications);
                 alert('Failed to clear all notifications. Please try again.');
+            } else {
+                // Refresh unread count in sidebar
+                refreshUnreadCount();
             }
 
         } catch (error) {
@@ -237,6 +245,9 @@ export default function notification() {
             if (!result.success) {
                 // Revert if backend operation failed
                 setNotifications(originalNotifications);
+            } else {
+                // Refresh unread count in sidebar
+                refreshUnreadCount();
             }
         } catch (error) {
             console.error('Error marking notification as read:', error);
@@ -271,6 +282,9 @@ export default function notification() {
             if (!result.success) {
                 // Revert if backend operation failed
                 setNotifications(originalNotifications);
+            } else {
+                // Refresh unread count in sidebar
+                refreshUnreadCount();
             }
         } catch (error) {
             console.error('Error removing notification:', error);
