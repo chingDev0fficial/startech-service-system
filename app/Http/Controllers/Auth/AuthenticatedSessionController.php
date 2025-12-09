@@ -47,7 +47,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
         session()->forget('auth.password_confirmed_at');
         
-
-        return redirect('/');
+        // Use route name instead of path to ensure proper Inertia handling
+        return redirect()->route('home');
     }
 }
