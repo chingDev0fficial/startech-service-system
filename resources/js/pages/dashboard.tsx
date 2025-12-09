@@ -347,7 +347,7 @@ export default function Dashboard() {
         }))
 
     let recentServiceReq = dataAppointments
-        .filter(service => service.status === "pending")
+        .filter(service => service.status === "pending" || service.status === "in-progress")
         .map(service => ({
             serviceType: service.service_type,
             itemBrand: service.item,
