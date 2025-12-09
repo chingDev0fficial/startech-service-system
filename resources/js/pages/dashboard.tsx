@@ -347,16 +347,7 @@ export default function Dashboard() {
         }))
 
     let recentServiceReq = dataAppointments
-    /**
-     * this filter is being addded at 12/7/2025
-     * this will reset the Recent Service Request every 24 hours
-     * 
-     */
-        .filter(service => {
-            const serviceDate = new Date(service.created_at);
-            const twentyFourHoursAgo = new Date(currentDateTime.getTime() - 24 * 60 * 60 * 1000);
-            return serviceDate >= twentyFourHoursAgo;
-        })
+        .filter(service => service.status === "pending")
         .map(service => ({
             serviceType: service.service_type,
             itemBrand: service.item,
@@ -426,7 +417,7 @@ export default function Dashboard() {
                     <div className="h-full w-full rounded-xl">
                        <Card className="bg-sidebar p-5 shadow-lg m-4 border border-sidebar-border p-2">
                             <CardHeader className="grid grid-cols-[1fr_60px] items-center">
-                                <CardTitle>Recent Service Request</CardTitle>
+                                <CardTitle>Pending Appointments</CardTitle>
                                 {/* <a href={route('manage-appointments')} className="text-xs">View All</a> */}
                             </CardHeader>
 

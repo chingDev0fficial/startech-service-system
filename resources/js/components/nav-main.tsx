@@ -1,12 +1,12 @@
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { type SharedData } from '@/types';
 import { ChevronRight } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useState } from 'react';
+import { type NavItem } from './app-sidebar';
 
-export function NavMain({ items = [] }: { items: NavItem[] }) {
+export function NavMain({ items = [], unreadCount = 0 }: { items: NavItem[]; unreadCount?: number }) {
     const { auth } = usePage<SharedData>().props;
     const page = usePage();
     const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -59,6 +59,11 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                         <Link href={item.href} prefetch>
                                             {item.icon && <item.icon />}
                                             <span>{item.title}</span>
+                                            {item.title === 'Notification' && unreadCount > 0 && (
+                                                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-medium text-white">
+                                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                                </span>
+                                            )}
                                         </Link>
                                     </SidebarMenuButton>
                                 )}
