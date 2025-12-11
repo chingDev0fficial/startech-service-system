@@ -639,26 +639,28 @@ export default function Dashboard() {
                         </div>
                     ))}
                 </div>
-                <div className="grid md:grid-cols-2 gap-[1px]">
-                    <PricingCard 
-                        title="City Area Service"
-                        initialPrice={cityPrice}
-                        description="base price for home service"
-                        icon={Home}
-                        onPriceChange={setCityPrice}
-                    />
-                    <PricingCard 
-                        title="Outside City Service"
-                        initialPrice={outsidePrice}
-                        description="base price for home service"
-                        icon={MapPin}
-                        onPriceChange={setOutsidePrice}
-                    />
-                    <div className="col-span-2 flex justify-end px-4">
+                <div className="space-y-4 md:space-y-0">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <PricingCard 
+                            title="City Area Service"
+                            initialPrice={cityPrice}
+                            description="base price for home service"
+                            icon={Home}
+                            onPriceChange={setCityPrice}
+                        />
+                        <PricingCard 
+                            title="Outside City Service"
+                            initialPrice={outsidePrice}
+                            description="base price for home service"
+                            icon={MapPin}
+                            onPriceChange={setOutsidePrice}
+                        />
+                    </div>
+                    <div className="flex justify-center md:justify-end px-4 md:px-6 pb-2">
                         <Button 
                             onClick={handleSavePrices}
                             disabled={isSaving}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto min-w-[200px]"
                         >
                             {isSaving ? 'Saving...' : 'Save Prices'}
                         </Button>
