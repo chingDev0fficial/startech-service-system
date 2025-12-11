@@ -28,6 +28,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'client' => \App\Http\Middleware\ClientMiddleware::class,
         ]);
     })
+    ->withSchedule(function ($schedule) {
+        // Run the scheduled availability update command daily at midnight
+        $schedule->command('availability:update-scheduled')->daily();
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
