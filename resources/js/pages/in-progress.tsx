@@ -447,11 +447,14 @@ export default function InProgress() {
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    width: 600,
+                    width: '90%',
+                    maxWidth: 600,
                     bgcolor: 'background.paper',
                     boxShadow: 24,
-                    p: 4,
-                    borderRadius: 2
+                    p: { xs: 3, sm: 4 },
+                    borderRadius: 2,
+                    maxHeight: '90vh',
+                    overflowY: 'auto'
                 }}>
                     <Typography id="note-modal-title" variant="h6" component="h2" className="mb-4">
                         Send Note to Client
