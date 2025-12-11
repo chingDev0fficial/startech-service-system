@@ -18,6 +18,14 @@ class InProgressController extends Controller
     public function update(Request $request)
     {
         try {
+            // Validate that if price is 0, a note must be provided
+            if ($request->price == 0 && (!$request->has('note') || empty(trim($request->note)))) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'A technician note is required when the price is $0'
+                ], 422);
+            }
+
             DB::table('appointment')
                 ->where('id', $request->id)
                 ->update([

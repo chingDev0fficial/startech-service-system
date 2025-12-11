@@ -71,21 +71,22 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
     }
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const value =  e.target.value;
-
-        if ( parseInt(value) <= 0 ) {
-            setOpenNote(true);
-            setIsNoteNotEmpty(true);
-        }
-        else {
-            setOpenNote(false);
-            setIsNoteNotEmpty(false);
-        }
+        const value = e.target.value;
 
         // Allow only numbers and decimal points
         if (value === '' || /^\d*\.?\d*$/.test(value)) {
             setAmount(value);
             setError('');
+            
+            // Check if amount is 0 or empty to show note field
+            const numericValue = parseFloat(value);
+            if (value === '' || isNaN(numericValue) || numericValue <= 0) {
+                setOpenNote(true);
+                setIsNoteNotEmpty(true);
+            } else {
+                setOpenNote(false);
+                setIsNoteNotEmpty(false);
+            }
         }
     };
 
@@ -93,14 +94,18 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
         const numericAmount = parseFloat(amount);
 
         if (!amount || amount.trim() === '') {
-            console.log('error1')
             setError('Amount is required');
             return;
         }
 
         if (isNaN(numericAmount) || numericAmount < 0) {
-            console.log('error2')
-            setError('Please enter a valid amount greater than 0');
+            setError('Please enter a valid amount (0 or greater)');
+            return;
+        }
+
+        // If amount is 0, note is required
+        if (numericAmount === 0 && (!note || note.trim() === '')) {
+            setError('A note is required when the amount is $0');
             return;
         }
 
@@ -109,7 +114,10 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
 
     const handleClose = () => {
         setAmount('');
+        setNote('');
         setError('');
+        setOpenNote(false);
+        setIsNoteNotEmpty(false);
         onClose();
     };
 
@@ -164,17 +172,22 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
 
                     {openNote && (
                     <>
-                        <div className='mb-4 border rounded-sm color-[#FFFFF] border-[#90EE90] bg-[#90EE90]/30 p-2'>
-                            <p>Please leave a note here!</p>
+                        <div className='mb-4 border rounded-sm color-[#FFFFF] border-[#FFA500] bg-[#FFA500]/20 p-3'>
+                            <p className='font-semibold text-sm'>⚠️ Note Required</p>
+                            <p className='text-sm mt-1'>Since the amount is $0, please explain why no charge is being applied. This will notify the admin.</p>
                         </div>
 
                         <div className='mb-1'>
+                            <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-2">
+                                Technician Note <span className="text-red-500">*</span>
+                            </label>
                             <textarea
                                 id="note"
                                 value={note}
                                 onChange={handleNoteChange}
-                                placeholder=""
+                                placeholder="Explain why no charge is being applied (e.g., warranty, goodwill, etc.)..."
                                 disabled={isLoading}
+                                rows={4}
                                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
                                     error ? 'border-red-500' : 'border-gray-300'
                                 }`}
