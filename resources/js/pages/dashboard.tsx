@@ -304,15 +304,13 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
 
                         {appointmentData.warranty_receipt && (
                             <div>
-                                <p className="text-xs text-[#393E46] dark:text-gray-400">Warranty Receipt</p>
-                                <a 
-                                    href={`/storage/${appointmentData.warranty_receipt}`} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-sm sm:text-base text-blue-600 hover:underline break-all"
-                                >
-                                    View Receipt
-                                </a>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400 mb-2">Warranty Receipt</p>
+                                <img 
+                                    src={`/storage/${appointmentData.warranty_receipt}`} 
+                                    alt="Warranty Receipt"
+                                    className="w-full max-w-md rounded-lg border border-sidebar-border shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                                    onClick={() => window.open(`/storage/${appointmentData.warranty_receipt}`, '_blank')}
+                                />
                             </div>
                         )}
 
@@ -639,28 +637,26 @@ export default function Dashboard() {
                         </div>
                     ))}
                 </div>
-                <div className="space-y-4 md:space-y-0">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <PricingCard 
-                            title="City Area Service"
-                            initialPrice={cityPrice}
-                            description="base price for home service"
-                            icon={Home}
-                            onPriceChange={setCityPrice}
-                        />
-                        <PricingCard 
-                            title="Outside City Service"
-                            initialPrice={outsidePrice}
-                            description="base price for home service"
-                            icon={MapPin}
-                            onPriceChange={setOutsidePrice}
-                        />
-                    </div>
-                    <div className="flex justify-center md:justify-end px-4 md:px-6 pb-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-[1px]">
+                    <PricingCard 
+                        title="City Area Service"
+                        initialPrice={cityPrice}
+                        description="base price for home service"
+                        icon={Home}
+                        onPriceChange={setCityPrice}
+                    />
+                    <PricingCard 
+                        title="Outside City Service"
+                        initialPrice={outsidePrice}
+                        description="base price for home service"
+                        icon={MapPin}
+                        onPriceChange={setOutsidePrice}
+                    />
+                    <div className="col-span-2 flex justify-end px-4">
                         <Button 
                             onClick={handleSavePrices}
                             disabled={isSaving}
-                            className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto min-w-[200px]"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                             {isSaving ? 'Saving...' : 'Save Prices'}
                         </Button>
