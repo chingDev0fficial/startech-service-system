@@ -91,7 +91,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
             return;
         }
 
-        if (isNaN(numericAmount) || numericAmount <= 0) {
+        if (isNaN(numericAmount) || numericAmount < 0) {
             console.log('error2')
             setError('Please enter a valid amount greater than 0');
             return;
