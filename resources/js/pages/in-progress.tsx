@@ -151,7 +151,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
 
                     <div className="mb-4">
                         <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
-                            Service Amount ($)
+                            Service Amount (₱)
                         </label>
                         <input
                             id="amount"
