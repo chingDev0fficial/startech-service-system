@@ -263,7 +263,7 @@ export default function InProgress() {
             
             if (result.success) {
                 // Remove the transferred appointment from the list
-                setServices(prev => prev.filter(service => service.id !== selectedAppointmentId.toString()));
+                setJobs(prev => prev.filter(job => job.appointmentId !== selectedAppointmentId));
                 setIsTransferModalOpen(false);
                 setSelectedAppointmentId(null);
                 alert('Appointment transferred successfully!');
@@ -482,7 +482,8 @@ export default function InProgress() {
             status: status,
             price: amount,
             technicianStatus: technicianStatus,
-            ...(note && { note: note })
+            ...(note && { note: note }),
+            ...(amount === 0 && note && { notifyAdmin: true })
         };
 
         const response = await fetch(route('in-progress.mark-in-progress'), {
