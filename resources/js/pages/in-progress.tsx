@@ -573,7 +573,7 @@ export default function InProgress() {
                                             Send Note
                                         </button>
 
-                                        {/* Show "Mark Progress" only for pending jobs */}
+                                        {/* Sequential buttons: pending -> in-progress -> completed */}
                                         {job.status === "pending" && (
                                             <button
                                                 onClick={() => handleMark(job.appointmentId, 'in-progress')}
@@ -583,39 +583,39 @@ export default function InProgress() {
                                                 {loadingJobs.get(job.appointmentId) === 'in-progress' ? (
                                                     <LoaderCircle className="h-4 w-4 animate-spin" />
                                                 ) : (
-                                                    "Mark Progress"
+                                                    "Mark In Progress"
                                                 )}
                                             </button>
                                         )}
 
-                                        {/* Show "Mark Complete" and "Mark Cancel" for both pending and in-progress jobs */}
-                                        {(job.status === "pending" || job.status === "in-progress") && (
-                                            <>
-                                                <button
-                                                    onClick={() => handleMark(job.appointmentId, 'completed')}
-                                                    className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-                                                    disabled={loadingJobs.has(job.appointmentId)}
-                                                >
-                                                    {loadingJobs.get(job.appointmentId) === 'completed' ? (
-                                                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                                                    ) : (
-                                                        "Mark Complete"
-                                                    )}
-                                                </button>
+                                        {job.status === "in-progress" && (
+                                            <button
+                                                onClick={() => handleMark(job.appointmentId, 'completed')}
+                                                className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                                                disabled={loadingJobs.has(job.appointmentId)}
+                                            >
+                                                {loadingJobs.get(job.appointmentId) === 'completed' ? (
+                                                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    "Mark Completed"
+                                                )}
+                                            </button>
+                                        )}
 
-                                                <button
-                                                    onClick={() => handleMark(job.appointmentId, 'canceled')}
-                                                    className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-                                                    disabled={loadingJobs.has(job.appointmentId)}
-                                                >
-                                                    {loadingJobs.get(job.appointmentId) === 'canceled' ? (
-                                                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                                                    ) : (
-                                                        "Mark Cancel"
-                                                    )}
-                                                </button>
-                                            </>
-                                    )}
+                                        {/* Cancel button - Always visible for both statuses */}
+                                        {(job.status === "pending" || job.status === "in-progress") && (
+                                            <button
+                                                onClick={() => handleMark(job.appointmentId, 'canceled')}
+                                                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                                                disabled={loadingJobs.has(job.appointmentId)}
+                                            >
+                                                {loadingJobs.get(job.appointmentId) === 'canceled' ? (
+                                                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    "Mark Cancel"
+                                                )}
+                                            </button>
+                                        )}
                                 </div>
                             </div>
                         )))}
