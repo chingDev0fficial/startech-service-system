@@ -28,8 +28,6 @@ class Notification extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'appointment_id',
-        'client_id', // Added this since you have a client relationship
         'type',
         'title',
         'message',
