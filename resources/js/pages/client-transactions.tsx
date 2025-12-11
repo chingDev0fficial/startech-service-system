@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {usePage} from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, Link } from '@inertiajs/react';
 import { useEcho } from '@laravel/echo-react';
 import { NavBar } from "@/components/nav-bar";
 import { CustomFooter } from "@/components/custom-footer";
@@ -372,7 +372,7 @@ export default function ClientTransactions(){
             href: "/client-logout",
             className: "hover:underline transition-colors whitespace-nowrap ml-2"
         },
-        { component: "link", name: "Contact Us", onClick: () => alert("Contact Us clicked"), className: "hover:underline transition-colors whitespace-nowrap ml-2" }
+        { component: "link", name: "Contact Us", href: "/contact-us", className: "hover:underline transition-colors whitespace-nowrap ml-2" }
     ];
 
     const handleFetchTransactions = async () => {
@@ -622,7 +622,17 @@ export default function ClientTransactions(){
                     <NavBar tabs={tabs} />
                 </div>
 
-                <div className='w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8'>
+                <div className="mt-8 ml-5">
+                        <Link
+                            href="/client"
+                            className="inline-flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors group"
+                        >
+                            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                            <span className="font-light">Back to Home</span>
+                        </Link>
+                    </div>
+
+                {/* <div className='w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8'>
                     <Button
                         type="button"
                         className="text-[#ffffff] !bg-[#393E46]" 
@@ -636,7 +646,7 @@ export default function ClientTransactions(){
                     >
                         <ArrowLeft />
                     </Button>
-                </div>
+                </div> */}
 
                 <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
                     <div className="max-w-7xl mx-auto">
