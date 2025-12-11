@@ -480,14 +480,16 @@ export default function InProgress() {
 
     // Update your makeApiCall function to handle amount
     const makeApiCallWithAmount = async (jobId: number, status: string, amount?: number, technicianStatus?: string, note?: string) => {
+        const trimmedNote = note?.trim() || '';
+        
         const body = {
             id: jobId,
             currentUserId: currentUserId,
             status: status,
             price: amount,
             technicianStatus: technicianStatus,
-            ...(note && { note: note }),
-            ...(amount === 0 && note && { notifyAdmin: true })
+            ...(trimmedNote && { note: trimmedNote }),
+            ...(amount === 0 && trimmedNote && { notifyAdmin: true })
         };
 
         const response = await fetch(route('in-progress.mark-in-progress'), {
