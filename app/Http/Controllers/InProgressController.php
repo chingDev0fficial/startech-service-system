@@ -23,12 +23,19 @@ class InProgressController extends Controller
                 'updated_at' => now() // or Carbon::now()
             ]);
 
+        $serviceUpdateData = [
+            'status' => $request->status,
+            'updated_at' => now() // or Carbon::now()
+        ];
+
+        // Add technician note to update if it exists
+        if ($request->has('note') && !empty($request->note)) {
+            $serviceUpdateData['technician_note'] = $request->note;
+        }
+
         DB::table('service')
             ->where('appointment_id', $request->id)
-            ->update([
-                'status' => $request->status,
-                'updated_at' => now() // or Carbon::now()
-            ]);
+            ->update($serviceUpdateData);
 
         DB::table('users')
             ->where('id', $request->currentUserId)

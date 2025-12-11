@@ -26,11 +26,14 @@ const style = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 800,
-    // maxHeight: '75vh',
+    width: { xs: '90%', sm: '85%', md: 700, lg: 800 },
+    maxWidth: '95vw',
+    maxHeight: { xs: '90vh', sm: '85vh' },
+    overflowY: 'auto',
     bgcolor: 'background.paper',
     boxShadow: 24,
-    p: 4,
+    p: { xs: 2, sm: 3, md: 4 },
+    borderRadius: 2,
 };
 
 interface Jobs {
@@ -47,16 +50,31 @@ interface Jobs {
 interface SetCompleteModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (amount: number) => void;
+    onSave: (amount: number, note: string) => void;
     isLoading: boolean;
 }
 
 const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteModalProps) => {
+    const [note, setNote] = useState<string>('');
     const [amount, setAmount] = useState<string>('');
     const [error, setError] = useState<string>('');
+    const [openNote, setOpenNote] = useState<boolean>(false);
 
-    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
+    const handleNoteChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const value =  e.target.value;
+
+        console.log(value);
+
+        setNote(value);
+        setError('');
+    }
+
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const value =  e.target.value;
+
+        if ( parseInt(value) <= 0 ) setOpenNote(true);
+        else setOpenNote(false);
+
         // Allow only numbers and decimal points
         if (value === '' || /^\d*\.?\d*$/.test(value)) {
             setAmount(value);
@@ -79,7 +97,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
             return;
         }
 
-        onSave(numericAmount);
+        onSave(numericAmount, note);
     };
 
     const handleClose = () => {
@@ -134,7 +152,29 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
                         {error && (
                             <p className="mt-1 text-sm text-red-600">{error}</p>
                         )}
+                        
                     </div>
+
+                    {openNote && (
+                    <>
+                        <div className='mb-4 border rounded-sm color-[#FFFFF] border-[#90EE90] bg-[#90EE90]/30 p-2'>
+                            <p>Please leave a note here!</p>
+                        </div>
+
+                        <div className='mb-1'>
+                            <textarea
+                                id="note"
+                                value={note}
+                                onChange={handleNoteChange}
+                                placeholder=""
+                                disabled={isLoading}
+                                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
+                                    error ? 'border-red-500' : 'border-gray-300'
+                                }`}
+                            />
+                        </div>
+                    </>
+                    )}
 
                     <div className="flex gap-2 justify-end">
                         <Button
@@ -354,14 +394,14 @@ export default function InProgress() {
     }
 
     // Update your handleModalSave function to accept amount parameter
-    const handleModalSave = async (amount: number) => {
+    const handleModalSave = async (amount: number, note: string) => {
         const jobId = jobData;
         setIsModalSaveClick(true);
         setLoadingJobs(prev => new Map(prev).set(jobId, 'completed'));
 
         try {
             // Set technician status to available when completing
-            await makeApiCallWithAmount(jobId, 'completed', amount, 'available');
+            await makeApiCallWithAmount(jobId, 'completed', amount, 'available', note);
             
             // Only remove after successful API call
             setJobs(prev => prev.filter(job => job.appointmentId !== jobId));
@@ -381,13 +421,14 @@ export default function InProgress() {
     }
 
     // Update your makeApiCall function to handle amount
-    const makeApiCallWithAmount = async (jobId: number, status: string, amount?: number, technicianStatus?: string) => {
+    const makeApiCallWithAmount = async (jobId: number, status: string, amount?: number, technicianStatus?: string, note?: string) => {
         const body = {
             id: jobId,
             currentUserId: currentUserId,
             status: status,
             price: amount,
             technicianStatus: technicianStatus,
+            ...(note && { note: note })
         };
 
         const response = await fetch(route('in-progress.mark-in-progress'), {
