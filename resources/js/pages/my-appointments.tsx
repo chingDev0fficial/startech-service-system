@@ -5,9 +5,6 @@ import { type BreadcrumbItem, type SharedData } from '@/types';
 import { useState, useEffect } from 'react';
 import { useEcho } from '@laravel/echo-react';
 import { usePage } from '@inertiajs/react';
-import Modal from '@mui/material/Modal';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -30,6 +27,7 @@ interface Service {
     client_name: string;
     client_email: string;
     client_phone: string;
+    client_address: string
     service_created_at: string;
     service_status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
     appointment_service_type: string;
@@ -49,6 +47,7 @@ interface Appointment {
         name: string;
         phone: string;
         email: string;
+        address: string
     };
     device: {
         name: string;
@@ -77,9 +76,6 @@ export default function TechnicianAppointments() {
     // Changed: Initialize as null to prevent flash of wrong status
     const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'unavailable' | null>(null);
     const [updatingAvailability, setUpdatingAvailability] = useState<boolean>(false);
-    const [isTransferModalOpen, setIsTransferModalOpen] = useState<boolean>(false);
-    const [selectedAppointmentId, setSelectedAppointmentId] = useState<number | null>(null);
-    const [transferring, setTransferring] = useState<boolean>(false);
     
     const [technicianInfo] = useState<TechnicianInfo>({
         name: auth.user?.name || 'Technician Name',
@@ -254,6 +250,7 @@ export default function TechnicianAppointments() {
                     name: service.client_name,
                     phone: service.client_phone,
                     email: service.client_email,
+                    address: service.client_address
                 },
                 device: {
                     name: service.appointment_item_name,
@@ -264,50 +261,7 @@ export default function TechnicianAppointments() {
             }));
     }
 
-    const handleTransferAppointment = (appointmentId: number) => {
-        setSelectedAppointmentId(appointmentId);
-        setIsTransferModalOpen(true);
-    };
 
-
-    const handleTransferSubmit = async () => {
-        if (!selectedAppointmentId) return;
-
-        setTransferring(true);
-        try {
-            const response = await fetch(route('appointment.transfer'), {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                },
-                body: JSON.stringify({
-                    appointmentId: selectedAppointmentId
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            
-            if (result.success) {
-                // Remove the transferred appointment from the list
-                setServices(prev => prev.filter(service => service.id !== selectedAppointmentId.toString()));
-                setIsTransferModalOpen(false);
-                setSelectedAppointmentId(null);
-                alert('Appointment transferred successfully!');
-            } else {
-                throw new Error(result.message || 'Failed to transfer appointment');
-            }
-        } catch (err) {
-            console.error('Error transferring appointment:', err);
-            alert('Failed to transfer appointment. No available technicians.');
-        } finally {
-            setTransferring(false);
-        }
-    };
 
     const filteredServices = services.filter(appointment => {
         // Exclude completed appointments from display
@@ -343,65 +297,6 @@ export default function TechnicianAppointments() {
 
     return (
         <>
-            {/* Transfer Appointment Modal */}
-            <Modal
-                open={isTransferModalOpen}
-                onClose={() => !transferring && setIsTransferModalOpen(false)}
-                aria-labelledby="transfer-modal-title"
-            >
-                <Box sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '90%',
-                    maxWidth: 500,
-                    bgcolor: 'background.paper',
-                    boxShadow: 24,
-                    p: { xs: 3, sm: 4 },
-                    borderRadius: 2,
-                    maxHeight: '90vh',
-                    overflowY: 'auto'
-                }}>
-                    <Typography id="transfer-modal-title" variant="h6" component="h2" className="mb-4">
-                        Transfer Appointment
-                    </Typography>
-                    <div className="mb-6">
-                        <p className="text-gray-700 mb-2">
-                            Are you sure you want to transfer this appointment to another technician?
-                        </p>
-                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4">
-                            <p className="text-sm text-blue-700">
-                                <strong>Note:</strong> This appointment will be reassigned to an available technician through the queuing system.
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                        <button
-                            onClick={() => setIsTransferModalOpen(false)}
-                            disabled={transferring}
-                            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleTransferSubmit}
-                            disabled={transferring}
-                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center gap-2"
-                        >
-                            {transferring ? (
-                                <>
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    Transferring...
-                                </>
-                            ) : (
-                                'Confirm Transfer'
-                            )}
-                        </button>
-                    </div>
-                </Box>
-            </Modal>
-
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="My Appointments" />
             <div className="flex h-full flex-1 flex-col gap-[1px] rounded-xl p-4 overflow-x-auto">
@@ -590,6 +485,10 @@ export default function TechnicianAppointments() {
                                                     <span className="text-gray-600">Email:</span>
                                                     <span className="font-medium">{appointment.customer.email}</span>
                                                 </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Address:</span>
+                                                    <span className="font-medium">{appointment.customer.address}</span>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -621,7 +520,7 @@ export default function TechnicianAppointments() {
                                         </div>
                                     </div>
 
-                                    {/* Transfer Button */}
+                                    {/* Transfer Button
                                     <div className="mt-6 flex justify-end">
                                         <button
                                             onClick={() => handleTransferAppointment(parseInt(appointment.id))}
@@ -632,7 +531,7 @@ export default function TechnicianAppointments() {
                                             </svg>
                                             Transfer Appointment
                                         </button>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
                         ))

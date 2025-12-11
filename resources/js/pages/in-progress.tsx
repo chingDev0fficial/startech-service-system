@@ -56,6 +56,7 @@ interface SetCompleteModalProps {
 
 const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteModalProps) => {
     const [note, setNote] = useState<string>('');
+    const [isNoteNotEmpty, setIsNoteNotEmpty] = useState<boolean>(false);
     const [amount, setAmount] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [openNote, setOpenNote] = useState<boolean>(false);
@@ -72,8 +73,14 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const value =  e.target.value;
 
-        if ( parseInt(value) <= 0 ) setOpenNote(true);
-        else setOpenNote(false);
+        if ( parseInt(value) <= 0 ) {
+            setOpenNote(true);
+            setIsNoteNotEmpty(true);
+        }
+        else {
+            setOpenNote(false);
+            setIsNoteNotEmpty(false);
+        }
 
         // Allow only numbers and decimal points
         if (value === '' || /^\d*\.?\d*$/.test(value)) {
@@ -186,7 +193,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
                         </Button>
                         <Button
                             onClick={handleSave}
-                            disabled={isLoading}
+                            disabled={isLoading || (isNoteNotEmpty && note.trim() === '')}
                             className="bg-green-600 hover:bg-green-700"
                         >
                             {isLoading ? (
@@ -223,6 +230,53 @@ export default function InProgress() {
     const [noteText, setNoteText] = useState<string>('');
     const [sendingNote, setSendingNote] = useState<boolean>(false);
     const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
+    const [isTransferModalOpen, setIsTransferModalOpen] = useState<boolean>(false);
+    const [selectedAppointmentId, setSelectedAppointmentId] = useState<number | null>(null);
+    const [transferring, setTransferring] = useState<boolean>(false);
+
+    const handleTransferAppointment = (appointmentId: number) => {
+        setSelectedAppointmentId(appointmentId);
+        setIsTransferModalOpen(true);
+    };
+
+    const handleTransferSubmit = async () => {
+        if (!selectedAppointmentId) return;
+
+        setTransferring(true);
+        try {
+            const response = await fetch(route('appointment.transfer'), {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    appointmentId: selectedAppointmentId
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                // Remove the transferred appointment from the list
+                setServices(prev => prev.filter(service => service.id !== selectedAppointmentId.toString()));
+                setIsTransferModalOpen(false);
+                setSelectedAppointmentId(null);
+                alert('Appointment transferred successfully!');
+            } else {
+                throw new Error(result.message || 'Failed to transfer appointment');
+            }
+        } catch (err) {
+            console.error('Error transferring appointment:', err);
+            alert('Failed to transfer appointment. No available technicians.');
+        } finally {
+            setTransferring(false);
+        }
+    };
 
     // Mock data - replace with actual API call
     const handleFetchedServices = async () => {
@@ -553,6 +607,65 @@ export default function InProgress() {
                 </Box>
             </Modal>
 
+            {/* Transfer Appointment Modal */}
+            <Modal
+                open={isTransferModalOpen}
+                onClose={() => !transferring && setIsTransferModalOpen(false)}
+                aria-labelledby="transfer-modal-title"
+            >
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '90%',
+                    maxWidth: 500,
+                    bgcolor: 'background.paper',
+                    boxShadow: 24,
+                    p: { xs: 3, sm: 4 },
+                    borderRadius: 2,
+                    maxHeight: '90vh',
+                    overflowY: 'auto'
+                }}>
+                    <Typography id="transfer-modal-title" variant="h6" component="h2" className="mb-4">
+                        Transfer Appointment
+                    </Typography>
+                    <div className="mb-6">
+                        <p className="text-gray-700 mb-2">
+                            Are you sure you want to transfer this appointment to another technician?
+                        </p>
+                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4">
+                            <p className="text-sm text-blue-700">
+                                <strong>Note:</strong> This appointment will be reassigned to an available technician through the queuing system.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                        <button
+                            onClick={() => setIsTransferModalOpen(false)}
+                            disabled={transferring}
+                            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleTransferSubmit}
+                            disabled={transferring}
+                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center gap-2"
+                        >
+                            {transferring ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    Transferring...
+                                </>
+                            ) : (
+                                'Confirm Transfer'
+                            )}
+                        </button>
+                    </div>
+                </Box>
+            </Modal>
+
             <SetCompleteModal
                 isOpen={openCompleteModal}
                 onClose={handleCompleteModalClose}
@@ -601,7 +714,9 @@ export default function InProgress() {
                                     {/* </p> */}
                                 </div>
 
-                                        <div className="mt-3 flex gap-2 flex-wrap">
+                                <div className='flex justify-between'>
+
+                                    <div className="mt-3 flex gap-2 flex-wrap">
                                         {/* Send Note Button - Always visible */}
                                         <button
                                             onClick={() => handleOpenNoteModal(parseInt(job.id))}
@@ -657,7 +772,23 @@ export default function InProgress() {
                                                 )}
                                             </button>
                                         )}
+                                    </div>
+
+                                    {/* Transfer Button */}
+                                    <div className="mt-3 flex justify-end">
+                                        <button
+                                            onClick={() => handleTransferAppointment(job.appointmentId)}
+                                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2"
+                                            disabled={loadingJobs.has(job.appointmentId)}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8zM12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z" />
+                                            </svg>
+                                            Transfer Appointment
+                                        </button>
+                                    </div>
                                 </div>
+
                             </div>
                         )))}
                     </div>

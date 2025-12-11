@@ -13,8 +13,10 @@ use Inertia\Inertia;
 Route::get('get-service-price', [DashboardController::class, 'getServicePrice'])
     ->name('client.get.service.price');
 
-Route::get('dashboard/fetch-appointment-data/{id}', [DashboardController::class, 'fetchAppointmentData'])
-    ->name('fetch.appointment-data');
+// Route::get('dashboard/fetch-appointment-data/{id}', [DashboardController::class, 'fetchAppointmentData'])
+//     ->name('fetch.appointment-data');
+// Route::get('my-appointments/fetch', [App\Http\Controllers\MyAppointmentController::class, 'fetch'])
+//             ->name('my-appointments.fetch');
 
 Route::middleware(['client'])->group(function () {
 

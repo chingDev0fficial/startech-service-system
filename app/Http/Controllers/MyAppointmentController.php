@@ -27,6 +27,7 @@ class MyAppointmentController extends Controller
                 'appointment.item as appointment_item_name',
                 'appointment.service_type as appointment_service_type',
                 'appointment.service_location as appointment_service_location',
+                'appointment.address as client_address',
                 'appointment.schedule_at as appointment_date',
                 'appointment.description as appointment_description',
                 'client.name as client_name',
