@@ -31,6 +31,7 @@ interface HistoryRecord {
     serviceLocation: string;
     technicianNote?: string | null;
     noteSentAt?: string | null;
+    updatedAt: string;
 }
 
 interface appointmentRating {
@@ -477,9 +478,10 @@ export default function ClientTransactions(){
                         serviceType: service.appointment_service_type,
                         serviceLocation: service.appointment_service_location,
                         technicianNote: service.technician_note || null,
-                        noteSentAt: service.note_sent_at || null
+                        noteSentAt: service.note_sent_at || null,
+                        updatedAt: service.completion_date || service.appointment_date
                     }))
-                    .reverse();
+                    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
                 
                 setTransactions(clientTransactions);
                 setLoading(false);
@@ -515,9 +517,10 @@ export default function ClientTransactions(){
                             amount: service.amount || 0,
                             rating: service.rating || null,
                             serviceType: service.appointment_service_type,
-                            serviceLocation: service.appointment_service_location
+                            serviceLocation: service.appointment_service_location,
+                            updatedAt: service.completion_date || service.appointment_date
                         }))
-                        .reverse());
+                        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()));
             })
         // Cleanup listener on unmount
         return () => {
@@ -571,9 +574,10 @@ export default function ClientTransactions(){
                     amount: service.amount || 0,
                     rating: service.rating || null,
                     serviceType: service.appointment_service_type,
-                    serviceLocation: service.appointment_service_location
+                    serviceLocation: service.appointment_service_location,
+                    updatedAt: service.completion_date || service.appointment_date
                 }))
-                .reverse();
+                .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
             
             setTransactions(clientTransactions);
         } catch (err) {
