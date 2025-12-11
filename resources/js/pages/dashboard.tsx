@@ -637,7 +637,7 @@ export default function Dashboard() {
                         </div>
                     ))}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-[1px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                     <PricingCard 
                         title="City Area Service"
                         initialPrice={cityPrice}
@@ -652,11 +652,11 @@ export default function Dashboard() {
                         icon={MapPin}
                         onPriceChange={setOutsidePrice}
                     />
-                    <div className="col-span-2 flex justify-end px-4">
+                    <div className="col-span-1 md:col-span-2 flex justify-center md:justify-end px-4 py-2">
                         <Button 
                             onClick={handleSavePrices}
                             disabled={isSaving}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto min-w-[200px]"
                         >
                             {isSaving ? 'Saving...' : 'Save Prices'}
                         </Button>
