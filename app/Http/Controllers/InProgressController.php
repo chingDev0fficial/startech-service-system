@@ -86,7 +86,7 @@ class InProgressController extends Controller
                 // Different message format based on status
                 if ($request->status === 'completed') {
                     $notificationMessage = sprintf(
-                        'Technician %s completed appointment for %s. Price: $%s',
+                        'Technician %s completed appointment for %s. Price: ₱%s',
                         $technician->name ?? 'Unknown',
                         $appointment->client_name,
                         number_format($request->price, 2)
