@@ -149,33 +149,34 @@ export default function ManageBillings() {
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                width: { xs: '90%', sm: '80%', md: 700 },
-                maxHeight: '85vh',
+                width: { xs: '95%', sm: '85%', md: 700 },
+                maxWidth: '700px',
+                maxHeight: { xs: '95vh', sm: '90vh', md: '85vh' },
                 bgcolor: 'background.paper',
                 boxShadow: 24,
                 borderRadius: 2,
                 overflow: 'hidden'
             }}>
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 flex justify-between items-center">
-                    <Typography variant="h5" component="h2" className="text-white font-bold">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 sm:p-6 flex justify-between items-center">
+                    <Typography variant="h5" component="h2" className="text-white font-bold text-base sm:text-xl">
                         Billing Details
                     </Typography>
                     <button
                         onClick={handleCloseModal}
-                        className="text-white hover:bg-blue-800 rounded-full p-2 transition-colors"
+                        className="text-white hover:bg-blue-800 rounded-full p-1 sm:p-2 transition-colors"
                     >
-                        <X className="w-6 h-6" />
+                        <X className="w-5 h-5 sm:w-6 sm:h-6" />
                     </button>
                 </div>
 
                 {selectedBilling && (
-                    <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 88px)' }}>
+                    <div className="p-3 sm:p-4 md:p-6 overflow-y-auto" style={{ maxHeight: 'calc(95vh - 60px)' }}>
                         {/* Billing ID and Status */}
-                        <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                            <div className="flex justify-between items-center">
+                        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg mb-4 sm:mb-6">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
                                 <div>
                                     <p className="text-xs text-gray-500 mb-1">Billing ID</p>
-                                    <p className="text-lg font-bold text-gray-900">#{selectedBilling.id}</p>
+                                    <p className="text-base sm:text-lg font-bold text-gray-900">#{selectedBilling.id}</p>
                                 </div>
                                 <span className={getStatusBadge(selectedBilling.status)}>
                                     {selectedBilling.status}
@@ -184,12 +185,12 @@ export default function ManageBillings() {
                         </div>
 
                         {/* Service Information */}
-                        <div className="mb-6">
-                            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                        <div className="mb-4 sm:mb-6">
+                            <h3 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3 pb-2 border-b flex items-center gap-2">
                                 <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
                                 Service Information
                             </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                 <div>
                                     <p className="text-xs text-gray-500">Item</p>
                                     <p className="text-sm font-medium text-gray-900">{selectedBilling.item}</p>
@@ -216,8 +217,8 @@ export default function ManageBillings() {
                         </div>
 
                         {/* Customer Information */}
-                        <div className="mb-6">
-                            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                        <div className="mb-4 sm:mb-6">
+                            <h3 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3 pb-2 border-b flex items-center gap-2">
                                 <span className="w-2 h-2 bg-green-600 rounded-full"></span>
                                 Customer Information
                             </h3>
@@ -248,20 +249,20 @@ export default function ManageBillings() {
                         </div>
 
                         {/* Payment Information */}
-                        <div className="mb-6">
-                            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                        <div className="mb-4 sm:mb-6">
+                            <h3 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3 pb-2 border-b flex items-center gap-2">
                                 <span className="w-2 h-2 bg-purple-600 rounded-full"></span>
                                 Payment Information
                             </h3>
-                            <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
+                            <div className="bg-gradient-to-r from-green-50 to-green-100 p-3 sm:p-4 rounded-lg">
                                 <p className="text-xs text-gray-600 mb-1">Total Amount</p>
-                                <p className="text-3xl font-bold text-green-700">₱{selectedBilling.amount.toFixed(2)}</p>
+                                <p className="text-2xl sm:text-3xl font-bold text-green-700">₱{selectedBilling.amount.toFixed(2)}</p>
                             </div>
                         </div>
 
                         {/* Timeline */}
                         <div>
-                            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                            <h3 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3 pb-2 border-b flex items-center gap-2">
                                 <span className="w-2 h-2 bg-orange-600 rounded-full"></span>
                                 Timeline
                             </h3>
@@ -373,6 +374,7 @@ export default function ManageBillings() {
 
                 {/* Table */}
                 <div className="bg-white rounded-lg shadow overflow-hidden">
+                    <div className="overflow-x-auto">
                     {loading ? (
                         <div className="p-8 text-center">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -445,6 +447,7 @@ export default function ManageBillings() {
                             </tbody>
                         </table>
                     )}
+                    </div>
                 </div>
 
             </div>
