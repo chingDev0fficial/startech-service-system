@@ -37,14 +37,12 @@ class AuthenticatedSessionController extends Controller
         $user = $request->user();
 
         // Redirect based on user role
-        $redirectRoute = match($user->role) {
-            'super user' => route('dashboard', absolute: false),
-            'staff' => route('manage-appointments', absolute: false),
-            'technician' => route('my-appointments', absolute: false),
-            default => route('dashboard', absolute: false),
+        return match($user->role) {
+            'super user' => redirect()->route('dashboard'),
+            'staff' => redirect()->route('manage-appointments'),
+            'technician' => redirect()->route('my-appointments'),
+            default => redirect()->route('dashboard'),
         };
-
-        return redirect()->intended($redirectRoute);
     }
 
     /**
