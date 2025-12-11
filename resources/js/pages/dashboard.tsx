@@ -21,6 +21,13 @@ import { Home, MapPin } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { floated } from "@material-tailwind/react/types/components/card";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -110,6 +117,217 @@ function PricingCard({ title, initialPrice, icon, description, onPriceChange }) 
     );
 }
 
+interface AppointmentDetails {
+    id: number;
+    client_id: number;
+    schedule_at: string;
+    item: string;
+    service_type: string;
+    service_location: string;
+    description: string;
+    mark_as: string;
+    created_at: string;
+    updated_at: string;
+    warranty_receipt?: string;
+    price?: string;
+    address?: string;
+    phone_number?: string;
+    name: string;
+    status?: string;
+    rating?: number;
+}
+
+function AppointmentInfoModal({ isOpen, onClose, appointmentId }: { 
+    isOpen: boolean; 
+    onClose: () => void; 
+    appointmentId: string | null;
+}) {
+    const [appointmentData, setAppointmentData] = useState<AppointmentDetails | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (isOpen && appointmentId) {
+            handleFetchAppointmentInfo();
+        }
+    }, [isOpen, appointmentId]);
+
+    const handleFetchAppointmentInfo = async () => {
+        if (!appointmentId) return;
+
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            // Remove # from appointmentId if present
+            const cleanId = appointmentId.replace('#', '');
+
+            const response = await fetch(`/dashboard/fetch-appointment-data/${cleanId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                setAppointmentData(result.data);
+            } else {
+                throw new Error(result.error || 'Failed to fetch appointment');
+            }
+        } catch(error) {
+            console.error('Error fetching appointment info:', error);
+            setError(error instanceof Error ? error.message : 'Failed to fetch appointment details');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="bg-sidebar border-sidebar-border">
+                <DialogHeader>
+                    <DialogTitle className="text-[#222831] dark:text-white">
+                        Appointment Details
+                    </DialogTitle>
+                    <DialogDescription className="text-[#393E46] dark:text-gray-300">
+                        {appointmentId && `Appointment ${appointmentId}`}
+                    </DialogDescription>
+                </DialogHeader>
+
+                {isLoading && (
+                    <div className="flex items-center justify-center py-8">
+                        <p className="text-[#393E46] dark:text-white">Loading...</p>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        {error}
+                    </div>
+                )}
+
+                {appointmentData && !isLoading && (
+                    <div className="space-y-4 max-h-[500px] overflow-y-auto">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400">Service Type</p>
+                                <p className="font-semibold text-[#222831] dark:text-white capitalize">{appointmentData.service_type}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400">Status</p>
+                                <div className={`inline-block px-2 py-1 rounded text-xs capitalize ${
+                                    appointmentData.status?.toLowerCase() === "pending" ? "bg-orange-500/30 text-orange-700" :
+                                    appointmentData.status?.toLowerCase() === "in-progress" ? "bg-yellow-500/30 text-yellow-700" :
+                                    appointmentData.status?.toLowerCase() === "completed" ? "bg-green-500/30 text-green-700" :
+                                    "bg-red-500/30 text-red-700"
+                                }`}>
+                                    {appointmentData.status || 'N/A'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400">Customer Name</p>
+                                <p className="font-semibold text-[#222831] dark:text-white">{appointmentData.name}</p>
+                            </div>
+                            {appointmentData.phone_number && (
+                                <div>
+                                    <p className="text-xs text-[#393E46] dark:text-gray-400">Phone Number</p>
+                                    <p className="font-semibold text-[#222831] dark:text-white">{appointmentData.phone_number}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <p className="text-xs text-[#393E46] dark:text-gray-400">Item/Device</p>
+                            <p className="font-semibold text-[#222831] dark:text-white">{appointmentData.item}</p>
+                        </div>
+
+                        <div>
+                            <p className="text-xs text-[#393E46] dark:text-gray-400">Description</p>
+                            <p className="text-[#222831] dark:text-white">{appointmentData.description}</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400">Service Location</p>
+                                <p className="font-semibold text-[#222831] dark:text-white capitalize">{appointmentData.service_location}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400">Mark As</p>
+                                <p className="font-semibold text-[#222831] dark:text-white capitalize">{appointmentData.mark_as}</p>
+                            </div>
+                        </div>
+
+                        {appointmentData.address && (
+                            <div>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400">Address</p>
+                                <p className="text-[#222831] dark:text-white">{appointmentData.address}</p>
+                            </div>
+                        )}
+
+                        <div>
+                            <p className="text-xs text-[#393E46] dark:text-gray-400">Scheduled At</p>
+                            <p className="font-semibold text-[#222831] dark:text-white">
+                                {new Date(appointmentData.schedule_at).toLocaleString()}
+                            </p>
+                        </div>
+
+                        {appointmentData.warranty_receipt && (
+                            <div>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400">Warranty Receipt</p>
+                                <a 
+                                    href={`/storage/${appointmentData.warranty_receipt}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                >
+                                    View Receipt
+                                </a>
+                            </div>
+                        )}
+
+                        {appointmentData.price && (
+                            <div>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400">Price</p>
+                                <p className="font-semibold text-[#222831] dark:text-white">₱{appointmentData.price}</p>
+                            </div>
+                        )}
+
+                        {appointmentData.rating && (
+                            <div>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400">Rating</p>
+                                <p className="font-semibold text-[#222831] dark:text-white">⭐ {appointmentData.rating}/5</p>
+                            </div>
+                        )}
+
+                        <div className="text-xs text-[#393E46] dark:text-gray-400 pt-2 border-t border-sidebar-border">
+                            <p>Created: {new Date(appointmentData.created_at).toLocaleString()}</p>
+                            <p>Updated: {new Date(appointmentData.updated_at).toLocaleString()}</p>
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex justify-end gap-2 mt-4">
+                    <Button onClick={onClose} variant="outline">
+                        Close
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 export default function Dashboard() {
     const echo = useEcho();
     const [currentDateTime, setCurrentDateTime] = useState<Date>(new Date());
@@ -132,6 +350,20 @@ export default function Dashboard() {
     const [cityPrice, setCityPrice] = useState(0);
     const [outsidePrice, setOutsidePrice] = useState(0);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Modal state
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+
+    const handlePendingClick = (appointmentId: string) => {
+        setSelectedAppointmentId(appointmentId);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedAppointmentId(null);
+    };
 
     const getServicePrices = async () => {
        try {
@@ -424,7 +656,7 @@ export default function Dashboard() {
                             <CardContent className="grid grid-cols-1 gap-3 pb-5">
 
                                 {recentServiceReq.slice(0, 6).map((req) => (
-                                    <div className="flex items-center justify-between w-full p-2 border border-sidebar-border rounded-xl">
+                                    <div onClick={() => handlePendingClick(req.appointmentId)} className="flex items-center justify-between w-full p-2 border border-sidebar-border rounded-xl cursor-pointer hover:bg-sidebar-accent transition-colors">
                                         <div className="flex items-center gap-2">
 
                                             <Icon iconNode={req.serviceType.toLowerCase() === "hardware repair" ? LaptopMinimal : req.serviceType.toLowerCase() === "software solution" ? AppWindow : BrushCleaning } className={ `dark:text-[#ffffff] h-6 w-6 rounded-xl p-1 ${req.serviceType.toLowerCase() === "hardware repair" ? "bg-blue-500/30 text-blue-700" : req.serviceType.toLowerCase() === "software solution" ? "bg-green-500/30 text-green-700" : "bg-purple-500/30 text-purple-700" }` } strokeWidth={2} />
@@ -487,6 +719,12 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
+
+            <AppointmentInfoModal 
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                appointmentId={selectedAppointmentId}
+            />
         </AppLayout>
     );
 }

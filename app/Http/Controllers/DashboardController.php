@@ -86,4 +86,44 @@ class DashboardController extends Controller
             ]);
         }
     }
+
+    public function fetchAppointmentData($id)
+    {
+        try {
+            $appointment = DB::table('appointment')
+                ->join('client', 'appointment.client_id', '=', 'client.id')
+                ->leftJoin('service', 'appointment.id', '=', 'service.appointment_id')
+                ->leftJoin('users', 'service.user_id', '=', 'users.id')
+                ->select(
+                    'appointment.*',
+                    'client.name',
+                    'service.status',
+                    'service.rating',
+                    'users.name as technician_name',
+                    'users.email as technician_email',
+                    'users.id as technician_id'
+                )
+                ->where('appointment.id', $id)
+                ->first();
+
+            if (!$appointment) {
+                return response()->json([
+                    'success' => false, 
+                    'error' => 'Appointment not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $appointment
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error("Error fetching appointment: " . $e->getMessage());
+            return response()->json([
+                'success' => false, 
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

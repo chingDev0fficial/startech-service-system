@@ -93,12 +93,12 @@ const mainNavItems: NavItem[] = [
         icon: Check,
         accessRole: ['technician']
     },
-    {
-        title: 'Contact Us',
-        href: '/contact-us',
-        icon: Phone,
-        accessRole: ['super user', 'staff', 'technician']
-    },
+    // {
+    //     title: 'Contact Us',
+    //     href: '/contact-us',
+    //     icon: Phone,
+    //     accessRole: ['super user', 'staff', 'technician']
+    // },
 
 ];
 
