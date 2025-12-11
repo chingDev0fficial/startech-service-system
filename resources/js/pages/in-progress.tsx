@@ -317,29 +317,39 @@ export default function InProgress() {
 
     // Load services when selectedDate or echo changes
     useEffect(() => {
+        let isMounted = true;
+
         handleFetchedServices()
             .then(data => {
-                const transformedData = transformServiceData(data);
-                setJobs(transformedData);
+                if (isMounted) {
+                    const transformedData = transformServiceData(data);
+                    setJobs(transformedData);
+                }
             })
             .catch(err => console.error(err));
 
         if (echo) {
-            echo.channel('services')
-                .listen('.services.retrieve', (event: any) => {
-                    // Fetch fresh data instead of appending to prevent duplicates
+            const channel = echo.channel('services');
+            
+            channel.listen('.services.retrieve', (event: any) => {
+                // Use a flag to prevent duplicate fetches
+                if (isMounted) {
                     handleFetchedServices()
                         .then(data => {
-                            const transformedData = transformServiceData(data);
-                            setJobs(transformedData);
+                            if (isMounted) {
+                                const transformedData = transformServiceData(data);
+                                setJobs(transformedData);
+                            }
                         })
                         .catch(err => console.error(err));
-                });
+                }
+            });
         }
 
         return () => {
+            isMounted = false;
             if (echo) {
-                echo.channel('services').stopListening('.services.retrieve');
+                echo.leave('services');
             }
         };
     }, [echo, currentUserId]);
@@ -425,6 +435,12 @@ export default function InProgress() {
             return;
         }
 
+        // Prevent multiple clicks
+        if (loadingJobs.has(jobId)) {
+            console.log("Already processing this job");
+            return;
+        }
+
         if (status === 'completed') {
             setJobData(jobId);
             setOpenCompleteModal(true);
@@ -437,7 +453,12 @@ export default function InProgress() {
             // Determine technician status based on job status
             const technicianStatus = status === 'in-progress' ? 'unavailable' : 'available';
             
-            await makeApiCall(jobId, status, undefined, technicianStatus);
+            const result = await makeApiCall(jobId, status, undefined, technicianStatus);
+            
+            // Verify success before updating UI
+            if (!result || result.success === false) {
+                throw new Error(result?.message || 'Operation failed');
+            }
             
             // Only update state after successful API call
             if (status === 'canceled') {
@@ -453,6 +474,7 @@ export default function InProgress() {
             console.error(`Error marking job as ${status}:`, error);
             alert(`Failed to mark job as ${status}. Please try again.`);
         } finally {
+            // Ensure loading state is always cleared
             setLoadingJobs(prev => {
                 const newMap = new Map(prev);
                 newMap.delete(jobId);
@@ -464,12 +486,22 @@ export default function InProgress() {
     // Update your handleModalSave function to accept amount parameter
     const handleModalSave = async (amount: number, note: string) => {
         const jobId = jobData;
+        
+        // Prevent duplicate submissions
+        if (loadingJobs.has(jobId)) {
+            return;
+        }
+        
         setIsModalSaveClick(true);
         setLoadingJobs(prev => new Map(prev).set(jobId, 'completed'));
 
         try {
             // Set technician status to available when completing
-            await makeApiCallWithAmount(jobId, 'completed', amount, 'available', note);
+            const result = await makeApiCallWithAmount(jobId, 'completed', amount, 'available', note);
+            
+            if (!result || result.success === false) {
+                throw new Error(result?.message || 'Failed to complete job');
+            }
             
             // Only remove after successful API call
             setJobs(prev => prev.filter(job => job.appointmentId !== jobId));
@@ -502,21 +534,41 @@ export default function InProgress() {
             ...(amount === 0 && trimmedNote && { notifyAdmin: true })
         };
 
-        const response = await fetch(route('in-progress.mark-in-progress'), {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+        try {
+            const response = await fetch(route('in-progress.mark-in-progress'), {
+                method: 'POST',
+                body: JSON.stringify(body),
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ message: 'Network error' }));
+                throw new Error(error.message || `HTTP error! status: ${response.status}`);
             }
-        });
 
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            throw new Error(error.message || `HTTP error! status: ${response.status}`);
+            const result = await response.json();
+            
+            if (result.success === false) {
+                throw new Error(result.message || 'Failed to update appointment');
+            }
+
+            return result;
+        } catch (error: any) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                throw new Error('Request timeout - please try again');
+            }
+            throw error;
         }
-
-        return await response.json();
     }
 
     // Or update your existing makeApiCall function:
@@ -529,28 +581,42 @@ export default function InProgress() {
             technicianStatus: technicianStatus
         };
 
-        const response = await fetch(route('in-progress.mark-in-progress'), {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+        try {
+            const response = await fetch(route('in-progress.mark-in-progress'), {
+                method: 'POST',
+                body: JSON.stringify(body),
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ message: 'Network error' }));
+                throw new Error(error.message || `HTTP error! status: ${response.status}`);
             }
-        });
 
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            throw new Error(error.message || `HTTP error! status: ${response.status}`);
+            const result = await response.json();
+            
+            // Check if the backend indicates success
+            if (result.success === false) {
+                throw new Error(result.message || 'Failed to update appointment');
+            }
+
+            return result;
+        } catch (error: any) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                throw new Error('Request timeout - please try again');
+            }
+            throw error;
         }
-
-        const result = await response.json();
-        
-        // Check if the backend indicates success
-        if (result.success === false) {
-            throw new Error(result.message || 'Failed to update appointment');
-        }
-
-        return result;
     }
 
     return (
