@@ -127,15 +127,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Customer routes
     Route::middleware(['role:technician'])->group(function () {
 
+        Route::get('my-appointments/fetch', [App\Http\Controllers\MyAppointmentController::class, 'fetch'])
+            ->name('my-appointments.fetch');
         Route::get('my-appointments', [App\Http\Controllers\MyAppointmentController::class, 'create'])
             ->name('my-appointments');
         Route::get('in-progress', [App\Http\Controllers\InProgressController::class, 'create'])
             ->name('in-progress');
         Route::get('completed-today', [App\Http\Controllers\CompletedTodayController::class, 'create'])
             ->name('completed-today');
-
-        Route::get('my-appointments/fetch', [App\Http\Controllers\MyAppointmentController::class, 'fetch'])
-            ->name('my-appointments.fetch');
         Route::get('my-appointments/availability/status', [App\Http\Controllers\MyAppointmentController::class, 'fetchAvailability'])
             ->name('my-appointments.availability.status');
         Route::post('my-appointments/availability/update', [App\Http\Controllers\MyAppointmentController::class, 'updateAvailability'])
