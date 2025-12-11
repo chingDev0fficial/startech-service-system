@@ -49,20 +49,20 @@ export default function Welcome(){
         date: '',
         time: '',
         serviceType: '',
-        fullname: client ? client.name : '',
-        email: client ? client.email : '',
-        phone_no: client ? client.phone_number : '',
+        fullname: client?.name || '',
+        email: client?.email || '',
+        phone_no: client?.phone_number || '',
         address: '',
         item: '',
         description: '',
         warrantyReceipt: null,
-        clientStatus: client ? client.client_status : 'guest',
+        clientStatus: client?.client_status || 'guest',
     });
 
     const tabs = [
         {
             component: "text",
-            name: `Welcome, ${client.name}`,
+            name: `Welcome, ${client?.name || 'Guest'}`,
             href: undefined,
             className: `transition-colors whitespace-nowrap ml-2 ${client ? "" : "hover:underline"}`
         },

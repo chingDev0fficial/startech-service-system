@@ -46,7 +46,7 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user() ? $request->user()->only(['id', 'name', 'email', 'role', 'avatar']) : null,
-                'client' => Auth::guard('client')->user() ? Auth::guard('client')->user()->only(['id', 'name', 'email', 'phone', 'avatar']) : null,
+                'client' => Auth::guard('client')->user() ? Auth::guard('client')->user()->only(['id', 'name', 'email', 'phone_number', 'avatar', 'client_status']) : null,
             ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),

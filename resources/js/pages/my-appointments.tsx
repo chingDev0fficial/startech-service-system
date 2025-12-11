@@ -73,8 +73,8 @@ export default function TechnicianAppointments() {
     const [services, setServices] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [statusFilter, setStatusFilter] = useState<string>('all');
-    // Changed: Initialize as null to prevent flash of wrong status
-    const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'unavailable' | null>(null);
+    // Initialize as 'available' by default to prevent uncontrolled to controlled warning
+    const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'unavailable'>('available');
     const [updatingAvailability, setUpdatingAvailability] = useState<boolean>(false);
     
     const [technicianInfo] = useState<TechnicianInfo>({
