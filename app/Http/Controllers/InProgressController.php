@@ -46,33 +46,45 @@ class InProgressController extends Controller
                             ($request->status == 'completed' ? 'available' : null)
                 ]);
 
-            // Create notification for admin when price is 0 and there's a note
-            if ($request->has('notifyAdmin') && $request->notifyAdmin && $request->price == 0) {
-                // Get appointment details for the notification
-                $appointment = DB::table('appointment')
-                    ->join('client', 'appointment.client_id', '=', 'client.id')
-                    ->where('appointment.id', $request->id)
-                    ->select('appointment.*', 'client.name as client_name')
+            // Notify admin about appointment status update
+            $appointment = DB::table('appointment')
+                ->join('client', 'appointment.client_id', '=', 'client.id')
+                ->where('appointment.id', $request->id)
+                ->select('appointment.*', 'client.name as client_name')
+                ->first();
+
+            if ($appointment) {
+                $technician = DB::table('users')
+                    ->where('id', $request->currentUserId)
                     ->first();
 
-                if ($appointment) {
-                    // Get technician name
-                    $technician = DB::table('users')
-                        ->where('id', $request->currentUserId)
-                        ->first();
+                $notificationType = 'appointment_status_update';
+                $notificationTitle = 'Appointment Status Updated';
+                $notificationMessage = sprintf(
+                    'Technician %s updated appointment for %s to status: %s. Price: $%s',
+                    $technician->name ?? 'Unknown',
+                    $appointment->client_name,
+                    ucfirst(str_replace('-', ' ', $request->status)),
+                    number_format($request->price, 2)
+                );
 
-                    Notification::create([
-                        'type' => 'zero_price_note',
-                        'title' => 'Technician Note - Zero Price Appointment',
-                        'message' => sprintf(
-                            'Technician %s completed appointment for %s with $0 price. Note: %s',
-                            $technician->name ?? 'Unknown',
-                            $appointment->client_name,
-                            $request->note
-                        ),
-                        'status' => 'unseen',
-                    ]);
+                // Add note to message if provided
+                if ($request->has('note') && !empty($request->note)) {
+                    $notificationMessage .= '. Note: ' . $request->note;
                 }
+
+                // Special case for zero price appointments with notes
+                if ($request->has('notifyAdmin') && $request->notifyAdmin && $request->price == 0) {
+                    $notificationType = 'zero_price_note';
+                    $notificationTitle = 'Technician Note - Zero Price Appointment';
+                }
+
+                Notification::create([
+                    'type' => $notificationType,
+                    'title' => $notificationTitle,
+                    'message' => $notificationMessage,
+                    'status' => 'unseen',
+                ]);
             }
 
             return response()->json(['success' => true, 'message' => 'Appointment status updated successfully'], 200);

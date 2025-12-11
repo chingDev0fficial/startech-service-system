@@ -212,7 +212,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
 export default function InProgress() {
     const { auth } = usePage<SharedData>().props;
     const currentUserId = auth.user?.id;
-    const echo = useEcho();
+    const echo = useEcho('');
     // const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [jobs, setJobs] = useState<Jobs[]>([]);
     const [services, setServices] = useState<any[]>([]);
@@ -313,19 +313,23 @@ export default function InProgress() {
             })
             .catch(err => console.error(err));
 
-        echo.channel('services')
-            .listen('.services.retrieve', (event: any) => {
-                // Fetch fresh data instead of appending to prevent duplicates
-                handleFetchedServices()
-                    .then(data => {
-                        const transformedData = transformServiceData(data);
-                        setJobs(transformedData);
-                    })
-                    .catch(err => console.error(err));
-            });
+        if (echo) {
+            echo.channel('services')
+                .listen('.services.retrieve', (event: any) => {
+                    // Fetch fresh data instead of appending to prevent duplicates
+                    handleFetchedServices()
+                        .then(data => {
+                            const transformedData = transformServiceData(data);
+                            setJobs(transformedData);
+                        })
+                        .catch(err => console.error(err));
+                });
+        }
 
         return () => {
-            echo.leaveChannel('services');
+            if (echo) {
+                echo.channel('services').stopListening('.services.retrieve');
+            }
         };
     }, [echo, currentUserId]);
 
@@ -356,8 +360,8 @@ export default function InProgress() {
         setOpenCompleteModal(false);
     }
 
-    const handleOpenNoteModal = (jobId: number) => {
-        setSelectedJobId(jobId);
+    const handleOpenNoteModal = (jobId: string | number) => {
+        setSelectedJobId(typeof jobId === 'string' ? parseInt(jobId) : jobId);
         setNoteText('');
         setIsNoteModalOpen(true);
     };
