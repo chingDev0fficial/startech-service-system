@@ -36,7 +36,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-function Dot({ serviceType }) {
+interface DotProps {
+    serviceType: string;
+}
+
+function Dot({ serviceType }: DotProps) {
     return (<>
         <div className="grid grid-cols-1 grid-rows-1 place-items-center">
             <div className={`rounded-xl w-[7px] h-[7px] ${ serviceType.toLowerCase() === "home service" ? "bg-blue-500" : "bg-orange-500"}`}></div>
@@ -44,7 +48,14 @@ function Dot({ serviceType }) {
     </>)
 }
 
-function DashboardCard({ icon, iconColor, title, value }) {
+interface DashboardCardProps {
+    icon: any;
+    iconColor: 'blue' | 'orange' | 'green' | 'purple';
+    title: string;
+    value: string | number;
+}
+
+function DashboardCard({ icon, iconColor, title, value }: DashboardCardProps) {
 
     const colors = {
         blue: {
@@ -81,11 +92,19 @@ function DashboardCard({ icon, iconColor, title, value }) {
     </>);
 }
 
-function PricingCard({ title, initialPrice, icon, description, onPriceChange }) {
+interface PricingCardProps {
+    title: string;
+    initialPrice: number;
+    icon: any;
+    description: string;
+    onPriceChange: (price: number) => void;
+}
+
+function PricingCard({ title, initialPrice, icon, description, onPriceChange }: PricingCardProps) {
     const [price, setPrice] = useState(initialPrice);
 
-    const handlePriceChange = (e) => {
-        const newPrice = e.target.value;
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newPrice = parseFloat(e.target.value) || 0;
         setPrice(newPrice);
         onPriceChange(newPrice);
     };
@@ -420,13 +439,8 @@ export default function Dashboard() {
         fetchInitialPrices();
     }, []);
 
-    // console.log("City Price:", cityPrice);
-    // console.log("Outside Price:", outsidePrice);
-
     const handleSavePrices = async () => {
-        console.log("Saving prices:", cityPrice, outsidePrice);
         try {
-            console.log("working")
             setIsSaving(true);
             const response = await fetch('dashboard/set-service-price', {
                 method: 'POST',
@@ -489,7 +503,8 @@ export default function Dashboard() {
             setError(null);
             return data.retrieved || [];
         } catch (error) {
-            setError(error.message);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            setError(errorMessage);
             return dataAppointments; // Return existing data on error
         } finally {
             setIsLoading(false);
@@ -524,7 +539,8 @@ export default function Dashboard() {
             setError(null);
             return data.retrieved || [];
         } catch (error) {
-            setError(error.message);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            setError(errorMessage);
             return dataTech; // Return existing data on error
         } finally {
             setIsLoading(false);
@@ -544,17 +560,16 @@ export default function Dashboard() {
     useEffect(() => {
         handleFetchAppointment()
             .then(data => {
-                const activeRepairCount = data.filter(appointment => appointment.status === "in-progress").length
-                const pendingAppointmentsCount = data.filter(appointment => appointment.status === "pending").length
+                const activeRepairCount = data.filter((appointment: any) => appointment.status === "in-progress").length
+                const pendingAppointmentsCount = data.filter((appointment: any) => appointment.status === "pending").length
 
-                console.log(data)
-                const totalRatings = data.reduce((sum, appointment) => 
+                const totalRatings = data.reduce((sum: number, appointment: any) => 
                     appointment.rating !== null && appointment.rating !== undefined 
                         ? sum + appointment.rating 
                         : sum, 
                     0
                 );
-                const numberOfRatings = data.filter(appointment => appointment.rating !== null && appointment.rating !== undefined).length;
+                const numberOfRatings = data.filter((appointment: any) => appointment.rating !== null && appointment.rating !== undefined).length;
                 const averageSatisfaction = numberOfRatings > 0 ? (totalRatings / numberOfRatings) : 0;
                 setSatisfaction(parseFloat(averageSatisfaction.toFixed(2)));
 
@@ -562,11 +577,11 @@ export default function Dashboard() {
                     style: 'currency',
                     currency: 'PHP',
                 });
-                const revenueTotal = data.filter(appointment => appointment.status === "completed")
-                    .reduce((sum, appointment) => sum + parseInt(appointment.price), 0);
+                const revenueTotal = data.filter((appointment: any) => appointment.status === "completed")
+                    .reduce((sum: number, appointment: any) => sum + parseInt(appointment.price), 0);
                 const formattedPrice = formatter.format(revenueTotal);
 
-                setTotalRevenue(formattedPrice);
+                setTotalRevenue(revenueTotal);
                 setActiveRepair(activeRepairCount);
                 setPendingAppointments(pendingAppointmentsCount);
                 setDataAppointments(data);
@@ -615,10 +630,10 @@ export default function Dashboard() {
         }))
 
     const statCards = [
-        {icon: ToolCase, iconColor: "blue", title: "Active Repairs", value: activeRepair},
-        {icon: ClipboardClock, iconColor: "orange", title: "pending Appointments", value: pendingAppointments},
-        {icon: PhilippinePeso, iconColor: "green", title: "Today's Revenue", value: totalRevenue},
-        {icon: Star, iconColor: "purple", title: "Satisfaction", value: `${satisfaction}/5`},
+        {icon: ToolCase, iconColor: "blue" as const, title: "Active Repairs", value: activeRepair},
+        {icon: ClipboardClock, iconColor: "orange" as const, title: "pending Appointments", value: pendingAppointments},
+        {icon: PhilippinePeso, iconColor: "green" as const, title: "Today's Revenue", value: totalRevenue},
+        {icon: Star, iconColor: "purple" as const, title: "Satisfaction", value: `${satisfaction}/5`},
     ];
 
     return (
@@ -701,7 +716,7 @@ export default function Dashboard() {
                             title="Today's Appointments"
                             items={todaysAppointment}
                             visibleCount={3}
-                            renderItem={(appointment) => (
+                            renderItem={(appointment: any) => (
                                 <div className={`flex items-center gap-2 rounded-[10px] ${appointment.serviceType.toLowerCase() === "home service" ? "bg-blue-500/30" : "bg-orange-500/30"} p-[10px]`}>
                                     <Dot serviceType={appointment.serviceType} />
                                     <div>
@@ -719,7 +734,7 @@ export default function Dashboard() {
                             title="Technician Availability"
                             items={availableStatusTechnician}
                             visibleCount={3}
-                            renderItem={(technician) => (
+                            renderItem={(technician: any) => (
                                 <div className="flex items-center justify-between" >
                                     <div className="grid grid-cols-[1fr_100px] gap-5 items-center">
                                         <Icon iconNode={technician.icon} className={ `h-6 w-6 ${ technician.status.toLowerCase() === "available" ? "text-green-700 bg-green-500/30" : technician.status.toLowerCase() === "busy" ? "text-orange-700 bg-orange-500/30" : "text-blue-700 bg-blue-500/30" } rounded-xl p-1 dark:text-[#ffffff]` } strokeWidth={2} />

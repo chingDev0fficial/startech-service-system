@@ -18,10 +18,29 @@ import { useState, useEffect } from 'react';
 
 const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
 
+interface Billing {
+    id: string;
+    service: string;
+    item: string;
+    serviceType: string;
+    serviceLocation: string;
+    customer: string;
+    customerEmail: string;
+    customerPhone: string;
+    address: string;
+    status: string;
+    amount: number;
+    description: string;
+    scheduleAt: string;
+    createdAt: string;
+    updatedAt: string;
+    date: string;
+}
+
 export default function ManageBillings() {
     // Initialization
     const echo = useEcho();
-    const [billings, setBillings] = useState([]);
+    const [billings, setBillings] = useState<Billing[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -50,8 +69,8 @@ export default function ManageBillings() {
     useEffect(() => {
         handleFetchedAppointments()
             .then(data => setFetchedAppointments(
-                data.filter(appointment => appointment.price && appointment.price !== 'null')
-                    .map(appointment => ({
+                data.filter((appointment: any) => appointment.price && appointment.price !== 'null')
+                    .map((appointment: any) => ({
                         id: appointment.id,
                         service: `${appointment.item} - ${appointment.service_type}`,
                         item: appointment.item,
@@ -84,8 +103,8 @@ export default function ManageBillings() {
                 .listen('.appointments.retrieve', (event: any) => {
                     setFetchedAppointments(prev =>
                     prev
-                        .filter(appointment => appointment.price && appointment.price !== 'null')
-                        .map(appointment => ({
+                        .filter((appointment: any) => appointment.price && appointment.price !== 'null')
+                        .map((appointment: any) => ({
                             id: appointment.id,
                             service: `${appointment.item} - ${appointment.service_type}`,
                             customer: appointment.client_name,
@@ -129,8 +148,8 @@ export default function ManageBillings() {
         setSelectedBilling(null);
     };
 
-    const getStatusBadge = (status) => {
-        const statusClasses = {
+    const getStatusBadge = (status: string) => {
+        const statusClasses: Record<string, string> = {
             'completed': 'bg-green-100 text-green-800',
             'in-progress': 'bg-yellow-100 text-yellow-800',
             // 'Waiting Part': 'bg-red-100 text-red-800'
@@ -406,7 +425,7 @@ export default function ManageBillings() {
                             <tbody className="divide-y divide-gray-200">
                                 {filteredBillings.length === 0 ? (
                                     <tr>
-                                        <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
+                                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                                             No billing records found
                                         </td>
                                     </tr>

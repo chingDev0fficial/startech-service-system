@@ -18,20 +18,31 @@ class InProgressController extends Controller
     public function update(Request $request)
     {
         try {
-            // Validate that if price is 0, a note must be provided
-            if ($request->price == 0 && (!$request->has('note') || empty(trim($request->note)))) {
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'A technician note is required when the price is $0'
-                ], 422);
-            }
+            // Only validate price if status is completed
+            if ($request->status === 'completed') {
+                // Validate that if price is 0, a note must be provided
+                if ($request->price == 0 && (!$request->has('note') || empty(trim($request->note)))) {
+                    return response()->json([
+                        'success' => false, 
+                        'message' => 'A technician note is required when the price is $0'
+                    ], 422);
+                }
 
-            DB::table('appointment')
-                ->where('id', $request->id)
-                ->update([
-                    'price' => $request->price,
-                    'updated_at' => now() // or Carbon::now()
-                ]);
+                // Only update price when completing the appointment
+                DB::table('appointment')
+                    ->where('id', $request->id)
+                    ->update([
+                        'price' => $request->price,
+                        'updated_at' => now()
+                    ]);
+            } else {
+                // For non-completion status changes, only update timestamp
+                DB::table('appointment')
+                    ->where('id', $request->id)
+                    ->update([
+                        'updated_at' => now()
+                    ]);
+            }
 
             $serviceUpdateData = [
                 'status' => $request->status,
@@ -47,12 +58,15 @@ class InProgressController extends Controller
                 ->where('appointment_id', $request->id)
                 ->update($serviceUpdateData);
 
-            DB::table('users')
-                ->where('id', $request->currentUserId)
-                ->update([
-                    'status' => $request->status == 'in-progress' ? 'unavailable' :
-                            ($request->status == 'completed' ? 'available' : null)
-                ]);
+            // Update technician status if provided
+            if ($request->has('technicianStatus') && !empty($request->technicianStatus)) {
+                DB::table('users')
+                    ->where('id', $request->currentUserId)
+                    ->update([
+                        'status' => $request->technicianStatus,
+                        'updated_at' => now()
+                    ]);
+            }
 
             // Notify admin about appointment status update
             $appointment = DB::table('appointment')
@@ -68,13 +82,23 @@ class InProgressController extends Controller
 
                 $notificationType = 'appointment_status_update';
                 $notificationTitle = 'Appointment Status Updated';
-                $notificationMessage = sprintf(
-                    'Technician %s updated appointment for %s to status: %s. Price: $%s',
-                    $technician->name ?? 'Unknown',
-                    $appointment->client_name,
-                    ucfirst(str_replace('-', ' ', $request->status)),
-                    number_format($request->price, 2)
-                );
+                
+                // Different message format based on status
+                if ($request->status === 'completed') {
+                    $notificationMessage = sprintf(
+                        'Technician %s completed appointment for %s. Price: $%s',
+                        $technician->name ?? 'Unknown',
+                        $appointment->client_name,
+                        number_format($request->price, 2)
+                    );
+                } else {
+                    $notificationMessage = sprintf(
+                        'Technician %s marked appointment for %s as %s',
+                        $technician->name ?? 'Unknown',
+                        $appointment->client_name,
+                        ucfirst(str_replace('-', ' ', $request->status))
+                    );
+                }
 
                 // Add note to message if provided
                 if ($request->has('note') && !empty($request->note)) {

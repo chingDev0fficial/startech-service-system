@@ -111,9 +111,6 @@ export default function TechnicianAppointments() {
 
             const result = await response.json();
             
-            // Debug: Log the entire response to see what we're getting
-            console.log('Availability status response:', result);
-            
             // Handle different possible response structures
             let status = null;
             
@@ -129,7 +126,6 @@ export default function TechnicianAppointments() {
             
             // Ensure status is either 'available' or 'unavailable'
             if (status === 'available' || status === 'unavailable') {
-                console.log('Setting availability status to:', status);
                 setAvailabilityStatus(status);
             } else {
                 console.warn('Unexpected status format:', result);
@@ -166,8 +162,6 @@ export default function TechnicianAppointments() {
             
             if (result.success) {
                 setAvailabilityStatus(newStatus);
-                // Optional: Show success notification
-                console.log('Availability updated successfully');
             } else {
                 // Handle case where server returns success: false
                 throw new Error(result.message || 'Failed to update availability');

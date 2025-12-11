@@ -167,10 +167,10 @@ class MyAppointmentController extends Controller
     {
         try {
             $validated = $request->validate([
-                'appointmentId' => 'required|integer|exists:service,id'
+                'appointmentId' => 'required|integer|exists:appointment,id'
             ]);
 
-            $serviceId = $validated['appointmentId'];
+            $appointmentId = $validated['appointmentId'];
             $currentUserId = Auth::id();
 
             if (!$currentUserId) {
@@ -182,7 +182,7 @@ class MyAppointmentController extends Controller
 
             // Get the service record to retrieve appointment_id, warranty info
             $service = DB::table('service')
-                ->where('id', $serviceId)
+                ->where('appointment_id', $appointmentId)
                 ->where('user_id', $currentUserId)
                 ->first();
 
@@ -193,7 +193,7 @@ class MyAppointmentController extends Controller
                 ], 404);
             }
 
-            $appointmentId = $service->appointment_id;
+            $serviceId = $service->id;
             $warranty = $service->warranty;
             $warrantyStatus = $service->warranty_status;
 

@@ -1,6 +1,7 @@
 import {useForm, usePage} from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import InputError from '@/components/input-error';
+import { type SharedData } from '@/types';
 
 import { NavBar } from "@/components/nav-bar";
 import { PrimaryButton } from "@/components/default-button";
@@ -28,13 +29,14 @@ interface AppointmentFormData {
     item: string,
     description: string,
     warrantyReceipt: File | null,
-    clientStatus: string
+    clientStatus: string,
+    [key: string]: any;
 }
 
 export default function Welcome(){
-    const { auth } = usePage().props;
+    const { auth } = usePage<SharedData>().props;
     const [notification, setNotification] = useState<string | null>(null);
-    const [preview, setPreview] = useState(null);
+    const [preview, setPreview] = useState<string | null>(null);
 
     const [cityPrice, setCityPrice] = useState(0);
     const [outsidePrice, setOutsidePrice] = useState(0);
@@ -61,7 +63,7 @@ export default function Welcome(){
         {
             component: "text",
             name: `Welcome, ${client.name}`,
-            href: null,
+            href: undefined,
             className: `transition-colors whitespace-nowrap ml-2 ${client ? "" : "hover:underline"}`
         },
         {

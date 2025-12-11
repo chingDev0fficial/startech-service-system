@@ -4,17 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-<<<<<<< HEAD
-=======
-use Illuminate\Database\Eloquent\Factories\HasFactory;
->>>>>>> 350df0ccb30e57741e8c8de5c20cab01fe9351b4
 use Illuminate\Notifications\Notifiable;
 
 class Notification extends Model
 {
     /** @use HasFactory<\Database\Factories\NotificationFactory> */
-    use HasUlids, HasFactory, Notifiable;
+    use HasFactory, Notifiable;
 
     protected $table = 'notification';
 

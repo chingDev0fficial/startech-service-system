@@ -64,8 +64,6 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
     const handleNoteChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const value =  e.target.value;
 
-        console.log(value);
-
         setNote(value);
         setError('');
     }
@@ -423,10 +421,9 @@ export default function InProgress() {
 
     const handleMark = async (jobId: number, status: string) => {
         if (!jobId) {
-            return console.error("No user ID provided");
+            console.error("No user ID provided");
+            return;
         }
-
-        console.log('handleMark', jobId, status);
 
         if (status === 'completed') {
             setJobData(jobId);
@@ -528,8 +525,8 @@ export default function InProgress() {
             id: jobId,
             currentUserId: currentUserId,
             status: status,
-            technicianStatus: technicianStatus,
-            ...(amount && { amount: amount })
+            price: amount || 0, // Always send price, default to 0 for status changes
+            technicianStatus: technicianStatus
         };
 
         const response = await fetch(route('in-progress.mark-in-progress'), {
@@ -546,7 +543,14 @@ export default function InProgress() {
             throw new Error(error.message || `HTTP error! status: ${response.status}`);
         }
 
-        return await response.json();
+        const result = await response.json();
+        
+        // Check if the backend indicates success
+        if (result.success === false) {
+            throw new Error(result.message || 'Failed to update appointment');
+        }
+
+        return result;
     }
 
     return (
@@ -739,7 +743,7 @@ export default function InProgress() {
                                     <div className="mt-3 flex gap-2 flex-wrap">
                                         {/* Send Note Button - Always visible */}
                                         <button
-                                            onClick={() => handleOpenNoteModal(parseInt(job.id))}
+                                            onClick={() => handleOpenNoteModal(job.id)}
                                             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 flex items-center gap-2"
                                             disabled={loadingJobs.has(job.appointmentId)}
                                         >
