@@ -103,7 +103,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
 
         // If amount is 0, note is required
         if (numericAmount === 0 && (!note || note.trim() === '')) {
-            setError('A note is required when the amount is $0');
+            setError('A note is required when the amount is ₱0');
             return;
         }
 
@@ -172,7 +172,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
                     <>
                         <div className='mb-4 border rounded-sm color-[#FFFFF] border-[#FFA500] bg-[#FFA500]/20 p-3'>
                             <p className='font-semibold text-sm'>⚠️ Note Required</p>
-                            <p className='text-sm mt-1'>Since the amount is $0, please explain why no charge is being applied. This will notify the admin.</p>
+                            <p className='text-sm mt-1'>Since the amount is ₱0, please explain why no charge is being applied. This will notify the admin.</p>
                         </div>
 
                         <div className='mb-1'>
