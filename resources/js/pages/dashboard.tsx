@@ -135,6 +135,9 @@ interface AppointmentDetails {
     name: string;
     status?: string;
     rating?: number;
+    technician_name?: string;
+    technician_email?: string;
+    technician_id?: number;
 }
 
 function AppointmentInfoModal({ isOpen, onClose, appointmentId }: { 
@@ -193,12 +196,12 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-sidebar border-sidebar-border">
+            <DialogContent className="bg-sidebar border-sidebar-border max-w-[95vw] sm:max-w-[90vw] md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-hidden">
                 <DialogHeader>
-                    <DialogTitle className="text-[#222831] dark:text-white">
+                    <DialogTitle className="text-base sm:text-lg md:text-xl text-[#222831] dark:text-white">
                         Appointment Details
                     </DialogTitle>
-                    <DialogDescription className="text-[#393E46] dark:text-gray-300">
+                    <DialogDescription className="text-xs sm:text-sm text-[#393E46] dark:text-gray-300">
                         {appointmentId && `Appointment ${appointmentId}`}
                     </DialogDescription>
                 </DialogHeader>
@@ -216,11 +219,11 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
                 )}
 
                 {appointmentData && !isLoading && (
-                    <div className="space-y-4 max-h-[500px] overflow-y-auto">
-                        <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-3 sm:space-y-4 max-h-[60vh] sm:max-h-[500px] overflow-y-auto px-1 sm:px-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Service Type</p>
-                                <p className="font-semibold text-[#222831] dark:text-white capitalize">{appointmentData.service_type}</p>
+                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white capitalize break-words">{appointmentData.service_type}</p>
                             </div>
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Status</p>
@@ -235,50 +238,66 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Customer Name</p>
-                                <p className="font-semibold text-[#222831] dark:text-white">{appointmentData.name}</p>
+                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.name}</p>
                             </div>
                             {appointmentData.phone_number && (
                                 <div>
                                     <p className="text-xs text-[#393E46] dark:text-gray-400">Phone Number</p>
-                                    <p className="font-semibold text-[#222831] dark:text-white">{appointmentData.phone_number}</p>
+                                    <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.phone_number}</p>
                                 </div>
                             )}
                         </div>
 
+                        {appointmentData.technician_name && (
+                            <div className="border-t border-sidebar-border pt-3 sm:pt-4 mt-2">
+                                <p className="text-xs text-[#393E46] dark:text-gray-400 mb-2 font-semibold">Assigned Technician</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                    <div>
+                                        <p className="text-xs text-[#393E46] dark:text-gray-400">Name</p>
+                                        <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.technician_name}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-[#393E46] dark:text-gray-400">Email</p>
+                                        <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.technician_email}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         <div>
                             <p className="text-xs text-[#393E46] dark:text-gray-400">Item/Device</p>
-                            <p className="font-semibold text-[#222831] dark:text-white">{appointmentData.item}</p>
+                            <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.item}</p>
                         </div>
 
                         <div>
                             <p className="text-xs text-[#393E46] dark:text-gray-400">Description</p>
-                            <p className="text-[#222831] dark:text-white">{appointmentData.description}</p>
+                            <p className="text-sm sm:text-base text-[#222831] dark:text-white break-words">{appointmentData.description}</p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Service Location</p>
-                                <p className="font-semibold text-[#222831] dark:text-white capitalize">{appointmentData.service_location}</p>
+                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white capitalize break-words">{appointmentData.service_location}</p>
                             </div>
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Mark As</p>
-                                <p className="font-semibold text-[#222831] dark:text-white capitalize">{appointmentData.mark_as}</p>
+                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white capitalize break-words">{appointmentData.mark_as}</p>
                             </div>
                         </div>
 
                         {appointmentData.address && (
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Address</p>
-                                <p className="text-[#222831] dark:text-white">{appointmentData.address}</p>
+                                <p className="text-sm sm:text-base text-[#222831] dark:text-white break-words">{appointmentData.address}</p>
                             </div>
                         )}
 
                         <div>
                             <p className="text-xs text-[#393E46] dark:text-gray-400">Scheduled At</p>
-                            <p className="font-semibold text-[#222831] dark:text-white">
+                            <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">
                                 {new Date(appointmentData.schedule_at).toLocaleString()}
                             </p>
                         </div>
@@ -290,7 +309,7 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
                                     href={`/storage/${appointmentData.warranty_receipt}`} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline"
+                                    className="text-sm sm:text-base text-blue-600 hover:underline break-all"
                                 >
                                     View Receipt
                                 </a>
@@ -300,14 +319,14 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
                         {appointmentData.price && (
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Price</p>
-                                <p className="font-semibold text-[#222831] dark:text-white">₱{appointmentData.price}</p>
+                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white">₱{appointmentData.price}</p>
                             </div>
                         )}
 
                         {appointmentData.rating && (
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Rating</p>
-                                <p className="font-semibold text-[#222831] dark:text-white">⭐ {appointmentData.rating}/5</p>
+                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white">⭐ {appointmentData.rating}/5</p>
                             </div>
                         )}
 
