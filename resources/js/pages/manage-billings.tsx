@@ -109,13 +109,15 @@ export default function ManageBillings() {
     }, [echo]);
 
     // Filter billings
-    const filteredBillings = billings.filter(billing => {
-        const matchesSearch = billing.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            billing.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            billing.id.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'all' || billing.status.toLowerCase().replace(' ', '') === statusFilter;
-        return matchesSearch && matchesStatus;
-    });
+    const filteredBillings = billings
+        .filter(billing => {
+            const matchesSearch = billing.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                billing.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                billing.id.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = statusFilter === 'all' || billing.status.toLowerCase().replace(' ', '') === statusFilter;
+            return matchesSearch && matchesStatus;
+        })
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     const handleViewBilling = (billing: any) => {
         setSelectedBilling(billing);
