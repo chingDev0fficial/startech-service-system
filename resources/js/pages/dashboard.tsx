@@ -196,8 +196,8 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-sidebar border-sidebar-border max-w-[95vw] sm:max-w-[90vw] md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-hidden">
-                <DialogHeader>
+            <DialogContent className="bg-sidebar border-sidebar-border max-w-[95vw] sm:max-w-[90vw] md:max-w-2xl lg:max-w-3xl max-h-[90vh] flex flex-col p-4 sm:p-6">
+                <DialogHeader className="flex-shrink-0 pb-3 sm:pb-4">
                     <DialogTitle className="text-base sm:text-lg md:text-xl text-[#222831] dark:text-white">
                         Appointment Details
                     </DialogTitle>
@@ -219,7 +219,7 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
                 )}
 
                 {appointmentData && !isLoading && (
-                    <div className="space-y-3 sm:space-y-4 max-h-[60vh] sm:max-h-[500px] overflow-y-auto px-1 sm:px-2">
+                    <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-2 sm:pr-3 -mr-2 sm:-mr-3">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Service Type</p>
@@ -330,18 +330,18 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
                             </div>
                         )}
 
-                        <div className="text-xs text-[#393E46] dark:text-gray-400 pt-2 border-t border-sidebar-border">
-                            <p>Created: {new Date(appointmentData.created_at).toLocaleString()}</p>
+                        <div className="text-xs text-[#393E46] dark:text-gray-400 pt-2 border-t border-sidebar-border pb-4">
+                            <p className="mb-1">Created: {new Date(appointmentData.created_at).toLocaleString()}</p>
                             <p>Updated: {new Date(appointmentData.updated_at).toLocaleString()}</p>
                         </div>
                     </div>
                 )}
 
-                <div className="flex justify-end gap-2 mt-4">
+                {/* <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-sidebar-border flex-shrink-0">
                     <Button onClick={onClose} variant="outline">
                         Close
                     </Button>
-                </div>
+                </div> */}
             </DialogContent>
         </Dialog>
     );
