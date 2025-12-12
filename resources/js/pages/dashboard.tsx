@@ -631,9 +631,9 @@ export default function Dashboard() {
 
     const statCards = [
         {icon: ToolCase, iconColor: "blue" as const, title: "Active Repairs", value: activeRepair},
-        {icon: ClipboardClock, iconColor: "orange" as const, title: "pending Appointments", value: pendingAppointments},
-        {icon: PhilippinePeso, iconColor: "green" as const, title: "Today's Revenue", value: totalRevenue},
-        {icon: Star, iconColor: "purple" as const, title: "Satisfaction", value: `${satisfaction}/5`},
+        {icon: ClipboardClock, iconColor: "orange" as const, title: "Pending Appointments", value: pendingAppointments},
+        {icon: PhilippinePeso, iconColor: "green" as const, title: "Total Revenue", value: totalRevenue},
+        {icon: Star, iconColor: "purple" as const, title: "Ratings", value: `${satisfaction}/5`},
     ];
 
     return (
@@ -737,12 +737,12 @@ export default function Dashboard() {
                             renderItem={(technician: any) => (
                                 <div className="flex items-center justify-between" >
                                     <div className="grid grid-cols-[1fr_100px] gap-5 items-center">
-                                        <Icon iconNode={technician.icon} className={ `h-6 w-6 ${ technician.status.toLowerCase() === "available" ? "text-green-700 bg-green-500/30" : technician.status.toLowerCase() === "busy" ? "text-orange-700 bg-orange-500/30" : "text-blue-700 bg-blue-500/30" } rounded-xl p-1 dark:text-[#ffffff]` } strokeWidth={2} />
+                                        <Icon iconNode={technician.icon} className={ `h-6 w-6 ${ technician.status.toLowerCase() === "available" ? "text-green-700 bg-green-500/30" : technician.status.toLowerCase() === "busy" ? "text-orange-700 bg-orange-500/30" : "text-red-700 bg-red-500/30" } rounded-xl p-1 dark:text-[#ffffff]` } strokeWidth={2} />
                                         <h1 className="text-[0.8rem] text-[#222831] font-normal dark:text-[#ffffff] whitespace-nowrap">
                                             {technician.name}
                                         </h1>
                                     </div>
-                                    <div className={`flex justify-center items-center font-medium w-20 text-[0.8rem] rounded-xl ${ technician.status.toLowerCase() === "available" ? "text-green-700 bg-green-500/30" : technician.status.toLowerCase() === "busy" ? "text-orange-700 bg-orange-500/30" : "text-blue-700 bg-blue-500/30" } p-[1px] dark:text-[#ffffff]`}>
+                                    <div className={`flex justify-center items-center font-medium w-20 text-[0.8rem] rounded-xl ${ technician.status.toLowerCase() === "available" ? "text-green-700 bg-green-500/30" : technician.status.toLowerCase() === "busy" ? "text-orange-700 bg-orange-500/30" : "text-red-700 bg-red-500/30" } p-[1px] dark:text-[#ffffff]`}>
                                         { technician.status }
                                     </div>
                                 </div>
