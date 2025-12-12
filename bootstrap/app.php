@@ -29,8 +29,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withSchedule(function ($schedule) {
-        // Run the scheduled availability update command daily at midnight
-        $schedule->command('availability:update-scheduled')->daily();
+        // Run the scheduled availability update command every minute (for testing/development)
+        // Change to ->daily() for production to run at midnight only
+        $schedule->command('availability:update-scheduled')->everyMinute();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

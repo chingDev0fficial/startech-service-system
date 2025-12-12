@@ -494,21 +494,21 @@ export default function Welcome(){
                                 <input name="fullname" value={data.fullname} onChange={handleChange} type="text" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Full Name" required />
                                 <input name="email" value={data.email} onChange={handleChange} type="email" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Email"  required />
                                 <input name="phone_no" value={data.phone_no} onChange={handleChange} type="tel" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Phone Number" required />
-                                <input name="address" value={data.address} onChange={handleChange} type="text" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Address (for home service only)" />
+                                <input name="address" value={data.address} onChange={handleChange} type="text" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Address (for home service only)" required={data.serviceLocation === 'home-service' && !data.address?.trim()} />
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-[10px] w-full">
                             <label className="font-medium text-[#222831]">Client Device</label>
-                            <input name="item" value={data.item} onChange={handleChange} type="text" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Eg. Printer Epson L23500" />
+                            <input name="item" value={data.item} onChange={handleChange} type="text" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Eg. Printer Epson L23500" required />
                             <label className="font-medium text-[#222831]">Problem Description</label>
-                            <textarea name="description" value={data.description} onChange={handleChange} className="h-32 rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Please describe the issue you're experiencing..."></textarea>
+                            <textarea name="description" value={data.description} onChange={handleChange} className="h-32 rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Please describe the issue you're experiencing..." required ></textarea>
                         </div>
 
 
                         <div className="flex flex-col gap-[1px] w-full">
                             <label className="font-medium text-[#222831]">Warranty Sticker/Reciept</label>
-                            <input name="warrantyReceipt" onChange={handleImageChange} type="file" accept="image/*" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0 w-[100%]" />
+                            <input name="warrantyReceipt" onChange={handleImageChange} type="file" accept="image/*" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0 w-[100%]" required />
                             {preview && (
                                 <div className="mt-4">
                                 <p>Image Preview:</p>
@@ -522,10 +522,9 @@ export default function Welcome(){
                         </div>
                         <PrimaryButton 
                             text="Confirm Booking" 
-                            type="submit" 
+                            type="submit"
                             onClick={() => {}} 
                             processing={processing}
-                            disabled={data.serviceLocation === 'home-service' && !data.address?.trim()}
                         />
                     </form>
                 </div>
