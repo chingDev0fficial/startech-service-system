@@ -30,6 +30,7 @@ class HistoryController extends Controller
                 'appointment.item as appointment_item_name',
                 'appointment.service_type as appointment_service_type',
                 'appointment.service_location as appointment_service_location',
+                'appointment.address as address',
                 'appointment.schedule_at as appointment_date',
                 'appointment.updated_at as completion_date',
                 'appointment.description as appointment_description',

@@ -17,6 +17,8 @@ Route::get('get-service-price', [DashboardController::class, 'getServicePrice'])
 //     ->name('fetch.appointment-data');
 // Route::get('my-appointments/fetch', [App\Http\Controllers\MyAppointmentController::class, 'fetch'])
 //             ->name('my-appointments.fetch');
+// Route::get('manage-appointments/fetch', [AppointmentController::class, 'fetch'])
+//     ->name('appointment.fetch');
 
 Route::middleware(['client'])->group(function () {
 

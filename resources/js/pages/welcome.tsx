@@ -12,6 +12,7 @@ import { TimeList } from "@/components/time-list";
 import { CustomFooter } from "@/components/custom-footer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { echo } from '@laravel/echo-react';
 
 type ServiceType = "hardware repair" | "software solution" | "maintenance"
@@ -40,8 +41,20 @@ export default function Welcome(){
 
     const [cityPrice, setCityPrice] = useState(0);
     const [outsidePrice, setOutsidePrice] = useState(0);
+    const [minTime, setMinTime] = useState<string>('');
 
     const client = auth.client;
+
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get current time in HH:MM format
+    const getCurrentTime = () => {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    };
 
     const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormData>({
         clientId: client ? client.id : 0,
@@ -144,6 +157,21 @@ export default function Welcome(){
         fetchInitialPrices();
     }, []);
 
+    // Update minTime when date changes or on initial load
+    useEffect(() => {
+        if (data.date === today) {
+            const currentTime = getCurrentTime();
+            setMinTime(currentTime);
+            
+            // Clear time if it's in the past
+            if (data.time && data.time < currentTime) {
+                setData('time', '');
+            }
+        } else {
+            setMinTime('');
+        }
+    }, [data.date]);
+
     const options = [
         { value: "in-store", title: "In-Store Service", sub: "Visit our service center" },
         {
@@ -174,6 +202,30 @@ export default function Welcome(){
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = e.target;
+        
+        // If date is changed, update minimum time and clear past times
+        if (name === 'date') {
+            if (value === today) {
+                const currentTime = getCurrentTime();
+                setMinTime(currentTime);
+                
+                // Clear time if it's in the past
+                if (data.time && data.time < currentTime) {
+                    setData('time', '');
+                }
+            } else {
+                setMinTime('');
+            }
+        }
+        
+        // Prevent selecting past time on today's date
+        if (name === 'time' && data.date === today) {
+            const currentTime = getCurrentTime();
+            if (value < currentTime) {
+                return; // Don't update if trying to select past time
+            }
+        }
+        
         setData(
             name as keyof AppointmentFormData,
             value,
@@ -394,22 +446,26 @@ export default function Welcome(){
                             </div>
 
                             <div className="flex flex-col gap-[10px] w-full">
-                                <label className="font-medium text-[#222831]">Select Time & Date</label>
+                                <label className="font-medium text-[#222831]">Select Date</label>
                                 <input
                                     type="date"
                                     name="date"
                                     value={data.date}
                                     onChange={handleChange}
+                                    min={today}
                                     className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0"
                                     required
                                 />
-                                <div className="grid grid-cols-3 gap-2">
-                                    <TimeList
-                                        times={technicianAvailableTime}
-                                        value={data.time}
-                                        onChange={(time) => setData('time', time)}
-                                    />
-                                </div>
+                                <label className="font-medium text-[#222831] mt-2">Select Time</label>
+                                <input
+                                    type="time"
+                                    name="time"
+                                    value={data.time}
+                                    onChange={handleChange}
+                                    min={minTime}
+                                    className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0"
+                                    required
+                                />
                             </div>
                         </div>
                         <div className="flex flex-col gap-[10px] w-full">
@@ -464,7 +520,13 @@ export default function Welcome(){
                                 </div>
                             )}
                         </div>
-                        <PrimaryButton text="Confirm Booking" type="submit" onClick={() => {}} processing={processing} />
+                        <PrimaryButton 
+                            text="Confirm Booking" 
+                            type="submit" 
+                            onClick={() => {}} 
+                            processing={processing}
+                            disabled={data.serviceLocation === 'home-service' && !data.address?.trim()}
+                        />
                     </form>
                 </div>
             </div>

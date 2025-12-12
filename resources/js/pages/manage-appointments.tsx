@@ -128,6 +128,10 @@ function ViewAppointment({ isOpen, onClose, appointmentData }) {
                                     <p className="text-sm text-gray-600">Email</p>
                                     <p className="font-medium">{appointmentDetails.client_email}</p>
                                 </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Address</p>
+                                    <p className="font-medium">{appointmentDetails.address}</p>
+                                </div>
                             </div>
                         </div>
 

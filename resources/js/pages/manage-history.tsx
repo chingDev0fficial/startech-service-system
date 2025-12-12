@@ -59,6 +59,7 @@ interface HistoryRecord {
     rating: number | null;
     serviceType: string;
     serviceLocation: string;
+    address: string;
     warranty: string | null;
     warrantyStatus: string | null;
 }
@@ -72,6 +73,7 @@ interface Jobs {
     appointment_date: string;
     appointment_service_type: string;
     appointment_service_location: string;
+    address: string;
     appointment_description: string;
     service_status: string;
     technician_name: string;
@@ -178,6 +180,7 @@ export default function ManageHistory() {
                 rating: service.rating || null, // You might want to get this from your service data
                 serviceType: service.appointment_service_type,
                 serviceLocation: serviceLocation, // Set based on current route
+                address: service.address,
                 warranty: service.warranty || null,
                 warrantyStatus: service.warranty_status || null
             }));
@@ -309,6 +312,11 @@ export default function ManageHistory() {
                                     <div>
                                         <p className="text-sm text-gray-600">Customer Name</p>
                                         <p className="font-medium">{selectedRecord.customer}</p>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-sm text-gray-600">Customer Address</p>
+                                        <p className="font-medium">{selectedRecord.address}</p>
                                     </div>
                                 </div>
                             </div>
