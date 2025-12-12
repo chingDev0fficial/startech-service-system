@@ -206,7 +206,7 @@ export default function TechnicianAppointments() {
         setSavingSchedule(true);
         
         try {
-            const response = await fetch(route('my-appointments.schedule.update'), {
+            const response = await fetch(route('my-appointments.availability.update'), {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
@@ -245,7 +245,7 @@ export default function TechnicianAppointments() {
         setSavingSchedule(true);
         
         try {
-            const response = await fetch(route('my-appointments.schedule.update'), {
+            const response = await fetch(route('my-appointments.availability.update'), {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
