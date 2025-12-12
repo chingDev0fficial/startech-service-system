@@ -5,6 +5,7 @@ import { type BreadcrumbItem, type SharedData } from '@/types';
 import { useState, useEffect } from 'react';
 import { useEcho } from '@laravel/echo-react';
 import { usePage } from '@inertiajs/react';
+import { Input } from '@/components/ui/input';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -76,6 +77,8 @@ export default function TechnicianAppointments() {
     // Initialize as 'available' by default to prevent uncontrolled to controlled warning
     const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'unavailable'>('available');
     const [updatingAvailability, setUpdatingAvailability] = useState<boolean>(false);
+    const [scheduledUnavailableDate, setScheduledUnavailableDate] = useState<string>('');
+    const [savingSchedule, setSavingSchedule] = useState<boolean>(false);
     
     const [technicianInfo] = useState<TechnicianInfo>({
         name: auth.user?.name || 'Technician Name',
@@ -132,6 +135,15 @@ export default function TechnicianAppointments() {
                 // Fallback to available if status format is unexpected
                 setAvailabilityStatus('available');
             }
+
+            // Get scheduled unavailable date if exists
+            if (result.scheduled_unavailable_date) {
+                setScheduledUnavailableDate(result.scheduled_unavailable_date);
+            } else if (result.data && result.data.scheduled_unavailable_date) {
+                setScheduledUnavailableDate(result.data.scheduled_unavailable_date);
+            } else {
+                setScheduledUnavailableDate('');
+            }
         } catch (err) {
             console.error('Error fetching availability status:', err);
             // Fallback to available on error
@@ -163,18 +175,112 @@ export default function TechnicianAppointments() {
             if (result.success) {
                 setAvailabilityStatus(newStatus);
             } else {
-                // Handle case where server returns success: false
                 throw new Error(result.message || 'Failed to update availability');
             }
         } catch (err) {
             console.error('Error updating availability:', err);
-            // Revert to previous status by fetching from server
             await fetchAvailabilityStatus();
-            // Optional: Show error notification
             alert('Failed to update availability status. Please try again.');
         } finally {
             setUpdatingAvailability(false);
         }
+    };
+
+    const handleScheduleUnavailable = async () => {
+        if (!scheduledUnavailableDate) {
+            // Clear the schedule if date is empty
+            await handleClearSchedule();
+            return;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(scheduledUnavailableDate);
+        selectedDate.setHours(0, 0, 0, 0);
+
+        if (selectedDate <= today) {
+            alert('Please select a future date');
+            return;
+        }
+
+        setSavingSchedule(true);
+        
+        try {
+            const response = await fetch(route('my-appointments.availability.update'), {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    scheduled_unavailable_date: scheduledUnavailableDate
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Schedule saved! Your account will automatically become unavailable on ' + 
+                    new Date(scheduledUnavailableDate).toLocaleDateString('en-PH', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }));
+            } else {
+                throw new Error(result.message || 'Failed to schedule unavailability');
+            }
+        } catch (err) {
+            console.error('Error scheduling unavailability:', err);
+            alert('Failed to save schedule. Please try again.');
+        } finally {
+            setSavingSchedule(false);
+        }
+    };
+
+    const handleClearSchedule = async () => {
+        setSavingSchedule(true);
+        
+        try {
+            const response = await fetch(route('my-appointments.availability.update'), {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    scheduled_unavailable_date: null
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                setScheduledUnavailableDate('');
+                alert('Schedule cleared successfully!');
+            } else {
+                throw new Error(result.message || 'Failed to clear schedule');
+            }
+        } catch (err) {
+            console.error('Error clearing schedule:', err);
+            alert('Failed to clear schedule. Please try again.');
+        } finally {
+            setSavingSchedule(false);
+        }
+    };
+
+    // Get minimum date (tomorrow)
+    const getMinDate = () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return tomorrow.toISOString().split('T')[0];
     };
 
     const handleFetchedServices = async () => {
@@ -348,6 +454,63 @@ export default function TechnicianAppointments() {
                             <div className="text-sm text-gray-500">Shift: {technicianInfo.shift}</div>
                             <div className="text-sm text-gray-500">ID: {technicianInfo.id}</div>
                         </div>
+                    </div>
+                    
+                    {/* Schedule Unavailability Section */}
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Schedule Auto-Unavailability</h3>
+                        <p className="text-xs text-gray-600 mb-3">
+                            Set a future date when your account should automatically become unavailable.
+                        </p>
+                        <div className="flex items-center gap-3">
+                            <div className="flex-1">
+                                <input
+                                    type="date"
+                                    value={scheduledUnavailableDate}
+                                    onChange={(e) => setScheduledUnavailableDate(e.target.value)}
+                                    min={getMinDate()}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                    placeholder="Select date"
+                                />
+                            </div>
+                            <button
+                                onClick={handleScheduleUnavailable}
+                                disabled={savingSchedule}
+                                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium flex items-center gap-2"
+                            >
+                                {savingSchedule ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        Saving...
+                                    </>
+                                ) : (
+                                    'Save Schedule'
+                                )}
+                            </button>
+                            {scheduledUnavailableDate && (
+                                <button
+                                    onClick={handleClearSchedule}
+                                    disabled={savingSchedule}
+                                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 text-sm"
+                                >
+                                    Clear
+                                </button>
+                            )}
+                        </div>
+                        {scheduledUnavailableDate && (
+                            <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-xs text-amber-700">
+                                    Scheduled: Your account will automatically become <strong>unavailable</strong> on <strong>{new Date(scheduledUnavailableDate).toLocaleDateString('en-PH', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}</strong>
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
 

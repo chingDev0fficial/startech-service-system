@@ -249,30 +249,111 @@ export default function InProgress() {
         setIsTransferModalOpen(true);
     };
 
+    const getCookie = (name: string): string => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+            return parts.pop()?.split(';').shift() || '';
+        }
+        return '';
+    };
+
+    // const fetchFreshCsrfToken = async (): Promise<string> => {
+    //     try {
+    //         // First, get fresh CSRF cookie
+    //         await fetch('/sanctum/csrf-cookie', {
+    //             credentials: 'include'
+    //         });
+            
+    //         // Wait for cookie to be set
+    //         await new Promise(resolve => setTimeout(resolve, 200));
+            
+    //         // Now make a simple GET request that will include the new token in response
+    //         const response = await fetch(route('my-appointments.fetch'), {
+    //             method: 'GET',
+    //             credentials: 'include'
+    //         });
+            
+    //         if (response.ok) {
+    //             // Get the CSRF token from the meta tag after the request
+    //             // Laravel should have updated it
+    //             const meta = document.querySelector('meta[name="csrf-token"]');
+    //             const token = meta?.getAttribute('content') || '';
+                
+    //             if (token) {
+    //                 console.log('Fresh CSRF token obtained');
+    //                 return token;
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.error('Failed to refresh CSRF token:', error);
+    //     }
+    //     return '';
+    // };
+
+
+    const fetchFreshCsrfToken = async (): Promise<string> => {
+        try {
+            // Make a simple GET request to refresh the session
+            // This will cause Laravel to regenerate the CSRF token
+            const response = await fetch(window.location.href, {
+                method: 'HEAD', // Use HEAD to avoid getting page content
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                // After the request, check if meta tag was updated
+                // In reality, it won't be updated without a full page reload
+                // So we'll just prompt the user to reload
+                return '';
+            }
+        } catch (error) {
+            console.error('Failed to refresh session:', error);
+        }
+        return '';
+    };
+
     const handleTransferSubmit = async () => {
         if (!selectedAppointmentId) return;
 
         setTransferring(true);
+
+        let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
         try {
             const response = await fetch(route('appointment.transfer'), {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    "X-CSRF-TOKEN": csrfToken
                 },
                 body: JSON.stringify({
                     appointmentId: selectedAppointmentId
-                })
+                }),
+                credentials: 'include'
             });
 
+            // Handle CSRF token mismatch (419) - session expired
+            if (response.status === 419) {
+                // Show user-friendly message and reload
+                if (confirm('Your session has expired. The page will reload to refresh your session. Click OK to continue.')) {
+                    window.location.reload();
+                } else {
+                    setIsTransferModalOpen(false);
+                }
+                return;
+            }
+
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorData = await response.json().catch(() => ({ 
+                    message: 'Network error occurred' 
+                }));
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
 
             const result = await response.json();
             
             if (result.success) {
-                // Remove the transferred appointment from the list
                 setJobs(prev => prev.filter(job => job.appointmentId !== selectedAppointmentId));
                 setIsTransferModalOpen(false);
                 setSelectedAppointmentId(null);
@@ -282,7 +363,8 @@ export default function InProgress() {
             }
         } catch (err) {
             console.error('Error transferring appointment:', err);
-            alert('Failed to transfer appointment. No available technicians.');
+            const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+            alert(`Failed to transfer appointment: ${errorMessage}`);
         } finally {
             setTransferring(false);
         }
