@@ -65,8 +65,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('fetch.todaysAppoint');
         Route::get('dashboard/get-service-price', [DashboardController::class, 'getServicePrice'])
             ->name('get.service.price');
-        // Route::get('dashboard/fetch-appointment-data/{id}', [DashboardController::class, 'fetchAppointmentData'])
-        //     ->name('fetch.appointment-data');
+        Route::get('dashboard/fetch-appointment-data/{id}', [DashboardController::class, 'fetchAppointmentData'])
+            ->name('fetch.appointment-data');
         Route::get('dashboard/fetch-technician', [DashboardController::class, 'fetchTech']);
         Route::post('dashboard/set-service-price', [DashboardController::class, 'updateServicePrice'])
             ->name('update.service.price');
