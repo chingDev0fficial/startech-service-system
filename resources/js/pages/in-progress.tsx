@@ -1,13 +1,11 @@
 import AppLayout from '@/layouts/app-layout';
-import { Head } from '@inertiajs/react';
-import AppTable, { Column } from '@/components/table';
+import { Head, usePage } from '@inertiajs/react';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { useEcho } from '@laravel/echo-react';
 import { useState, useEffect } from 'react';
-import { usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 
-import { Eye, Check, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
@@ -221,7 +219,8 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
 };
 
 export default function InProgress() {
-    const { auth } = usePage<SharedData>().props;
+    const pageProps = usePage<SharedData>().props;
+    const auth = pageProps.auth;
     const currentUserId = auth.user?.id;
     const echo = useEcho('');
     // const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -522,6 +521,7 @@ export default function InProgress() {
 
     // Update your makeApiCall function to handle amount
     const makeApiCallWithAmount = async (jobId: number, status: string, amount?: number, technicianStatus?: string, note?: string) => {
+        const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
         const trimmedNote = note?.trim() || '';
         
         const body = {
@@ -535,36 +535,48 @@ export default function InProgress() {
         };
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
         try {
+            console.log('makeApiCallWithAmount - Sending request:', {
+                url: route('in-progress.mark-in-progress'),
+                csrfToken: csrfToken ? csrfToken.substring(0, 20) + '...' : 'MISSING',
+                body
+            });
+
             const response = await fetch(route('in-progress.mark-in-progress'), {
                 method: 'POST',
                 body: JSON.stringify(body),
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    "X-CSRF-TOKEN": csrfToken
                 },
-                signal: controller.signal
+                signal: controller.signal,
+                credentials: 'include'
             });
 
             clearTimeout(timeoutId);
 
             if (!response.ok) {
                 const error = await response.json().catch(() => ({ message: 'Network error' }));
+                console.error('makeApiCallWithAmount - Response error:', {
+                    status: response.status,
+                    error
+                });
                 throw new Error(error.message || `HTTP error! status: ${response.status}`);
             }
 
             const result = await response.json();
+            console.log('makeApiCallWithAmount - Success:', result);
             
             if (result.success === false) {
                 throw new Error(result.message || 'Failed to update appointment');
             }
 
             return result;
-        } catch (error: any) {
+        } catch (error) {
             clearTimeout(timeoutId);
-            if (error.name === 'AbortError') {
+            if (error instanceof Error && error.name === 'AbortError') {
                 throw new Error('Request timeout - please try again');
             }
             throw error;
@@ -573,46 +585,58 @@ export default function InProgress() {
 
     // Or update your existing makeApiCall function:
     const makeApiCall = async (jobId: number, status: string, amount?: number, technicianStatus?: string) => {
+        const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
         const body = {
             id: jobId,
             currentUserId: currentUserId,
             status: status,
-            price: amount || 0, // Always send price, default to 0 for status changes
+            price: amount || 0,
             technicianStatus: technicianStatus
         };
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
         try {
+            console.log('makeApiCall - Sending request:', {
+                url: route('in-progress.mark-in-progress'),
+                csrfToken: csrfToken ? csrfToken.substring(0, 20) + '...' : 'MISSING',
+                body
+            });
+
             const response = await fetch(route('in-progress.mark-in-progress'), {
                 method: 'POST',
                 body: JSON.stringify(body),
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    "X-CSRF-TOKEN": csrfToken
                 },
-                signal: controller.signal
+                signal: controller.signal,
+                credentials: 'include'
             });
 
             clearTimeout(timeoutId);
 
             if (!response.ok) {
                 const error = await response.json().catch(() => ({ message: 'Network error' }));
+                console.error('makeApiCall - Response error:', {
+                    status: response.status,
+                    error
+                });
                 throw new Error(error.message || `HTTP error! status: ${response.status}`);
             }
 
             const result = await response.json();
+            console.log('makeApiCall - Success:', result);
             
-            // Check if the backend indicates success
             if (result.success === false) {
                 throw new Error(result.message || 'Failed to update appointment');
             }
 
             return result;
-        } catch (error: any) {
+        } catch (error) {
             clearTimeout(timeoutId);
-            if (error.name === 'AbortError') {
+            if (error instanceof Error && error.name === 'AbortError') {
                 throw new Error('Request timeout - please try again');
             }
             throw error;
