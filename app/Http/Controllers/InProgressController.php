@@ -18,6 +18,13 @@ class InProgressController extends Controller
     public function update(Request $request)
     {
         try {
+            // Debug logging
+            Log::info('InProgressController.update called', [
+                'request_all' => $request->all(),
+                'headers' => $request->headers->all(),
+                'csrf_token_present' => $request->header('X-CSRF-TOKEN') ? 'yes' : 'no'
+            ]);
+            
             // Only validate price if status is completed
             if ($request->status === 'completed') {
                 // Validate that if price is 0, a note must be provided
