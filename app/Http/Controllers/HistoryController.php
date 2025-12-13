@@ -34,13 +34,16 @@ class HistoryController extends Controller
                 'appointment.schedule_at as appointment_date',
                 'appointment.updated_at as completion_date',
                 'appointment.description as appointment_description',
-                // 'appointment.status as appointment_status',
                 'appointment.price as amount',
                 'client.id as client_id',
                 'client.name as client_name',
                 'client.email as client_email',
                 'client.phone_number as client_phone',
-                DB::raw('COALESCE(users.name, "Technician Removed") as technician_name'),
+                DB::raw('CASE 
+                    WHEN service.user_id IS NULL THEN "Not Assigned"
+                    WHEN users.id IS NULL THEN "Technician Removed"
+                    ELSE users.name 
+                END as technician_name'),
                 DB::raw('COALESCE(users.email, "") as technician_email'),
                 'service.rating as rating',
                 'service.user_id',
@@ -48,7 +51,7 @@ class HistoryController extends Controller
                 'service.warranty_status as warranty_status',
                 'service.technician_note as technician_note',
                 'service.note_sent_at as note_sent_at',
-                DB::raw('COALESCE(service.status, "unknown") as service_status')
+                DB::raw('COALESCE(service.status, "pending") as service_status')
             )
             ->get();
 
