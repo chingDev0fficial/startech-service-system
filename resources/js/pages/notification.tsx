@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { useEffect, useState } from 'react';
-import { Bell, Check, Clock, AlertTriangle, Info, CheckCircle, Calendar, Settings, Eye, X } from 'lucide-react';
+import { Bell, Check, Clock, AlertTriangle, Info, CheckCircle, Calendar, Settings, Eye, X, Star } from 'lucide-react';
 import { Head, usePage } from '@inertiajs/react';
 import { useEcho } from '@laravel/echo-react';
 
@@ -44,6 +44,8 @@ const getIconByType = (type: string) => {
             return Calendar;
         case 'technician_note':
             return Bell;
+        case 'rating_submitted':
+                return Star;
         case 'settings':
             return Settings;
         default:
@@ -322,18 +324,20 @@ export default function Notification() {
     const getNotificationStyle = (type: string) => {
         switch (type.toLowerCase()) {
             case 'success':
-                return 'border-l-green-500 bg-green-50';
+                return 'border-l-green-500';
             case 'warning':
-                return 'border-l-yellow-500 bg-yellow-50';
+                return 'border-l-yellow-500';
             case 'error':
-                return 'border-l-red-500 bg-red-50';
+                return 'border-l-red-500';
             case 'technician_note':
-                return 'border-l-purple-500 bg-purple-50';
+                return 'border-l-purple-500';
             case 'client_req':
-                return 'border-l-indigo-500 bg-indigo-50';
+                return 'border-l-indigo-500';
+            case 'rating_submitted':
+                return 'border-l-purple-500';
             case 'info':
             default:
-                return 'border-l-blue-500 bg-blue-50';
+                return 'border-l-blue-500';
         }
     };
 
@@ -349,6 +353,8 @@ export default function Notification() {
                 return 'text-purple-600';
             case 'client_req':
                 return 'text-indigo-600';
+            case 'rating_submitted':
+                return 'text-purple-600';
             case 'info':
             default:
                 return 'text-blue-600';

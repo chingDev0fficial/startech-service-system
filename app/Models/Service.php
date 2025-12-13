@@ -21,6 +21,7 @@ class Service extends Model
     protected $fillable = [
         'appointment_id',
         'user_id',
+        'comment_id'
     ];
 
 

@@ -28,6 +28,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { Modal } from "flowbite-react";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -53,9 +54,10 @@ interface DashboardCardProps {
     iconColor: 'blue' | 'orange' | 'green' | 'purple';
     title: string;
     value: string | number;
+    onClick?: () => void;
 }
 
-function DashboardCard({ icon, iconColor, title, value }: DashboardCardProps) {
+function DashboardCard({ icon, iconColor, title, value, onClick }: DashboardCardProps) {
 
     const colors = {
         blue: {
@@ -80,7 +82,10 @@ function DashboardCard({ icon, iconColor, title, value }: DashboardCardProps) {
     const icon_text_color =  colors[iconColor].text;
 
     return (<>
-        <Card className="!flex-row items-center justify-between w-full bg-sidebar shadow-lg m-4 border border-sidebar-border p-2">
+        <Card 
+            className={`!flex-row items-center justify-between w-full bg-sidebar shadow-lg m-4 border border-sidebar-border p-2 ${onClick ? 'cursor-pointer hover:bg-sidebar-accent transition-colors' : ''}`}
+            onClick={onClick}
+        >
             <CardContent className="!p-[0]">
                 <CardTitle className="!font-normal text-[0.7rem] text-[#393E46] dark:text-[#ffffff]">{ title }</CardTitle>
                 <CardDescription className="!font-semibold text-[1.2rem] text-[#222831] dark:text-[#ffffff]">{ value }</CardDescription>
@@ -364,6 +369,158 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
     );
 }
 
+function ViewRatingsModal({isOpen, onClose} : {
+    isOpen: boolean;
+    onClose: () => void;
+}) {
+    const [ratings, setRatings] = useState<Array<any>>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleFetchRatings = async () => {
+        try {
+
+            const response = await fetch("dashboard/fetch-ratings", {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            console.log(`This is result => ${result}`);
+
+            if (result.success && result.data) {
+                setRatings(result.data);
+            } else {
+                throw new Error('Failed to fetch ratings');
+            }
+
+        } catch (error) {
+            throw new Error(`An error occour: ${error}`)
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        if (isOpen) {
+            handleFetchRatings();
+        }
+    }, [isOpen]);
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="bg-sidebar border-sidebar-border max-w-[95vw] sm:max-w-[90vw] md:max-w-4xl max-h-[90vh] flex flex-col p-4 sm:p-6">
+                <DialogHeader className="flex-shrink-0 pb-3 sm:pb-4">
+                    <DialogTitle className="text-base sm:text-lg md:text-xl text-[#222831] dark:text-white">
+                        Customer Ratings & Reviews
+                    </DialogTitle>
+                    <DialogDescription className="text-xs sm:text-sm text-[#393E46] dark:text-gray-300">
+                        View all customer feedback and ratings
+                    </DialogDescription>
+                </DialogHeader>
+
+                {isLoading && (
+                    <div className="flex items-center justify-center py-8">
+                        <p className="text-[#393E46] dark:text-white">Loading ratings...</p>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        {error}
+                    </div>
+                )}
+
+                {!isLoading && !error && ratings.length === 0 && (
+                    <div className="flex items-center justify-center py-8">
+                        <p className="text-[#393E46] dark:text-white">No ratings found</p>
+                    </div>
+                )}
+
+                {!isLoading && !error && ratings.length > 0 && (
+                    <div className="space-y-4 overflow-y-auto flex-1 pr-2 sm:pr-3 -mr-2 sm:-mr-3">
+                        {ratings.map((rating) => (
+                            <Card key={rating.id} className="bg-sidebar border-sidebar-border p-4">
+                                <div className="space-y-3">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold text-[#222831] dark:text-white">
+                                                {rating.client_name}
+                                            </h3>
+                                            <p className="text-xs text-[#393E46] dark:text-gray-400">
+                                                Appointment #{rating.appointment_id}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                            <span className="font-semibold text-[#222831] dark:text-white">
+                                                {rating.rating}/5
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                        <div>
+                                            <span className="text-[#393E46] dark:text-gray-400">Item: </span>
+                                            <span className="text-[#222831] dark:text-white font-medium">
+                                                {rating.item}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="text-[#393E46] dark:text-gray-400">Service: </span>
+                                            <span className="text-[#222831] dark:text-white font-medium capitalize">
+                                                {rating.service_type}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="text-[#393E46] dark:text-gray-400">Status: </span>
+                                            <span className={`inline-block px-2 py-0.5 rounded text-xs capitalize ${
+                                                rating.status === "completed" ? "bg-green-500/30 text-green-700" :
+                                                rating.status === "in-progress" ? "bg-yellow-500/30 text-yellow-700" :
+                                                "bg-orange-500/30 text-orange-700"
+                                            }`}>
+                                                {rating.status}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="text-[#393E46] dark:text-gray-400">Date: </span>
+                                            <span className="text-[#222831] dark:text-white">
+                                                {new Date(rating.schedule_at).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {rating.comment && (
+                                        <div className="pt-2 border-t border-sidebar-border">
+                                            <p className="text-xs text-[#393E46] dark:text-gray-400 mb-1">Comment:</p>
+                                            <p className="text-sm text-[#222831] dark:text-white italic">
+                                                "{rating.comment}"
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <div className="text-xs text-[#393E46] dark:text-gray-400 pt-2 border-t border-sidebar-border">
+                                        Reviewed on: {new Date(rating.created_at).toLocaleString()}
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 export default function Dashboard() {
     const echo = useEcho();
     const [currentDateTime, setCurrentDateTime] = useState<Date>(new Date());
@@ -390,6 +547,7 @@ export default function Dashboard() {
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+    const [isRatingsModalOpen, setIsRatingsModalOpen] = useState(false);
 
     const handlePendingClick = (appointmentId: string) => {
         setSelectedAppointmentId(appointmentId);
@@ -633,7 +791,9 @@ export default function Dashboard() {
         {icon: ToolCase, iconColor: "blue" as const, title: "Active Repairs", value: activeRepair},
         {icon: ClipboardClock, iconColor: "orange" as const, title: "Pending Appointments", value: pendingAppointments},
         {icon: PhilippinePeso, iconColor: "green" as const, title: "Total Revenue", value: totalRevenue},
-        {icon: Star, iconColor: "purple" as const, title: "Ratings", value: `${satisfaction}/5`},
+        {icon: Star, iconColor: "purple" as const, title: "Ratings", value: `${satisfaction}/5`, onClick: () => {
+            setIsRatingsModalOpen(true);
+        }},
     ];
 
     return (
@@ -648,7 +808,7 @@ export default function Dashboard() {
                 <div className="grid auto-rows-min gap-[1px] md:grid-cols-4">
                     {statCards.map((card) => (
                         <div className="flex justify-center items-center relative overflow-hidden rounded-xl dark:border-sidebar-border">
-                            <DashboardCard icon={ card.icon } iconColor={ card.iconColor } title={ card.title } value={ card.value } />
+                            <DashboardCard icon={ card.icon } iconColor={ card.iconColor } title={ card.title } value={ card.value } onClick={ card.onClick } />
                         </div>
                     ))}
                 </div>
@@ -756,6 +916,11 @@ export default function Dashboard() {
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 appointmentId={selectedAppointmentId}
+            />
+
+            <ViewRatingsModal 
+                isOpen={isRatingsModalOpen}
+                onClose={() => setIsRatingsModalOpen(false)}
             />
         </AppLayout>
     );

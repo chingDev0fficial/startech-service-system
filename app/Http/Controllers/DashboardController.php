@@ -126,4 +126,31 @@ class DashboardController extends Controller
             ], 500);
         }
     }
+
+    public function fetchRatings()
+    {
+        try {
+            $ratings = DB::table("rating_comments")
+                ->leftJoin("service", "rating_comments.appointment_id", "=", "service.appointment_id")
+                ->leftJoin("appointment", "rating_comments.appointment_id", "=", "appointment.id")
+                ->leftJoin("client", "appointment.client_id", "=", "client.id")
+                ->whereNotNull("service.rating")
+                ->select(
+                    "rating_comments.*",
+                    "service.status",
+                    "service.rating",
+                    "appointment.item",
+                    "appointment.service_type",
+                    "appointment.schedule_at",
+                    "client.name as client_name"
+                )
+                ->get();
+
+            return response()->json(['success' => true, 'data' => $ratings]);
+        } catch ( \Exception $e ) {
+            throw new \Exception("Failed to fetch ratings");
+        }
+
+        return response()->json(['success' => false]);
+    }
 }
