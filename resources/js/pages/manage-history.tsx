@@ -1,3 +1,4 @@
+
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import AppTable, { Column } from '@/components/table';
