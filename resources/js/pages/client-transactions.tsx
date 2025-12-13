@@ -762,7 +762,9 @@ export default function ClientTransactions(){
                                                             </div>
                                                             {record.completionDate && (
                                                                 <div className="text-xs text-gray-500 mt-1">
-                                                                    Completed: {record.completionDate}
+                                                                    { record.status === "completed" && (
+                                                                        <>Completed: {record.completionDate}</>
+                                                                    )}
                                                                 </div>
                                                             )}
                                                         </td>
