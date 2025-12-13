@@ -172,7 +172,7 @@ export default function ManageBillings() {
                 transform: 'translate(-50%, -50%)',
                 width: { xs: '95%', sm: '85%', md: 700 },
                 maxWidth: '700px',
-                maxHeight: { xs: '95vh', sm: '90vh', md: '85vh' },
+                maxHeight: { xs: '95vh', sm: '90vh', md: '100vh' },
                 bgcolor: 'background.paper',
                 boxShadow: 24,
                 borderRadius: 2,

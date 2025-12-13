@@ -137,10 +137,6 @@ export default function Notification() {
     const markAllAsRead = async () => {
         if (unreadCount === 0) return;
 
-        // Optimistically update UI
-        const originalNotifications = notifications;
-        setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
-
         try {
             const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
             
@@ -158,18 +154,17 @@ export default function Notification() {
 
             const result = await response.json();
             
-            if (!result.success) {
-                // Revert if backend operation failed
-                setNotifications(originalNotifications);
-            } else {
+            if (result.success) {
+                // Update UI after successful backend operation
+                setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
                 // Refresh unread count in sidebar
                 refreshSidebarCount();
+            } else {
+                alert('Failed to mark all notifications as read. Please try again.');
             }
 
         } catch (error) {
             console.error('Error marking all as read:', error);
-            // Revert on error
-            setNotifications(originalNotifications);
             alert('Failed to mark all notifications as read. Please try again.');
         }
     };
