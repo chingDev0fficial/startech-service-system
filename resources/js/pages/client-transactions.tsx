@@ -535,8 +535,8 @@ export default function ClientTransactions(){
         const statusClasses: Record<string, string> = {
             'completed': 'bg-green-100 text-green-800',
             'Completed': 'bg-green-100 text-green-800',
-            'cancelled': 'bg-red-100 text-red-800',
-            'Cancelled': 'bg-red-100 text-red-800',
+            'canceled': 'bg-red-100 text-red-800',
+            'Canceled': 'bg-red-100 text-red-800',
             'in-progress': 'bg-blue-100 text-blue-800',
             'In Progress': 'bg-blue-100 text-blue-800',
             'pending': 'bg-yellow-100 text-yellow-800',
@@ -778,7 +778,7 @@ export default function ClientTransactions(){
                                                                     {record.status}
                                                                 </span>
                                                             ) : record.mark_as === "declined" ? (
-                                                                <span className={getStatusBadge("cancelled")}>
+                                                                <span className={getStatusBadge("declined")}>
                                                                     Declined
                                                                 </span>
                                                             ) : (
