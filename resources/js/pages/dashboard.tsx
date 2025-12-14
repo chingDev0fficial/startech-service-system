@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+// import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
@@ -20,7 +20,7 @@ import { Home, MapPin } from 'lucide-react';
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { floated } from "@material-tailwind/react/types/components/card";
+// import { floated } from "@material-tailwind/react/types/components/card";
 import {
     Dialog,
     DialogContent,
@@ -709,8 +709,7 @@ export default function Dashboard() {
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentDateTime(new Date());
-        }, 10000);
-
+        }, 5000)
         return () => clearInterval(timer);
     }, []);
 
