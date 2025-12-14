@@ -24,6 +24,7 @@ interface HistoryRecord {
     serviceDate: string;
     completionDate: string | null;
     status: string;
+    mark_as: string;
     technician: string;
     amount: number;
     rating: 5;
@@ -472,6 +473,7 @@ export default function ClientTransactions(){
                             day: 'numeric'
                         }) : null,
                         status: service.service_status,
+                        mark_as: service.mark_as,
                         technician: service.technician_name || 'Not Assigned',
                         amount: service.amount || 0,
                         rating: service.rating || null,
@@ -513,6 +515,7 @@ export default function ClientTransactions(){
                                 day: 'numeric'
                             }) : null,
                             status: service.service_status,
+                            mark_as: service.mark_as,
                             technician: service.technician_name || 'Not Assigned',
                             amount: service.amount || 0,
                             rating: service.rating || null,
@@ -570,6 +573,7 @@ export default function ClientTransactions(){
                         day: 'numeric'
                     }) : null,
                     status: service.service_status,
+                    mark_as: service.mark_as,
                     technician: service.technician_name || 'Not Assigned',
                     amount: service.amount || 0,
                     rating: service.rating || null,
@@ -769,9 +773,20 @@ export default function ClientTransactions(){
                                                             )}
                                                         </td>
                                                         <td className="px-4 xl:px-6 py-4">
+                                                            {record.mark_as === "accepted" ? (
                                                                 <span className={getStatusBadge(record.status)}>
                                                                     {record.status}
                                                                 </span>
+                                                            ) : record.mark_as === "declined" ? (
+                                                                <span className={getStatusBadge("cancelled")}>
+                                                                    Declined
+                                                                </span>
+                                                            ) : (
+                                                                <span className={getStatusBadge(record.status)}>
+                                                                    {record.status}
+                                                                </span>
+                                                            )}
+                                                                
                                                         </td>
                                                         <td className="px-4 xl:px-6 py-4 text-sm font-medium text-gray-900">
                                                             ₱{(Number(record.amount) || 0)?.toFixed(2) || '0.00'}
