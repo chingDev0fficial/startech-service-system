@@ -30,7 +30,7 @@ interface Service {
     client_phone: string;
     client_address: string
     service_created_at: string;
-    service_status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    service_status: 'pending' | 'in-progress' | 'completed' | 'canceled';
     appointment_service_type: string;
     appointment_service_location: string;
     appointment_item_name: string;
@@ -43,7 +43,7 @@ interface Appointment {
     time: string;
     serviceType: string;
     location: string;
-    status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    status: 'pending' | 'in-progress' | 'completed' | 'canceled';
     customer: {
         name: string;
         phone: string;
@@ -376,7 +376,7 @@ export default function TechnicianAppointments() {
             'pending': 'bg-yellow-100 text-yellow-800 border-yellow-200',
             'in-progress': 'bg-blue-100 text-blue-800 border-blue-200',
             'completed': 'bg-green-100 text-green-800 border-green-200',
-            'cancelled': 'bg-red-100 text-red-800 border-red-200'
+            'canceled': 'bg-red-100 text-red-800 border-red-200'
         };
 
         return `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusClasses[status as keyof typeof statusClasses] || 'bg-gray-100 text-gray-800 border-gray-200'}`;

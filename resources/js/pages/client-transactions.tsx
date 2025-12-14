@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {usePage} from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import { Head, useForm, Link } from '@inertiajs/react';
+import { useForm, Link } from '@inertiajs/react';
 import { useEcho } from '@laravel/echo-react';
 import { NavBar } from "@/components/nav-bar";
 import { CustomFooter } from "@/components/custom-footer";
