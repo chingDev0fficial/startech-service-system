@@ -35,6 +35,7 @@ class HistoryController extends Controller
                 'appointment.updated_at as completion_date',
                 'appointment.description as appointment_description',
                 'appointment.price as amount',
+                'appointment.mark_as as mark_as',
                 'client.id as client_id',
                 'client.name as client_name',
                 'client.email as client_email',

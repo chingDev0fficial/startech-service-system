@@ -24,6 +24,7 @@ interface HistoryRecord {
     serviceDate: string;
     completionDate: string | null;
     status: string;
+    mark_as: string;
     technician: string;
     amount: number;
     rating: 5;
@@ -472,6 +473,7 @@ export default function ClientTransactions(){
                             day: 'numeric'
                         }) : null,
                         status: service.service_status,
+                        mark_as: service.mark_as,
                         technician: service.technician_name || 'Not Assigned',
                         amount: service.amount || 0,
                         rating: service.rating || null,
@@ -513,6 +515,7 @@ export default function ClientTransactions(){
                                 day: 'numeric'
                             }) : null,
                             status: service.service_status,
+                            mark_as: service.mark_as,
                             technician: service.technician_name || 'Not Assigned',
                             amount: service.amount || 0,
                             rating: service.rating || null,
@@ -532,8 +535,8 @@ export default function ClientTransactions(){
         const statusClasses: Record<string, string> = {
             'completed': 'bg-green-100 text-green-800',
             'Completed': 'bg-green-100 text-green-800',
-            'cancelled': 'bg-red-100 text-red-800',
-            'Cancelled': 'bg-red-100 text-red-800',
+            'canceled': 'bg-red-100 text-red-800',
+            'Canceled': 'bg-red-100 text-red-800',
             'in-progress': 'bg-blue-100 text-blue-800',
             'In Progress': 'bg-blue-100 text-blue-800',
             'pending': 'bg-yellow-100 text-yellow-800',
@@ -570,6 +573,7 @@ export default function ClientTransactions(){
                         day: 'numeric'
                     }) : null,
                     status: service.service_status,
+                    mark_as: service.mark_as,
                     technician: service.technician_name || 'Not Assigned',
                     amount: service.amount || 0,
                     rating: service.rating || null,
@@ -769,9 +773,20 @@ export default function ClientTransactions(){
                                                             )}
                                                         </td>
                                                         <td className="px-4 xl:px-6 py-4">
+                                                            {record.mark_as === "accepted" ? (
                                                                 <span className={getStatusBadge(record.status)}>
                                                                     {record.status}
                                                                 </span>
+                                                            ) : record.mark_as === "declined" ? (
+                                                                <span className={getStatusBadge("declined")}>
+                                                                    Declined
+                                                                </span>
+                                                            ) : (
+                                                                <span className={getStatusBadge(record.status)}>
+                                                                    {record.status}
+                                                                </span>
+                                                            )}
+                                                                
                                                         </td>
                                                         <td className="px-4 xl:px-6 py-4 text-sm font-medium text-gray-900">
                                                             ₱{(Number(record.amount) || 0)?.toFixed(2) || '0.00'}

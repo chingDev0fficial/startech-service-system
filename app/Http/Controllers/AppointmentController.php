@@ -128,12 +128,21 @@ class AppointmentController extends Controller
 
     public function decline(Request $request, $appointment)
     {
+        // Update appointment mark_as to declined
         DB::table('appointment')
             ->where('id', $appointment)
             ->update([
                 'mark_as' => 'declined',
                 'updated_at' => now(),
             ]);
+
+        // Also update the service status to canceled if it exists
+        // DB::table('service')
+        //     ->where('appointment_id', $appointment)
+        //     ->update([
+        //         'status' => 'canceled',
+        //         'updated_at' => now(),
+        //     ]);
 
         return response()->json(['message' => 'Appointment declined successfully']);
     }
