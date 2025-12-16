@@ -424,7 +424,7 @@ export default function Welcome(){
              <div className="grid content-center justify-items-center p-[20px]">
                 <h1 className="text-[2rem] font-bold text-[#222831]">Our Services & Pricing</h1>
                 <div className="grid lg:grid-flow-col w-full content-center justify-items-center gap-4">
-                    <CustomCard icon={ LaptopMinimal } iconColor="blue" title="HardWare Repair" content={ cardsContent.hardwareRepair } buttonText="Book Service" onButtonClick={() => alert("Learn More clicked")}/>
+                    <CustomCard icon={ LaptopMinimal } iconColor="blue" title="Hardware Repair" content={ cardsContent.hardwareRepair } buttonText="Book Service" onButtonClick={() => alert("Learn More clicked")}/>
                     <CustomCard icon={ AppWindow } iconColor="green" title="Software Solution" content={ cardsContent.softwareSolution } buttonText="Book Service" onButtonClick={() => alert("Learn More clicked")} />
                     <CustomCard icon={ BrushCleaning } iconColor="purple" title="Maintenance" content={ cardsContent.maintenance } buttonText="Book Service" onButtonClick={ () => alert("Learn More Clicked") } />
                 </div>

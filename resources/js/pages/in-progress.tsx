@@ -871,7 +871,7 @@ export default function InProgress() {
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="In Progress" />
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-                    <h1 className="text-xl font-semibold">Jobs In Progress</h1>
+                    <h1 className="text-xl font-semibold">Pending Appointments</h1>
 
                     <div className="flex flex-col gap-4">
                         {loading ? (
