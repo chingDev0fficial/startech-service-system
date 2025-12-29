@@ -1,22 +1,19 @@
-import { PopUpMessage } from '@/components/pop-up-message';
 import AppTable, { Column } from '@/components/table';
-import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { useEcho } from '@laravel/echo-react';
-import { LoaderCircle, Pencil, Trash, X } from 'lucide-react';
+import { AlertCircle, Check, CheckCircle, Eye, X } from 'lucide-react';
 import { FormEventHandler, useEffect, useState } from 'react';
-import Register from './auth/register';
 
-import { type BreadcrumbItem } from '@/types';
-
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+import { Button } from '@/components/ui/button';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
+import * as React from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -25,214 +22,307 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// type userForm = {
-//     name: string,
-//     email: string,
-//     password: string,
-//     role: string,
-// };
-
-function RegiterAccount() {
-    return <Register />;
-}
-
 const style = {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 800,
+    width: 'clamp(300px, 90vw, 800px)',
+    maxHeight: '90vh',
+    overflow: 'auto',
     bgcolor: 'background.paper',
     boxShadow: 24,
-    p: 4,
+    p: { xs: 2, sm: 3, md: 4 },
+    borderRadius: 1,
 };
 
-function EditUserModal({ isOpen, onClose, userData }) {
-    const { data, setData, patch, errors, processing, reset } = useForm({
-        name: userData?.name || '',
-        email: userData?.email || '',
-        password: '',
-        role: userData?.role || '',
+interface AppointmentFormData {
+    appointmentId: string;
+    userId: string;
+    warranty: string;
+    warrantyStatus: string;
+}
+
+const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
+
+function ViewAppointment({ isOpen, onClose, appointmentData }) {
+    const [appointmentDetails, setAppointmentDetails] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const handleFetchAppointmentsData = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(route('appointment.fetch'), {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const result = await response.json();
+            return result.retrieved;
+        } catch (err) {
+            console.error('Error fetching appointments:', err);
+            throw err instanceof Error ? err : new Error(String(err));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const appointments = await handleFetchAppointmentsData();
+                const details = appointments.find((app) => app.id === appointmentData);
+                setAppointmentDetails(details);
+            } catch (e) {
+                console.error('Failed to fetch appointments:', e);
+            }
+        };
+
+        if (isOpen) {
+            fetchData();
+        }
+    }, [isOpen, appointmentData]);
+
+    return (
+        <Modal
+            keepMounted
+            open={isOpen}
+            onClose={onClose}
+            aria-labelledby="keep-mounted-modal-title"
+            aria-describedby="keep-mounted-modal-description"
+        >
+            <Box sx={style}>
+                <Typography variant="h6" component="h2" className="mb-4 flex items-center justify-between">
+                    Appointment Details
+                    <Button className="!bg-[#393E46] text-[#ffffff]" onClick={onClose}>
+                        <X />
+                    </Button>
+                </Typography>
+
+                {loading ? (
+                    <div className="flex items-center justify-center p-4">Loading appointment details...</div>
+                ) : appointmentDetails ? (
+                    <div className="grid max-h-[70vh] grid-cols-1 gap-3 overflow-y-auto pr-2 sm:grid-cols-2 sm:gap-4">
+                        <div className="col-span-1 rounded-lg bg-blue-50 p-3 sm:col-span-2 sm:p-4">
+                            <h3 className="mb-2 text-base font-semibold sm:text-lg">Client Information</h3>
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                <div>
+                                    <p className="text-sm text-gray-600">Name</p>
+                                    <p className="font-medium">{appointmentDetails.client_name}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Phone</p>
+                                    <p className="font-medium">{appointmentDetails.client_phone}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Email</p>
+                                    <p className="font-medium">{appointmentDetails.client_email}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Address</p>
+                                    <p className="font-medium">{appointmentDetails.address}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="col-span-1 rounded-lg bg-green-50 p-3 sm:col-span-2 sm:p-4">
+                            <h3 className="mb-2 text-base font-semibold sm:text-lg">Service Details</h3>
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                <div>
+                                    <p className="text-sm text-gray-600">Schedule</p>
+                                    <p className="font-medium">{new Date(appointmentDetails.schedule_at).toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Service Type</p>
+                                    <p className="font-medium capitalize">{appointmentDetails.service_type}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Location</p>
+                                    <p className="font-medium capitalize">{appointmentDetails.service_location}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Status</p>
+                                    <p className="font-medium capitalize">{appointmentDetails.status}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="col-span-1 rounded-lg bg-yellow-50 p-3 sm:col-span-2 sm:p-4">
+                            <h3 className="mb-2 text-base font-semibold sm:text-lg">Device Information</h3>
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                <div>
+                                    <p className="text-sm text-gray-600">Device</p>
+                                    <p className="font-medium">{appointmentDetails.item}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Issue Description</p>
+                                    <p className="font-medium">{appointmentDetails.description}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Warranty Receipt</p>
+                                    <div className="font-medium">
+                                        {appointmentDetails.warranty_receipt ? (
+                                            <div className="mt-2">
+                                                <img
+                                                    src={`/storage/${appointmentDetails.warranty_receipt}`}
+                                                    alt="Warranty Receipt"
+                                                    className="h-auto max-w-full cursor-pointer rounded-lg shadow-lg transition-opacity hover:opacity-90"
+                                                    onClick={() => window.open(`/storage/${appointmentDetails.warranty_receipt}`, '_blank')}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-500">No warranty receipt available</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="p-4 text-center text-gray-500">No appointment details found</div>
+                )}
+            </Box>
+        </Modal>
+    );
+}
+
+function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
+    const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormData>({
+        appointmentId: '',
+        userId: '',
+        warranty: '',
+        warrantyStatus: '',
     });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setData(name as keyof AppointmentFormData, value);
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        patch(route('user.update', userData?.id), {
+
+        // Validate warranty status is selected
+        if (!data.warrantyStatus) {
+            alert('Please select a warranty status before assigning a technician.');
+            return;
+        }
+
+        const appointment = e.target.appointmentId.value;
+
+        post(route('appointment.accept', { appointment: appointment }), {
             preserveScroll: true,
             onSuccess: (response) => {
-                console.log(`response ${response}`);
-                reset('password');
+                reset();
                 onClose();
             },
             onError: (errors) => {
-                console.log('Update failed:', errors);
+                console.log('Creation failed:', errors);
+            },
+            onFinish: () => {
+                reset();
             },
         });
     };
 
     return (
-        <>
-            <Modal
-                keepMounted
-                open={isOpen}
-                onClose={onClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2" className="flex items-center justify-between">
-                        Edit User
-                        <Button className="!bg-[#393E46] text-[#ffffff]" onClick={onClose}>
-                            <X />
-                        </Button>
-                    </Typography>
-                    <Box sx={{ mt: 2 }}>
-                        <form onSubmit={submit} className="space-y-4">
-                            <div>
-                                <Label className="mb-1 block text-sm font-medium">Name</Label>
-                                <Input
-                                    type="text"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    autoComplete="name"
-                                    className="w-full rounded border px-3 py-2"
-                                />
-                                {errors.name && <span className="text-sm text-red-500">{errors.name}</span>}
-                            </div>
+        <Modal
+            keepMounted
+            open={isOpen}
+            onClose={onClose}
+            aria-labelledby="keep-mounted-modal-title"
+            aria-describedby="keep-mounted-modal-description"
+        >
+            <Box sx={style}>
+                <Typography
+                    id="keep-mounted-modal-title"
+                    variant="h6"
+                    component="h2"
+                    className="mb-4 flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center"
+                >
+                    <span>Set Appointment Warranty (if available)</span>
+                    <Button className="!bg-[#393E46] text-[#ffffff]" onClick={onClose}>
+                        <X />
+                    </Button>
+                </Typography>
+                <Box sx={{ mt: 2 }}>
+                    <form onSubmit={submit} className="space-y-4">
+                        <input type="hidden" name="appointmentId" value={appointmentData} />
 
-                            <div>
-                                <Label className="mb-1 block text-sm font-medium">Email</Label>
-                                <Input
-                                    type="email"
-                                    value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
-                                    autoComplete="email"
-                                    className="w-full rounded border px-3 py-2"
-                                />
-                                {errors.email && <span className="text-sm text-red-500">{errors.email}</span>}
-                            </div>
+                        <div className="relative rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700" role="alert">
+                            <p className="text-[15px]">Note</p>
+                            <p className="text-[13px]">
+                                Set the date when the warranty expires and the warranty status base on the receipt submitted by the client
+                            </p>
+                        </div>
 
-                            <div>
-                                <Label className="mb-1 block text-sm font-medium">Password</Label>
-                                <Input
-                                    type="text"
-                                    value={data.password}
-                                    onChange={(e) => setData('password', e.target.value)}
-                                    autoComplete="current-password"
-                                    className="w-full rounded border px-3 py-2"
-                                />
-                                {errors.email && <span className="text-sm text-red-500">{errors.email}</span>}
-                            </div>
+                        <div>
+                            <Select
+                                name="warrantyStatus"
+                                onValueChange={(value) => setData('warrantyStatus', value)}
+                                defaultValue={data.warrantyStatus}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select Warranty Status" />
+                                </SelectTrigger>
+                                <SelectContent className="z-[9999]">
+                                    <SelectItem value="valid">Warranty</SelectItem>
+                                    <SelectItem value="expired">No Warranty</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                            <div>
-                                <Label htmlFor="role" className="mb-1 block text-sm font-medium">
-                                    Role
-                                </Label>
-                                <Select
-                                    value={data.role}
-                                    onValueChange={(value) => setData('role', value)}
-                                    className="w-full rounded border px-3 py-2"
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a role" />
-                                    </SelectTrigger>
-                                    <SelectContent className="z-[9999]">
-                                        <SelectItem value="super user">Super User</SelectItem>
-                                        <SelectItem value="staff">Staff</SelectItem>
-                                        <SelectItem value="technician">Technician</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {errors.role && <span className="text-sm text-red-500">{errors.role}</span>}
-                            </div>
-
-                            <div className="flex justify-end space-x-2 pt-4">
-                                <button type="button" onClick={onClose} className="rounded border px-4 py-2 text-gray-600 hover:bg-gray-50">
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-                                >
-                                    {processing ? 'Saving...' : 'Save'}
-                                </button>
-                            </div>
-                        </form>
-                    </Box>
+                        <div className="flex flex-col justify-end gap-2 pt-4 sm:flex-row">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="w-full rounded border px-4 py-2 text-[#393E46]/600 hover:bg-[#393E46]/50 sm:w-auto"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={processing || !data.warrantyStatus}
+                                className="w-full rounded bg-[#393E46] px-4 py-2 text-white hover:bg-[#393E46]/70 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                            >
+                                {processing ? 'Saving...' : 'Assign Technician'}
+                            </button>
+                        </div>
+                    </form>
                 </Box>
-            </Modal>
-        </>
+            </Box>
+        </Modal>
     );
 }
 
-function Accounts() {
+export default function ManageAccount() {
     const echo = useEcho();
-    const [fetchedUsers, setFetchedUsers] = useState<any[]>([]);
-    const [deleteProcessLoading, setDeleteProcessing] = useState<Set<number>>(new Set());
+    const [fetchedAppointments, setFetchedAppointments] = useState<any[]>([]);
+    const [fetchLoading, setFetchLoading] = useState(true);
+    const [acceptProcessLoading, setAcceptProcessing] = useState<Set<number>>(new Set());
+    const [declineProcessLoading, setDeclineProcessing] = useState<Set<number>>(new Set());
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedUserData, setSelectedUserData] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [fetchLoading, setFetchLoading] = useState(true);
+    const [selectedAppointmentData, setSelectedAppointmentData] = useState<number>(0);
 
-    const { auth } = usePage().props;
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [viewAppointmentData, setViewAppointmentData] = useState(null);
 
-    const [popups, setPopups] = useState<
-        Array<{
-            id: string;
-            message: string;
-            show: boolean;
-            animate: boolean;
-        }>
-    >([]);
+    // Notification state
+    const [notification, setNotification] = useState<{
+        type: 'success' | 'error';
+        message: string;
+    } | null>(null);
 
     const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
 
-    // Function to add a new popup
-    const addPopup = (message: string) => {
-        const id = Date.now().toString(); // Simple unique ID
-
-        setPopups((prev) => [
-            ...prev,
-            {
-                id,
-                message,
-                show: true,
-                animate: false,
-            },
-        ]);
-
-        // Start animation after brief delay
-        setTimeout(() => {
-            setPopups((prev) => prev.map((popup) => (popup.id === id ? { ...popup, animate: true } : popup)));
-        }, 10);
-
-        // Remove popup after 3 seconds
-        setTimeout(() => {
-            setPopups((prev) => prev.map((popup) => (popup.id === id ? { ...popup, animate: false } : popup)));
-
-            setTimeout(() => {
-                setPopups((prev) => prev.filter((popup) => popup.id !== id));
-            }, 300);
-        }, 3000);
-    };
-
-    // Function to show and animate the panel
-    const triggerPanel = (message) => {
-        setPanelMessage(message);
-        setShowPanel(true);
-
-        setTimeout(() => setAnimate(true), 10);
-
-        setTimeout(() => {
-            setAnimate(false);
-            setTimeout(() => setShowPanel(false), 300);
-        }, 3000);
-    };
-
-    const hundleFetchUsers = async () => {
+    const handleFetchedAppointments = async () => {
         try {
-            const response = await fetch(`${apiBase}/manage-accounts/fetch`, {
+            const response = await fetch(`${apiBase}/manage-appointments/fetch`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -240,9 +330,6 @@ function Accounts() {
             });
 
             const result = await response.json();
-
-            if (!result.success) throw new Error('no user register');
-
             return result.retrieved;
         } catch (err) {
             throw err instanceof Error ? err : new Error(String(err));
@@ -251,110 +338,100 @@ function Accounts() {
         }
     };
 
-    const handleEdit = async (userId: number) => {
-        if (!userId) {
-            return console.error('No user ID provided');
-        }
-
-        setLoading(true);
-
-        try {
-            const res = await fetch(`${apiBase}/manage-accounts/edit/${userId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || ''
-                },
-            });
-
-            if (!res.ok) {
-                throw new Error(`HTTP error! status: ${res.status}`);
-            }
-
-            const userData = await res.json();
-
-            setSelectedUserData(userData.data);
-            setIsModalOpen(true);
-        } catch (err) {
-            console.error('Error editing user:', err);
-        } finally {
-            setLoading(false);
-        }
-
-        return <></>;
-    };
-
     useEffect(() => {
-        if (selectedUserData) {
-            console.log(`User ${selectedUserData.id}`);
-        }
-    }, [selectedUserData]);
-
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setSelectedUserData(null);
-    };
-
-    const handleDelete = async (userId: number) => {
-        setDeleteProcessing((prev) => new Set([...prev, userId]));
-        if (!userId) {
-            setDeleteProcessing((prev) => {
-                const newSet = new Set(prev);
-                newSet.delete(userId);
-                return newSet;
-            });
-            return console.error('No user ID provided');
-        }
-
-        try {
-            const res = await fetch(`${apiBase}/manage-accounts/delete/${userId}`, {
-                method: 'DELETE', // RESTful method
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                },
-            });
-
-            const data = await res.json();
-
-            // setUsers(data.users || []);
-        } catch (err) {
-            console.error('Error deleting user:', err);
-        }
-    };
-
-    useEffect(() => {
-        hundleFetchUsers()
-            .then((data) => setFetchedUsers(data))
+        handleFetchedAppointments()
+            .then((data) => setFetchedAppointments(data))
             .catch((err) => {
                 throw new Error(err);
             });
 
-        echo.channel('users').listen('.user.deleted', (event: any) => {
-            addPopup('Successfully Deleted');
-            setFetchedUsers((prev) => prev.filter((user) => user.id !== event.user.id));
+        echo.channel('appointments').listen('.appointments.retrieve', (event: any) => {
+            setFetchedAppointments((prev) => prev.filter((appointment) => appointment.mark_as === 'null'));
         });
 
-        // Cleanup listener on unmount
         return () => {
-            echo.leaveChannel('users');
+            echo.leaveChannel('appointments');
         };
     }, [echo]);
 
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedAppointmentData(0);
+    };
+
+    const handleView = async (id: number) => {
+        setViewAppointmentData(id);
+        setIsViewModalOpen(true);
+    };
+
+    const handleCloseViewModal = () => {
+        setIsViewModalOpen(false);
+        setViewAppointmentData(null);
+    };
+
+    const handleAccept = async (appointmentId) => {
+        setSelectedAppointmentData(appointmentId);
+        setIsModalOpen(true);
+    };
+
+    const { flash } = usePage().props;
+
+    const handleDecline = async (appointmentId) => {
+        setDeclineProcessing((prev) => new Set([...prev, appointmentId]));
+        if (!appointmentId) {
+            setAcceptProcessing((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(appointmentId);
+                return newSet;
+            });
+            return console.error('No appointment ID provided');
+        }
+
+        try {
+            const res = await fetch(`${apiBase}/manage-appointments/decline/${appointmentId}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await res.json();
+            console.log(data);
+        } catch (err) {
+            console.error('Error accepting appointment:', err);
+        }
+    };
+
     const columns: Column<Country>[] = [
-        { id: 'name', label: 'Name', minWidth: 170 },
-        { id: 'email', label: 'Email', minWidth: 170 },
-        { id: 'role', label: 'Role', minWidth: 170 },
+        { id: 'schedule', label: 'Schedule', minWidth: 170 },
+        { id: 'customer', label: 'Customer', minWidth: 170 },
+        { id: 'device', label: 'Device', minWidth: 170 },
+        { id: 'issue', label: 'Issue', minWidth: 170 },
         {
+            id: 'actions',
             label: 'Actions',
             minWidth: 150,
             align: 'center',
             render: (row) => (
                 <div className="flex items-center justify-center gap-2">
-                    <button className="rounded-md bg-blue-700 p-2 text-[#222831] text-[#ffffff]" onClick={() => handleEdit(row.userId)}>
-                        <Pencil className="h-4 w-4" />
+                    <button
+                        className="transform cursor-pointer rounded-md bg-blue-700 p-2 text-[#222831] text-[#ffffff] transition-transform duration-300 hover:scale-105"
+                        onClick={() => handleView(row.appointmentId)}
+                    >
+                        <Eye className="h-4 w-4" />
                     </button>
-                    <button className="rounded-md bg-red-700 p-2 text-[#222831] text-[#ffffff]" onClick={() => handleDelete(row.userId)}>
-                        {deleteProcessLoading.has(row.userId) ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Trash className="h-4 w-4" />}
+                    <button
+                        className="transform cursor-pointer rounded-md bg-green-700 p-2 text-[#222831] text-[#ffffff] transition-transform duration-300 hover:scale-105"
+                        onClick={() => handleAccept(row.appointmentId)}
+                    >
+                        <Check className="h-4 w-4" />
+                    </button>
+                    <button
+                        className="transform cursor-pointer rounded-md bg-red-700 p-2 text-[#222831] text-[#ffffff] transition-transform duration-300 hover:scale-105"
+                        onClick={() => handleDecline(row.appointmentId)}
+                    >
+                        <X className="h-4 w-4" />
                     </button>
                 </div>
             ),
@@ -362,64 +439,54 @@ function Accounts() {
     ];
 
     type Data = {
-        userId: number;
-        name: string;
-        email: string;
-        role: string;
+        appointmentId: number;
+        schedule: string;
+        customer: string;
+        device: string;
+        issue: string;
     };
 
-    function createData(userId: number, name: string, email: string, role: string): Data {
-        return { userId, name, email, role };
+    function createData(appointmentId: number, schedule: string, customer: string, device: string, issue: string): Data {
+        return { appointmentId, schedule, customer, device, issue };
     }
 
-    const rows = fetchedUsers.filter((user) => user.id !== auth.user?.id).map((user) => createData(user.id, user.name, user.email, user.role));
-
-    // console.log(selectedUserData.name)
-
-    return (
-        <>
-            {popups.map((popup) => (
-                <PopUpMessage key={popup.id} showPanel={popup.show} animate={popup.animate} message={popup.message} />
-            ))}
-
-            {selectedUserData && <EditUserModal isOpen={isModalOpen} onClose={handleCloseModal} userData={selectedUserData} />}
-
-            <AppTable
-                columns={columns}
-                rows={rows}
-                isLoading={fetchLoading} // Pass loading state
-                rowsPerPageOptions={[5, 10, 25]}
-            />
-        </>
-    );
-}
-
-export default function ManageAccount() {
-    const [activeTab, setActiveTab] = useState('Accounts');
+    const rows = fetchedAppointments
+        .filter((appointment) => appointment.mark_as === null)
+        .map((appointment) =>
+            createData(appointment.id, appointment.schedule_at, appointment.client_name, appointment.item, appointment.description),
+        );
 
     return (
         <>
+            {flash.success && <div className="alert alert-success">{flash.success}</div>}
+            <SetAppointmentModal isOpen={isModalOpen} onClose={handleCloseModal} appointmentData={selectedAppointmentData} />
+
+            <ViewAppointment isOpen={isViewModalOpen} onClose={handleCloseViewModal} appointmentData={viewAppointmentData} />
+
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="Manage Accounts" />
-                <div className="flex h-full flex-1 flex-col gap-[1px] overflow-x-auto rounded-xl p-4">
-                    <div className="flex w-full items-center justify-center">
-                        <div className="grid w-100 grid-cols-2 content-center gap-1 rounded-xl border border-sidebar-border p-1 text-[0.9rem] font-semibold text-[#222831] dark:text-[#ffffff]">
-                            <button
-                                onClick={() => setActiveTab('Accounts')}
-                                className={`rounded-xl p-1 transition duration-[0.2s] hover:bg-[#393E46] hover:text-[#ffffff] ${activeTab === 'Accounts' ? 'bg-[#393E46] text-[#ffffff]' : 'bg-[#ffffff]'}`}
-                            >
-                                Accounts
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('Register')}
-                                className={`rounded-xl p-1 transition duration-[0.2s] hover:bg-[#393E46] hover:text-[#ffffff] ${activeTab === 'Register' ? 'bg-[#393E46] text-[#ffffff]' : 'bg-[#ffffff]'}`}
-                            >
-                                Register Account
-                            </button>
-                        </div>
-                    </div>
 
-                    <div>{activeTab === 'Register' ? <RegiterAccount /> : <Accounts />}</div>
+                {/* Notification Alert */}
+                {notification && (
+                    <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-5">
+                        <Alert
+                            className={`min-w-[300px] ${
+                                notification.type === 'success'
+                                    ? 'border-green-500 bg-green-50 text-green-900'
+                                    : 'border-red-500 bg-red-50 text-red-900'
+                            }`}
+                        >
+                            {notification.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                            <AlertDescription className="ml-2">{notification.message}</AlertDescription>
+                            <button onClick={() => setNotification(null)} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
+                                <X className="h-4 w-4" />
+                            </button>
+                        </Alert>
+                    </div>
+                )}
+
+                <div className="flex h-full flex-1 flex-col gap-[1px] overflow-x-auto rounded-xl p-4">
+                    <AppTable columns={columns} rows={rows} isLoading={fetchLoading} rowsPerPageOptions={[5, 10, 25]} />
                 </div>
             </AppLayout>
         </>
