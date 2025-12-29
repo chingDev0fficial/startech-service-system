@@ -39,92 +39,103 @@ class AppointmentController extends Controller
 
     public function accept(Request $request, $appointment)
     {
-        $validated = $request->validate([
-            'warranty' => 'nullable|string',
-            'warrantyStatus' => 'nullable|string|max:10',
-            'fixedPrice' => 'required|int',
-        ]);
-
-        // Get only available technicians
-        $availableTechnicians = DB::table('users')
-            ->where('role', 'technician')
-            ->where('status', 'available')
-            ->get();
-
-        if ($availableTechnicians->isEmpty()) {
-            return back()->with([
-                'error' => 'No available technicians at the moment. Please try again later.'
+        try {
+            $validated = $request->validate([
+                // 'warranty' => 'nullable|string',
+                'warrantyStatus' => 'nullable|string|max:10',
+                'fixedPrice' => 'required|numeric',
             ]);
-        }
 
-        // Try to assign to a technician without queue
-        foreach ($availableTechnicians as $tech) {
-            $inQueues = DB::table('queues_tech')
-                ->where('technician_id', $tech->id)
-                ->exists();
+            \Log::info("This is the fixed price: $validated[fixedPrice]");
 
-            if (!$inQueues) {
-                DB::transaction(function () use ($tech, $appointment, $validated) {
-                    DB::table('queues_tech')->insert([
-                        'technician_id' => $tech->id,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+            // Get only available technicians
+            $availableTechnicians = DB::table('users')
+                ->where('role', 'technician')
+                ->where('status', 'available')
+                ->get();
 
-                    DB::table('service')->insert([
-                        'appointment_id' => $appointment,
-                        'user_id' => $tech->id,
-                        'warranty' => $validated['warranty'],
-                        'warranty_status' => $validated['warrantyStatus'],
-                        'status' => 'pending',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+            if ($availableTechnicians->isEmpty()) {
+                return back()->with([
+                    'error' => 'No available technicians at the moment. Please try again later.'
+                ]);
+            }
 
-                    DB::table('appointment')
-                        ->where('id', $appointment)
-                        ->update([
-                            'mark_as' => 'accepted',
+            // Try to assign to a technician without queue
+            foreach ($availableTechnicians as $tech) {
+                $inQueues = DB::table('queues_tech')
+                    ->where('technician_id', $tech->id)
+                    ->exists();
+
+                if (!$inQueues) {
+                    DB::transaction(function () use ($tech, $appointment, $validated) {
+                        DB::table('queues_tech')->insert([
+                            'technician_id' => $tech->id,
+                            'created_at' => now(),
                             'updated_at' => now(),
                         ]);
-                });
 
-                return back()->with('success', 'Appointment accepted and assigned to technician successfully!');
+                        DB::table('service')->insert([
+                            'appointment_id' => $appointment,
+                            'user_id' => $tech->id,
+                            // 'warranty' => $validated['warranty'],
+                            'warranty_status' => $validated['warrantyStatus'],
+                            'status' => 'pending',
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+
+                        DB::table('appointment')
+                            ->where('id', $appointment)
+                            ->update([
+                                'fix_price' => $validated['fixedPrice'],
+                                'mark_as' => 'accepted',
+                                'updated_at' => now(),
+                            ]);
+                    });
+
+                    return back()->with('success', 'Appointment accepted and assigned to technician successfully!');
+                }
             }
-        }
 
-        // If all available technicians have queues, clear queues and reassign
-        DB::table('queues_tech')->delete();
+            // If all available technicians have queues, clear queues and reassign
+            DB::table('queues_tech')->delete();
 
-        // Assign to first available technician
-        $tech = $availableTechnicians->first();
-        
-        DB::transaction(function () use ($tech, $appointment, $validated) {
-            DB::table('queues_tech')->insert([
-                'technician_id' => $tech->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            DB::table('service')->insert([
-                'appointment_id' => $appointment,
-                'user_id' => $tech->id,
-                'warranty' => $validated['warranty'],
-                'warranty_status' => $validated['warrantyStatus'],
-                'status' => 'pending',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            DB::table('appointment')
-                ->where('id', $appointment)
-                ->update([
-                    'mark_as' => 'accepted',
+            // Assign to first available technician
+            $tech = $availableTechnicians->first();
+            
+            DB::transaction(function () use ($tech, $appointment, $validated) {
+                DB::table('queues_tech')->insert([
+                    'technician_id' => $tech->id,
+                    'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-        });
 
-        return back()->with('success', 'Appointment accepted successfully!');
+                DB::table('service')->insert([
+                    'appointment_id' => $appointment,
+                    'user_id' => $tech->id,
+                    // 'warranty' => $validated['warranty'],
+                    'warranty_status' => $validated['warrantyStatus'],
+                    'status' => 'pending',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                DB::table('appointment')
+                    ->where('id', $appointment)
+                    ->update([
+                        'fix_price' => $validated['fixedPrice'],
+                        'mark_as' => 'accepted',
+                        'updated_at' => now(),
+                    ]);
+            });
+
+            return back()->with('success', 'Appointment accepted successfully!');
+        } catch (\Exception $e) {
+            \Log::info("Testing: $e");
+            return back()->with('failure', 'Appointment accepted unsuccefull!');
+        }
+
+        
     }
 
     public function decline(Request $request, $appointment)

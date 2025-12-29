@@ -40,8 +40,8 @@ const style = {
 interface AppointmentFormData {
     appointmentId: string;
     userId: string;
-    warranty: string;
     warrantyStatus: string;
+    fixedPrice: number;
 }
 
 const apiBase = `${window.location.protocol}//${window.location.hostname}:8000`;
@@ -135,7 +135,16 @@ function ViewAppointment({ isOpen, onClose, appointmentData }) {
                             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                 <div>
                                     <p className="text-sm text-gray-600">Schedule</p>
-                                    <p className="font-medium">{new Date(appointmentDetails.schedule_at).toLocaleString()}</p>
+                                    <p className="font-medium">
+                                        {new Date(appointmentDetails.schedule_at).toLocaleString('en-PH', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            hour12: true,
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                        })}
+                                    </p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-600">Service Type</p>
@@ -195,13 +204,13 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
     const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormData>({
         appointmentId: '',
         userId: '',
-        warranty: '',
         warrantyStatus: '',
+        fixedPrice: 0.0,
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setData(name as keyof AppointmentFormData, value);
+        setData(name as keyof AppointmentFormData, name === 'fixedPrice' ? parseFloat(value) || 0 : value);
     };
 
     const submit: FormEventHandler = (e) => {
@@ -222,7 +231,7 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
                 onClose();
             },
             onError: (errors) => {
-                console.log('Creation failed:', errors);
+                console.error('Creation failed:', errors);
             },
             onFinish: () => {
                 reset();
@@ -278,7 +287,7 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
                         </div>
 
                         <div>
-                            <Input name="fixedPrice"></Input>
+                            <Input name="fixedPrice" type="number" value={data.fixedPrice} onChange={handleChange}></Input>
                         </div>
 
                         <div className="flex flex-col justify-end gap-2 pt-4 sm:flex-row">
@@ -466,7 +475,13 @@ export default function ManageAppointments() {
     const rows = fetchedAppointments
         .filter((appointment) => appointment.mark_as === null)
         .map((appointment) =>
-            createData(appointment.id, appointment.schedule_at, appointment.client_name, appointment.item, appointment.description),
+            createData(
+                appointment.id,
+                new Date(appointment.schedule_at).toLocaleString(),
+                appointment.client_name,
+                appointment.item,
+                appointment.description,
+            ),
         );
 
     return (
