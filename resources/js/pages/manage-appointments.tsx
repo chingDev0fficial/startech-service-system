@@ -27,10 +27,13 @@ const style = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 800,
+    width: 'clamp(300px, 90vw, 800px)',
+    maxHeight: '90vh',
+    overflow: 'auto',
     bgcolor: 'background.paper',
     boxShadow: 24,
-    p: 4,
+    p: { xs: 2, sm: 3, md: 4 },
+    borderRadius: 1,
 };
 
 interface AppointmentFormData {
@@ -103,10 +106,17 @@ function ViewAppointment({ isOpen, onClose, appointmentData }) {
                 {loading ? (
                     <div className="flex items-center justify-center p-4">Loading appointment details...</div>
                 ) : appointmentDetails ? (
+<<<<<<< HEAD
                     <div className="grid max-h-[70vh] grid-cols-2 gap-4 overflow-y-auto pr-2">
                         <div className="col-span-2 rounded-lg bg-blue-50 p-4">
                             <h3 className="mb-2 text-lg font-semibold">Client Information</h3>
                             <div className="grid grid-cols-2 gap-2">
+=======
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 overflow-y-auto max-h-[70vh] pr-2">
+                        <div className="col-span-1 sm:col-span-2 bg-blue-50 p-3 sm:p-4 rounded-lg">
+                            <h3 className="font-semibold text-base sm:text-lg mb-2">Client Information</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                                 <div>
                                     <p className="text-sm text-gray-600">Name</p>
                                     <p className="font-medium">{appointmentDetails.client_name}</p>
@@ -119,12 +129,22 @@ function ViewAppointment({ isOpen, onClose, appointmentData }) {
                                     <p className="text-sm text-gray-600">Email</p>
                                     <p className="font-medium">{appointmentDetails.client_email}</p>
                                 </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Address</p>
+                                    <p className="font-medium">{appointmentDetails.address}</p>
+                                </div>
                             </div>
                         </div>
 
+<<<<<<< HEAD
                         <div className="col-span-2 rounded-lg bg-green-50 p-4">
                             <h3 className="mb-2 text-lg font-semibold">Service Details</h3>
                             <div className="grid grid-cols-2 gap-2">
+=======
+                        <div className="col-span-1 sm:col-span-2 bg-green-50 p-3 sm:p-4 rounded-lg">
+                            <h3 className="font-semibold text-base sm:text-lg mb-2">Service Details</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                                 <div>
                                     <p className="text-sm text-gray-600">Schedule</p>
                                     <p className="font-medium">{new Date(appointmentDetails.schedule_at).toLocaleString()}</p>
@@ -144,9 +164,15 @@ function ViewAppointment({ isOpen, onClose, appointmentData }) {
                             </div>
                         </div>
 
+<<<<<<< HEAD
                         <div className="col-span-2 rounded-lg bg-yellow-50 p-4">
                             <h3 className="mb-2 text-lg font-semibold">Device Information</h3>
                             <div className="grid grid-cols-2 gap-2">
+=======
+                        <div className="col-span-1 sm:col-span-2 bg-yellow-50 p-3 sm:p-4 rounded-lg">
+                            <h3 className="font-semibold text-base sm:text-lg mb-2">Device Information</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                                 <div>
                                     <p className="text-sm text-gray-600">Device</p>
                                     <p className="font-medium">{appointmentDetails.item}</p>
@@ -231,9 +257,15 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
             aria-describedby="keep-mounted-modal-description"
         >
             <Box sx={style}>
+<<<<<<< HEAD
                 <Typography id="keep-mounted-modal-title" variant="h6" component="h2" className="flex items-center justify-between">
                     Set Appointment Warranty (if available)
                     <Button className="!bg-[#393E46] text-[#ffffff]" onClick={onClose}>
+=======
+                <Typography id="keep-mounted-modal-title" variant="h6" component="h2" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
+                    <span>Set Appointment Warranty (if available)</span>
+                    <Button className="text-[#ffffff] !bg-[#393E46]" onClick={onClose}>
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                         <X />
                     </Button>
                 </Typography>
@@ -264,14 +296,27 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
                             </Select>
                         </div>
 
+<<<<<<< HEAD
                         <div className="flex justify-end space-x-2 pt-4">
                             <button type="button" onClick={onClose} className="rounded border px-4 py-2 text-[#393E46]/600 hover:bg-[#393E46]/50">
+=======
+                        <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="w-full sm:w-auto px-4 py-2 text-[#393E46]/600 border rounded hover:bg-[#393E46]/50"
+                            >
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={processing || !data.warrantyStatus}
+<<<<<<< HEAD
                                 className="rounded bg-[#393E46] px-4 py-2 text-white hover:bg-[#393E46]/70 disabled:cursor-not-allowed disabled:opacity-50"
+=======
+                                className="w-full sm:w-auto px-4 py-2 bg-[#393E46] text-white rounded hover:bg-[#393E46]/70 disabled:opacity-50 disabled:cursor-not-allowed"
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             >
                                 {processing ? 'Saving...' : 'Assign Technician'}
                             </button>
@@ -442,8 +487,22 @@ export default function ManageAccount() {
 
     return (
         <>
+<<<<<<< HEAD
             {flash.success && <div className="alert alert-success">{flash.success}</div>}
             <SetAppointmentModal isOpen={isModalOpen} onClose={handleCloseModal} appointmentData={selectedAppointmentData} />
+=======
+            
+            {flash.success && (
+                <div className="alert alert-success">
+                    {flash.success}
+                </div>
+            )}
+            <SetAppointmentModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                appointmentData={selectedAppointmentData}
+            />
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 
             <ViewAppointment isOpen={isViewModalOpen} onClose={handleCloseViewModal} appointmentData={viewAppointmentData} />
 

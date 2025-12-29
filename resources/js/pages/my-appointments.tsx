@@ -5,9 +5,7 @@ import { type BreadcrumbItem, type SharedData } from '@/types';
 import { useState, useEffect } from 'react';
 import { useEcho } from '@laravel/echo-react';
 import { usePage } from '@inertiajs/react';
-import Modal from '@mui/material/Modal';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import { Input } from '@/components/ui/input';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -30,8 +28,9 @@ interface Service {
     client_name: string;
     client_email: string;
     client_phone: string;
+    client_address: string
     service_created_at: string;
-    service_status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    service_status: 'pending' | 'in-progress' | 'completed' | 'canceled';
     appointment_service_type: string;
     appointment_service_location: string;
     appointment_item_name: string;
@@ -44,11 +43,12 @@ interface Appointment {
     time: string;
     serviceType: string;
     location: string;
-    status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    status: 'pending' | 'in-progress' | 'completed' | 'canceled';
     customer: {
         name: string;
         phone: string;
         email: string;
+        address: string
     };
     device: {
         name: string;
@@ -74,12 +74,11 @@ export default function TechnicianAppointments() {
     const [services, setServices] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [statusFilter, setStatusFilter] = useState<string>('all');
-    // Changed: Initialize as null to prevent flash of wrong status
-    const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'unavailable' | null>(null);
+    // Initialize as 'available' by default to prevent uncontrolled to controlled warning
+    const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'unavailable'>('available');
     const [updatingAvailability, setUpdatingAvailability] = useState<boolean>(false);
-    const [isTransferModalOpen, setIsTransferModalOpen] = useState<boolean>(false);
-    const [selectedAppointmentId, setSelectedAppointmentId] = useState<number | null>(null);
-    const [transferring, setTransferring] = useState<boolean>(false);
+    const [scheduledUnavailableDate, setScheduledUnavailableDate] = useState<string>('');
+    const [savingSchedule, setSavingSchedule] = useState<boolean>(false);
     
     const [technicianInfo] = useState<TechnicianInfo>({
         name: auth.user?.name || 'Technician Name',
@@ -115,9 +114,6 @@ export default function TechnicianAppointments() {
 
             const result = await response.json();
             
-            // Debug: Log the entire response to see what we're getting
-            console.log('Availability status response:', result);
-            
             // Handle different possible response structures
             let status = null;
             
@@ -133,12 +129,20 @@ export default function TechnicianAppointments() {
             
             // Ensure status is either 'available' or 'unavailable'
             if (status === 'available' || status === 'unavailable') {
-                console.log('Setting availability status to:', status);
                 setAvailabilityStatus(status);
             } else {
                 console.warn('Unexpected status format:', result);
                 // Fallback to available if status format is unexpected
                 setAvailabilityStatus('available');
+            }
+
+            // Get scheduled unavailable date if exists
+            if (result.scheduled_unavailable_date) {
+                setScheduledUnavailableDate(result.scheduled_unavailable_date);
+            } else if (result.data && result.data.scheduled_unavailable_date) {
+                setScheduledUnavailableDate(result.data.scheduled_unavailable_date);
+            } else {
+                setScheduledUnavailableDate('');
             }
         } catch (err) {
             console.error('Error fetching availability status:', err);
@@ -170,21 +174,113 @@ export default function TechnicianAppointments() {
             
             if (result.success) {
                 setAvailabilityStatus(newStatus);
-                // Optional: Show success notification
-                console.log('Availability updated successfully');
             } else {
-                // Handle case where server returns success: false
                 throw new Error(result.message || 'Failed to update availability');
             }
         } catch (err) {
             console.error('Error updating availability:', err);
-            // Revert to previous status by fetching from server
             await fetchAvailabilityStatus();
-            // Optional: Show error notification
             alert('Failed to update availability status. Please try again.');
         } finally {
             setUpdatingAvailability(false);
         }
+    };
+
+    const handleScheduleUnavailable = async () => {
+        if (!scheduledUnavailableDate) {
+            // Clear the schedule if date is empty
+            await handleClearSchedule();
+            return;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(scheduledUnavailableDate);
+        selectedDate.setHours(0, 0, 0, 0);
+
+        if (selectedDate <= today) {
+            alert('Please select a future date');
+            return;
+        }
+
+        setSavingSchedule(true);
+        
+        try {
+            const response = await fetch(route('my-appointments.availability.update'), {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    scheduled_unavailable_date: scheduledUnavailableDate
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Schedule saved! Your account will automatically become unavailable on ' + 
+                    new Date(scheduledUnavailableDate).toLocaleDateString('en-PH', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }));
+            } else {
+                throw new Error(result.message || 'Failed to schedule unavailability');
+            }
+        } catch (err) {
+            console.error('Error scheduling unavailability:', err);
+            alert('Failed to save schedule. Please try again.');
+        } finally {
+            setSavingSchedule(false);
+        }
+    };
+
+    const handleClearSchedule = async () => {
+        setSavingSchedule(true);
+        
+        try {
+            const response = await fetch(route('my-appointments.availability.update'), {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    scheduled_unavailable_date: null
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                setScheduledUnavailableDate('');
+                alert('Schedule cleared successfully!');
+            } else {
+                throw new Error(result.message || 'Failed to clear schedule');
+            }
+        } catch (err) {
+            console.error('Error clearing schedule:', err);
+            alert('Failed to clear schedule. Please try again.');
+        } finally {
+            setSavingSchedule(false);
+        }
+    };
+
+    // Get minimum date (tomorrow)
+    const getMinDate = () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return tomorrow.toISOString().split('T')[0];
     };
 
     const handleFetchedServices = async () => {
@@ -254,6 +350,7 @@ export default function TechnicianAppointments() {
                     name: service.client_name,
                     phone: service.client_phone,
                     email: service.client_email,
+                    address: service.client_address
                 },
                 device: {
                     name: service.appointment_item_name,
@@ -264,50 +361,7 @@ export default function TechnicianAppointments() {
             }));
     }
 
-    const handleTransferAppointment = (appointmentId: number) => {
-        setSelectedAppointmentId(appointmentId);
-        setIsTransferModalOpen(true);
-    };
 
-
-    const handleTransferSubmit = async () => {
-        if (!selectedAppointmentId) return;
-
-        setTransferring(true);
-        try {
-            const response = await fetch(route('appointment.transfer'), {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                },
-                body: JSON.stringify({
-                    appointmentId: selectedAppointmentId
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            
-            if (result.success) {
-                // Remove the transferred appointment from the list
-                setServices(prev => prev.filter(service => service.id !== selectedAppointmentId.toString()));
-                setIsTransferModalOpen(false);
-                setSelectedAppointmentId(null);
-                alert('Appointment transferred successfully!');
-            } else {
-                throw new Error(result.message || 'Failed to transfer appointment');
-            }
-        } catch (err) {
-            console.error('Error transferring appointment:', err);
-            alert('Failed to transfer appointment. No available technicians.');
-        } finally {
-            setTransferring(false);
-        }
-    };
 
     const filteredServices = services.filter(appointment => {
         // Exclude completed appointments from display
@@ -322,7 +376,7 @@ export default function TechnicianAppointments() {
             'pending': 'bg-yellow-100 text-yellow-800 border-yellow-200',
             'in-progress': 'bg-blue-100 text-blue-800 border-blue-200',
             'completed': 'bg-green-100 text-green-800 border-green-200',
-            'cancelled': 'bg-red-100 text-red-800 border-red-200'
+            'canceled': 'bg-red-100 text-red-800 border-red-200'
         };
 
         return `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusClasses[status as keyof typeof statusClasses] || 'bg-gray-100 text-gray-800 border-gray-200'}`;
@@ -343,62 +397,6 @@ export default function TechnicianAppointments() {
 
     return (
         <>
-            {/* Transfer Appointment Modal */}
-            <Modal
-                open={isTransferModalOpen}
-                onClose={() => !transferring && setIsTransferModalOpen(false)}
-                aria-labelledby="transfer-modal-title"
-            >
-                <Box sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: 500,
-                    bgcolor: 'background.paper',
-                    boxShadow: 24,
-                    p: 4,
-                    borderRadius: 2
-                }}>
-                    <Typography id="transfer-modal-title" variant="h6" component="h2" className="mb-4">
-                        Transfer Appointment
-                    </Typography>
-                    <div className="mb-6">
-                        <p className="text-gray-700 mb-2">
-                            Are you sure you want to transfer this appointment to another technician?
-                        </p>
-                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4">
-                            <p className="text-sm text-blue-700">
-                                <strong>Note:</strong> This appointment will be reassigned to an available technician through the queuing system.
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                        <button
-                            onClick={() => setIsTransferModalOpen(false)}
-                            disabled={transferring}
-                            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleTransferSubmit}
-                            disabled={transferring}
-                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center gap-2"
-                        >
-                            {transferring ? (
-                                <>
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    Transferring...
-                                </>
-                            ) : (
-                                'Confirm Transfer'
-                            )}
-                        </button>
-                    </div>
-                </Box>
-            </Modal>
-
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="My Appointments" />
             <div className="flex h-full flex-1 flex-col gap-[1px] rounded-xl p-4 overflow-x-auto">
@@ -456,6 +454,63 @@ export default function TechnicianAppointments() {
                             <div className="text-sm text-gray-500">Shift: {technicianInfo.shift}</div>
                             <div className="text-sm text-gray-500">ID: {technicianInfo.id}</div>
                         </div>
+                    </div>
+                    
+                    {/* Schedule Unavailability Section */}
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Schedule Auto-Unavailability</h3>
+                        <p className="text-xs text-gray-600 mb-3">
+                            Set a future date when your account should automatically become unavailable.
+                        </p>
+                        <div className="flex items-center gap-3">
+                            <div className="flex-1">
+                                <input
+                                    type="date"
+                                    value={scheduledUnavailableDate}
+                                    onChange={(e) => setScheduledUnavailableDate(e.target.value)}
+                                    min={getMinDate()}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                    placeholder="Select date"
+                                />
+                            </div>
+                            <button
+                                onClick={handleScheduleUnavailable}
+                                disabled={savingSchedule}
+                                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium flex items-center gap-2"
+                            >
+                                {savingSchedule ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        Saving...
+                                    </>
+                                ) : (
+                                    'Save Schedule'
+                                )}
+                            </button>
+                            {scheduledUnavailableDate && (
+                                <button
+                                    onClick={handleClearSchedule}
+                                    disabled={savingSchedule}
+                                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 text-sm"
+                                >
+                                    Clear
+                                </button>
+                            )}
+                        </div>
+                        {scheduledUnavailableDate && (
+                            <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-xs text-amber-700">
+                                    Scheduled: Your account will automatically become <strong>unavailable</strong> on <strong>{new Date(scheduledUnavailableDate).toLocaleDateString('en-PH', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}</strong>
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -587,6 +642,10 @@ export default function TechnicianAppointments() {
                                                     <span className="text-gray-600">Email:</span>
                                                     <span className="font-medium">{appointment.customer.email}</span>
                                                 </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Address:</span>
+                                                    <span className="font-medium">{appointment.customer.address}</span>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -618,7 +677,7 @@ export default function TechnicianAppointments() {
                                         </div>
                                     </div>
 
-                                    {/* Transfer Button */}
+                                    {/* Transfer Button
                                     <div className="mt-6 flex justify-end">
                                         <button
                                             onClick={() => handleTransferAppointment(parseInt(appointment.id))}
@@ -629,7 +688,7 @@ export default function TechnicianAppointments() {
                                             </svg>
                                             Transfer Appointment
                                         </button>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
                         ))

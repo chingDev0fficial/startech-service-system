@@ -1,3 +1,4 @@
+
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import AppTable, { Column } from '@/components/table';
@@ -11,17 +12,40 @@ import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { X, Eye } from 'lucide-react';
 
-const modalStyle = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 800,
-    bgcolor: 'background.paper',
-    boxShadow: 24,
-    p: 4,
-    maxHeight: '90vh',
-    overflow: 'auto',
+const getModalStyle = () => {
+    const width = typeof window !== 'undefined' ? window.innerWidth : 1024;
+    
+    let modalWidth = 900;
+    let padding = 4;
+    
+    if (width < 640) {
+        // Mobile
+        modalWidth = width - 32;
+        padding = 3;
+    } else if (width < 768) {
+        // Small tablet
+        modalWidth = width - 40;
+        padding = 3;
+    } else if (width < 1024) {
+        // Tablet
+        modalWidth = width - 60;
+        padding = 4;
+    }
+    
+    return {
+        position: 'absolute' as const,
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: modalWidth,
+        maxWidth: '95vw',
+        bgcolor: 'background.paper',
+        boxShadow: 24,
+        p: padding,
+        maxHeight: '95vh',
+        overflow: 'auto',
+        borderRadius: 2,
+    };
 };
 
 interface HistoryRecord {
@@ -36,6 +60,7 @@ interface HistoryRecord {
     rating: number | null;
     serviceType: string;
     serviceLocation: string;
+    address: string;
     warranty: string | null;
     warrantyStatus: string | null;
 }
@@ -49,6 +74,7 @@ interface Jobs {
     appointment_date: string;
     appointment_service_type: string;
     appointment_service_location: string;
+    address: string;
     appointment_description: string;
     service_status: string;
     technician_name: string;
@@ -155,6 +181,7 @@ export default function ManageHistory() {
                 rating: service.rating || null, // You might want to get this from your service data
                 serviceType: service.appointment_service_type,
                 serviceLocation: serviceLocation, // Set based on current route
+                address: service.address,
                 warranty: service.warranty || null,
                 warrantyStatus: service.warranty_status || null
             }));
@@ -246,7 +273,7 @@ export default function ManageHistory() {
                 onClose={handleCloseModal}
                 aria-labelledby="appointment-details-modal"
             >
-                <Box sx={modalStyle}>
+                <Box sx={getModalStyle()}>
                     <Typography variant="h6" component="h2" className="flex items-center justify-between mb-4">
                         Appointment Details
                         <Button className="text-[#ffffff] !bg-[#393E46]" onClick={handleCloseModal}>
@@ -259,7 +286,7 @@ export default function ManageHistory() {
                             {/* Service Information */}
                             <div className="bg-blue-50 p-4 rounded-lg">
                                 <h3 className="font-semibold text-lg mb-3 text-blue-900">Service Information</h3>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
                                         <p className="text-sm text-gray-600">Appointment ID</p>
                                         <p className="font-medium">{selectedRecord.id}</p>
@@ -282,10 +309,15 @@ export default function ManageHistory() {
                             {/* Customer Information */}
                             <div className="bg-green-50 p-4 rounded-lg">
                                 <h3 className="font-semibold text-lg mb-3 text-green-900">Customer Information</h3>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
                                         <p className="text-sm text-gray-600">Customer Name</p>
                                         <p className="font-medium">{selectedRecord.customer}</p>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-sm text-gray-600">Customer Address</p>
+                                        <p className="font-medium">{selectedRecord.address}</p>
                                     </div>
                                 </div>
                             </div>
@@ -293,7 +325,7 @@ export default function ManageHistory() {
                             {/* Technician Information */}
                             <div className="bg-purple-50 p-4 rounded-lg">
                                 <h3 className="font-semibold text-lg mb-3 text-purple-900">Technician Information</h3>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
                                         <p className="text-sm text-gray-600">Assigned Technician</p>
                                         <p className="font-medium">{selectedRecord.technician}</p>
@@ -304,7 +336,7 @@ export default function ManageHistory() {
                             {/* Date & Status Information */}
                             <div className="bg-yellow-50 p-4 rounded-lg">
                                 <h3 className="font-semibold text-lg mb-3 text-yellow-900">Date & Status Information</h3>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
                                         <p className="text-sm text-gray-600">Service Date</p>
                                         <p className="font-medium">{selectedRecord.serviceDate}</p>
@@ -313,7 +345,7 @@ export default function ManageHistory() {
                                         <p className="text-sm text-gray-600">Completion Date</p>
                                         <p className="font-medium">{selectedRecord.completionDate || 'Not completed'}</p>
                                     </div>
-                                    <div>
+                                    <div className="sm:col-span-2">
                                         <p className="text-sm text-gray-600">Status</p>
                                         <span className={`${
                                             selectedRecord.status.toLowerCase() === 'completed' ? 'bg-green-200 text-green-800' :
@@ -330,7 +362,7 @@ export default function ManageHistory() {
                             {/* Warranty Information */}
                             <div className="bg-orange-50 p-4 rounded-lg">
                                 <h3 className="font-semibold text-lg mb-3 text-orange-900">Warranty Information</h3>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
                                         <p className="text-sm text-gray-600">Warranty Status</p>
                                         {selectedRecord.warrantyStatus ? (
@@ -351,7 +383,7 @@ export default function ManageHistory() {
                             {/* Payment Information */}
                             <div className="bg-indigo-50 p-4 rounded-lg">
                                 <h3 className="font-semibold text-lg mb-3 text-indigo-900">Payment Information</h3>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
                                         <p className="text-sm text-gray-600">Amount</p>
                                         <p className="font-medium text-xl text-indigo-700">₱{selectedRecord.amount.toFixed(2)}</p>

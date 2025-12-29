@@ -1,8 +1,9 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { useEffect, useState } from 'react';
-import { Bell, Check, Clock, AlertTriangle, Info, CheckCircle, User, Calendar, Settings, Eye, X } from 'lucide-react';
+import { Bell, Check, Clock, AlertTriangle, Info, CheckCircle, Calendar, Settings, Eye, X, Star } from 'lucide-react';
 import { Head, usePage } from '@inertiajs/react';
+import { useEcho } from '@laravel/echo-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -43,6 +44,8 @@ const getIconByType = (type: string) => {
             return Calendar;
         case 'technician_note':
             return Bell;
+        case 'rating_submitted':
+                return Star;
         case 'settings':
             return Settings;
         default:
@@ -50,10 +53,23 @@ const getIconByType = (type: string) => {
     }
 };
 
-export default function notification() {
-    const { auth } = usePage<SharedData>().props;
-    const [notifications, setNotifications] = useState<any[]>([]);
+// Helper function to transform raw notification data
+const transformNotification = (notif: Record<string, any>) => ({
+    id: notif.id,
+    type: notif.type || 'info',
+    title: notif.title || 'Notification',
+    message: notif.message || '',
+    timestamp: notif.created_at ? formatTimestamp(notif.created_at) : 'Just now',
+    isRead: notif.status === 'read',
+    icon: getIconByType(notif.type || 'info'),
+    created_at: notif.created_at // Keep original for updates
+});
+
+export default function Notification() {
+    usePage<SharedData>();
+    const [notifications, setNotifications] = useState<Array<Record<string, any>>>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
 
     // Helper function to trigger unread count refresh in sidebar
     const refreshSidebarCount = () => {
@@ -88,18 +104,10 @@ export default function notification() {
         handleFetchedNotif()
             .then(data => {
                 if (data && Array.isArray(data)) {
-                    const transform = data.map((notif: any) => ({
-                        id: notif.id,
-                        type: notif.type || 'info',
-                        title: notif.title || 'Notification',
-                        message: notif.message || '',
-                        timestamp: notif.created_at ? formatTimestamp(notif.created_at) : 'Just now',
-                        isRead: notif.status === 'read',
-                        icon: getIconByType(notif.type || 'info')
-                    }));
+                    const transform = data.map(transformNotification);
 
                     // Sort by ID in descending order to show newest first
-                    const sortedNotifications = transform.sort((a: any, b: any) => b.id - a.id);
+                    const sortedNotifications = transform.sort((a: Record<string, any>, b: Record<string, any>) => b.id - a.id);
                     setNotifications(sortedNotifications);
                 }
             })
@@ -110,24 +118,15 @@ export default function notification() {
                 setIsLoading(false);
             });
 
-        // Optional: Set up polling for new notifications if Echo is not available
+        // Polling for new notifications - every 5 seconds for faster updates
         const pollInterval = setInterval(() => {
             handleFetchedNotif().then(data => {
                 if (data && Array.isArray(data)) {
-                    const transform = data.map((notif: any) => ({
-                        id: notif.id,
-                        type: notif.type || 'info',
-                        title: notif.title || 'Notification',
-                        message: notif.message || '',
-                        timestamp: notif.created_at ? formatTimestamp(notif.created_at) : 'Just now',
-                        isRead: notif.status === 'read',
-                        icon: getIconByType(notif.type || 'info')
-                    }));
-
-                    setNotifications(transform.sort((a: any, b: any) => b.id - a.id));
+                    const transform = data.map(transformNotification);
+                    setNotifications(transform.sort((a: Record<string, any>, b: Record<string, any>) => b.id - a.id));
                 }
             });
-        }, 30000); // Poll every 30 seconds
+        }, 5000); // Poll every 5 seconds instead of 30
 
         // Cleanup function
         return () => {
@@ -137,10 +136,6 @@ export default function notification() {
 
     const markAllAsRead = async () => {
         if (unreadCount === 0) return;
-
-        // Optimistically update UI
-        const originalNotifications = notifications;
-        setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
 
         try {
             const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
@@ -159,18 +154,17 @@ export default function notification() {
 
             const result = await response.json();
             
-            if (!result.success) {
-                // Revert if backend operation failed
-                setNotifications(originalNotifications);
-            } else {
+            if (result.success) {
+                // Update UI after successful backend operation
+                setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
                 // Refresh unread count in sidebar
                 refreshSidebarCount();
+            } else {
+                alert('Failed to mark all notifications as read. Please try again.');
             }
 
         } catch (error) {
             console.error('Error marking all as read:', error);
-            // Revert on error
-            setNotifications(originalNotifications);
             alert('Failed to mark all notifications as read. Please try again.');
         }
     };
@@ -221,15 +215,15 @@ export default function notification() {
     };
 
     const markAsRead = async (id: number) => {
-        // Optimistically update UI
-        const originalNotifications = notifications;
-        setNotifications(prev =>
-            prev.map(notif => notif.id === id ? { ...notif, isRead: true } : notif)
-        );
-
         try {
+            setProcessingIds(prev => new Set([...prev, id]));
             const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
             
+            // Optimistically update UI
+            setNotifications(prev =>
+                prev.map(notif => notif.id === id ? { ...notif, isRead: true } : notif)
+            );
+
             const response = await fetch(route('notification.markAsRead'), {
                 method: 'POST',
                 headers: {
@@ -247,7 +241,9 @@ export default function notification() {
             
             if (!result.success) {
                 // Revert if backend operation failed
-                setNotifications(originalNotifications);
+                setNotifications(prev =>
+                    prev.map(notif => notif.id === id ? { ...notif, isRead: false } : notif)
+                );
             } else {
                 // Refresh unread count in sidebar
                 refreshSidebarCount();
@@ -255,18 +251,26 @@ export default function notification() {
         } catch (error) {
             console.error('Error marking notification as read:', error);
             // Revert on error
-            setNotifications(originalNotifications);
+            setNotifications(prev =>
+                prev.map(notif => notif.id === id ? { ...notif, isRead: false } : notif)
+            );
+        } finally {
+            setProcessingIds(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(id);
+                return newSet;
+            });
         }
     };
 
     const removeNotification = async (id: number) => {
-        // Optimistically remove from UI
-        const originalNotifications = notifications;
-        setNotifications(prev => prev.filter(notif => notif.id !== id));
-
         try {
+            setProcessingIds(prev => new Set([...prev, id]));
             const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
             
+            // Optimistically remove from UI
+            setNotifications(prev => prev.filter(notif => notif.id !== id));
+
             const response = await fetch(route('notification.clear'), {
                 method: 'POST',
                 headers: {
@@ -283,16 +287,30 @@ export default function notification() {
             const result = await response.json();
             
             if (!result.success) {
-                // Revert if backend operation failed
-                setNotifications(originalNotifications);
+                // Revert if backend operation failed - need to refetch
+                const data = await handleFetchedNotif();
+                if (data && Array.isArray(data)) {
+                    const transform = data.map(transformNotification);
+                    setNotifications(transform.sort((a: Record<string, any>, b: Record<string, any>) => b.id - a.id));
+                }
             } else {
                 // Refresh unread count in sidebar
                 refreshSidebarCount();
             }
         } catch (error) {
             console.error('Error removing notification:', error);
-            // Revert on error
-            setNotifications(originalNotifications);
+            // Revert on error - need to refetch
+            const data = await handleFetchedNotif();
+            if (data && Array.isArray(data)) {
+                const transform = data.map(transformNotification);
+                setNotifications(transform.sort((a: Record<string, any>, b: Record<string, any>) => b.id - a.id));
+            }
+        } finally {
+            setProcessingIds(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(id);
+                return newSet;
+            });
         }
     };
 
@@ -301,18 +319,20 @@ export default function notification() {
     const getNotificationStyle = (type: string) => {
         switch (type.toLowerCase()) {
             case 'success':
-                return 'border-l-green-500 bg-green-50';
+                return 'border-l-green-500';
             case 'warning':
-                return 'border-l-yellow-500 bg-yellow-50';
+                return 'border-l-yellow-500';
             case 'error':
-                return 'border-l-red-500 bg-red-50';
+                return 'border-l-red-500';
             case 'technician_note':
-                return 'border-l-purple-500 bg-purple-50';
+                return 'border-l-purple-500';
             case 'client_req':
-                return 'border-l-indigo-500 bg-indigo-50';
+                return 'border-l-indigo-500';
+            case 'rating_submitted':
+                return 'border-l-purple-500';
             case 'info':
             default:
-                return 'border-l-blue-500 bg-blue-50';
+                return 'border-l-blue-500';
         }
     };
 
@@ -328,6 +348,8 @@ export default function notification() {
                 return 'text-purple-600';
             case 'client_req':
                 return 'text-indigo-600';
+            case 'rating_submitted':
+                return 'text-purple-600';
             case 'info':
             default:
                 return 'text-blue-600';
@@ -439,18 +461,20 @@ export default function notification() {
                                                         {!notification.isRead && (
                                                             <button
                                                                 onClick={() => markAsRead(notification.id)}
-                                                                className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                                                                disabled={processingIds.has(notification.id)}
+                                                                className={`p-1 text-blue-600 hover:bg-blue-100 hover:shadow-md hover:scale-110 active:scale-95 active:bg-blue-200 rounded transition-all duration-200 cursor-pointer disabled:opacity-50 ${processingIds.has(notification.id) ? 'animate-pulse' : ''}`}
                                                                 title="Mark as read"
                                                             >
-                                                                <Eye className="w-4 h-4" />
+                                                                <Eye className={`w-4 h-4 ${processingIds.has(notification.id) ? 'animate-spin' : ''}`} />
                                                             </button>
                                                         )}
                                                         <button
                                                             onClick={() => removeNotification(notification.id)}
-                                                            className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
+                                                            disabled={processingIds.has(notification.id)}
+                                                            className={`p-1 text-red-600 hover:bg-red-100 hover:shadow-md hover:scale-110 active:scale-95 active:bg-red-200 rounded transition-all duration-200 cursor-pointer disabled:opacity-50 ${processingIds.has(notification.id) ? 'animate-pulse' : ''}`}
                                                             title="Remove notification"
                                                         >
-                                                            <X className="w-4 h-4" />
+                                                            <X className={`w-4 h-4 ${processingIds.has(notification.id) ? 'animate-spin' : ''}`} />
                                                         </button>
                                                     </div>
                                                 </div>

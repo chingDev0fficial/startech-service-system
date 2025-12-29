@@ -1,7 +1,15 @@
 import AppLayout from '@/layouts/app-layout';
+<<<<<<< HEAD
+=======
+import { Head, usePage } from '@inertiajs/react';
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useEcho } from '@laravel/echo-react';
+<<<<<<< HEAD
+=======
+import { useState, useEffect } from 'react';
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 import { LoaderCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -60,6 +68,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
     const [openNote, setOpenNote] = useState<boolean>(false);
 
     const handleNoteChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+<<<<<<< HEAD
         const value = e.target.value;
 
         setNote(value);
@@ -69,11 +78,26 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const value = e.target.value;
 
+=======
+        const value =  e.target.value;
+
+        setNote(value);
+        setError('');
+    }
+
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const value = e.target.value;
+
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
         // Allow only numbers and decimal points
         if (value === '' || /^\d*\.?\d*$/.test(value)) {
             setAmount(value);
             setError('');
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             // Check if amount is 0 or empty to show note field
             const numericValue = parseFloat(value);
             if (value === '' || isNaN(numericValue) || numericValue <= 0) {
@@ -137,7 +161,11 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
                     <p className="mb-4">Please enter the service amount and confirm completion.</p>
 
                     <div className="mb-4">
+<<<<<<< HEAD
                         <label htmlFor="amount" className="mb-2 block text-sm font-medium text-gray-700">
+=======
+                        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             Service Amount (₱)
                         </label>
                         <input
@@ -151,6 +179,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
                                 error ? 'border-red-500' : 'border-gray-300'
                             }`}
                         />
+<<<<<<< HEAD
                         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
                     </div>
 
@@ -184,6 +213,46 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
 
                     <div className="flex justify-end gap-2">
                         <Button onClick={handleClose} variant="outline" disabled={isLoading}>
+=======
+                        {error && (
+                            <p className="mt-1 text-sm text-red-600">{error}</p>
+                        )}
+                        
+                    </div>
+
+                    {openNote && (
+                    <>
+                        <div className='mb-4 border rounded-sm color-[#FFFFF] border-[#FFA500] bg-[#FFA500]/20 p-3'>
+                            <p className='font-semibold text-sm'>⚠️ Note Required</p>
+                            <p className='text-sm mt-1'>Since the amount is ₱0, please explain why no charge is being applied. This will notify the admin.</p>
+                        </div>
+
+                        <div className='mb-1'>
+                            <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-2">
+                                Technician Note <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                                id="note"
+                                value={note}
+                                onChange={handleNoteChange}
+                                placeholder="Explain why no charge is being applied..."
+                                disabled={isLoading}
+                                rows={4}
+                                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
+                                    error ? 'border-red-500' : 'border-gray-300'
+                                }`}
+                            />
+                        </div>
+                    </>
+                    )}
+
+                    <div className="flex gap-2 justify-end">
+                        <Button
+                            onClick={handleClose}
+                            variant="outline"
+                            disabled={isLoading}
+                        >
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             Cancel
                         </Button>
                         <Button
@@ -246,22 +315,37 @@ export default function InProgress() {
     //         await fetch('/sanctum/csrf-cookie', {
     //             credentials: 'include'
     //         });
+<<<<<<< HEAD
 
     //         // Wait for cookie to be set
     //         await new Promise(resolve => setTimeout(resolve, 200));
 
+=======
+            
+    //         // Wait for cookie to be set
+    //         await new Promise(resolve => setTimeout(resolve, 200));
+            
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
     //         // Now make a simple GET request that will include the new token in response
     //         const response = await fetch(route('my-appointments.fetch'), {
     //             method: 'GET',
     //             credentials: 'include'
     //         });
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
     //         if (response.ok) {
     //             // Get the CSRF token from the meta tag after the request
     //             // Laravel should have updated it
     //             const meta = document.querySelector('meta[name="csrf-token"]');
     //             const token = meta?.getAttribute('content') || '';
+<<<<<<< HEAD
 
+=======
+                
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
     //             if (token) {
     //                 console.log('Fresh CSRF token obtained');
     //                 return token;
@@ -273,15 +357,25 @@ export default function InProgress() {
     //     return '';
     // };
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
     const fetchFreshCsrfToken = async (): Promise<string> => {
         try {
             // Make a simple GET request to refresh the session
             // This will cause Laravel to regenerate the CSRF token
             const response = await fetch(window.location.href, {
                 method: 'HEAD', // Use HEAD to avoid getting page content
+<<<<<<< HEAD
                 credentials: 'include',
             });
 
+=======
+                credentials: 'include'
+            });
+            
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             if (response.ok) {
                 // After the request, check if meta tag was updated
                 // In reality, it won't be updated without a full page reload
@@ -305,6 +399,7 @@ export default function InProgress() {
             const response = await fetch(route('appointment.transfer'), {
                 method: 'POST',
                 headers: {
+<<<<<<< HEAD
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                 },
@@ -312,6 +407,15 @@ export default function InProgress() {
                     appointmentId: selectedAppointmentId,
                 }),
                 credentials: 'include',
+=======
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken
+                },
+                body: JSON.stringify({
+                    appointmentId: selectedAppointmentId
+                }),
+                credentials: 'include'
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             });
 
             // Handle CSRF token mismatch (419) - session expired
@@ -326,16 +430,27 @@ export default function InProgress() {
             }
 
             if (!response.ok) {
+<<<<<<< HEAD
                 const errorData = await response.json().catch(() => ({
                     message: 'Network error occurred',
+=======
+                const errorData = await response.json().catch(() => ({ 
+                    message: 'Network error occurred' 
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                 }));
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
 
             const result = await response.json();
+<<<<<<< HEAD
 
             if (result.success) {
                 setJobs((prev) => prev.filter((job) => job.appointmentId !== selectedAppointmentId));
+=======
+            
+            if (result.success) {
+                setJobs(prev => prev.filter(job => job.appointmentId !== selectedAppointmentId));
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                 setIsTransferModalOpen(false);
                 setSelectedAppointmentId(null);
                 alert('Appointment transferred successfully!');
@@ -379,6 +494,7 @@ export default function InProgress() {
     // Load services when selectedDate or echo changes
     useEffect(() => {
         let isMounted = true;
+<<<<<<< HEAD
 
         handleFetchedServices()
             .then((data) => {
@@ -392,17 +508,40 @@ export default function InProgress() {
         if (echo) {
             const channel = echo.channel('services');
 
+=======
+
+        handleFetchedServices()
+            .then(data => {
+                if (isMounted) {
+                    const transformedData = transformServiceData(data);
+                    setJobs(transformedData);
+                }
+            })
+            .catch(err => console.error(err));
+
+        if (echo) {
+            const channel = echo.channel('services');
+            
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             channel.listen('.services.retrieve', (event: any) => {
                 // Use a flag to prevent duplicate fetches
                 if (isMounted) {
                     handleFetchedServices()
+<<<<<<< HEAD
                         .then((data) => {
+=======
+                        .then(data => {
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             if (isMounted) {
                                 const transformedData = transformServiceData(data);
                                 setJobs(transformedData);
                             }
                         })
+<<<<<<< HEAD
                         .catch((err) => console.error(err));
+=======
+                        .catch(err => console.error(err));
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                 }
             });
         }
@@ -489,13 +628,21 @@ export default function InProgress() {
 
     const handleMark = async (jobId: number, status: string) => {
         if (!jobId) {
+<<<<<<< HEAD
             console.error('No user ID provided');
+=======
+            console.error("No user ID provided");
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             return;
         }
 
         // Prevent multiple clicks
         if (loadingJobs.has(jobId)) {
+<<<<<<< HEAD
             console.log('Already processing this job');
+=======
+            console.log("Already processing this job");
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             return;
         }
 
@@ -510,14 +657,24 @@ export default function InProgress() {
         try {
             // Determine technician status based on job status
             const technicianStatus = status === 'in-progress' ? 'unavailable' : 'available';
+<<<<<<< HEAD
 
             const result = await makeApiCall(jobId, status, undefined, technicianStatus);
 
+=======
+            
+            const result = await makeApiCall(jobId, status, undefined, technicianStatus);
+            
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             // Verify success before updating UI
             if (!result || result.success === false) {
                 throw new Error(result?.message || 'Operation failed');
             }
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             // Only update state after successful API call
             if (status === 'canceled') {
                 setJobs((prev) => prev.filter((job) => job.appointmentId !== jobId));
@@ -529,7 +686,11 @@ export default function InProgress() {
             alert(`Failed to mark job as ${status}. Please try again.`);
         } finally {
             // Ensure loading state is always cleared
+<<<<<<< HEAD
             setLoadingJobs((prev) => {
+=======
+            setLoadingJobs(prev => {
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                 const newMap = new Map(prev);
                 newMap.delete(jobId);
                 return newMap;
@@ -540,23 +701,39 @@ export default function InProgress() {
     // Update your handleModalSave function to accept amount parameter
     const handleModalSave = async (amount: number, note: string) => {
         const jobId = jobData;
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
         // Prevent duplicate submissions
         if (loadingJobs.has(jobId)) {
             return;
         }
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
         setIsModalSaveClick(true);
         setLoadingJobs((prev) => new Map(prev).set(jobId, 'completed'));
 
         try {
             // Set technician status to available when completing
             const result = await makeApiCallWithAmount(jobId, 'completed', amount, 'available', note);
+<<<<<<< HEAD
 
             if (!result || result.success === false) {
                 throw new Error(result?.message || 'Failed to complete job');
             }
 
+=======
+            
+            if (!result || result.success === false) {
+                throw new Error(result?.message || 'Failed to complete job');
+            }
+            
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             // Only remove after successful API call
             setJobs((prev) => prev.filter((job) => job.appointmentId !== jobId));
             setOpenCompleteModal(false);
@@ -578,7 +755,11 @@ export default function InProgress() {
     const makeApiCallWithAmount = async (jobId: number, status: string, amount?: number, technicianStatus?: string, note?: string) => {
         const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
         const trimmedNote = note?.trim() || '';
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
         const body = {
             id: jobId,
             currentUserId: currentUserId,
@@ -586,7 +767,11 @@ export default function InProgress() {
             price: amount,
             technicianStatus: technicianStatus,
             ...(trimmedNote && { note: trimmedNote }),
+<<<<<<< HEAD
             ...(amount === 0 && trimmedNote && { notifyAdmin: true }),
+=======
+            ...(amount === 0 && trimmedNote && { notifyAdmin: true })
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
         };
 
         const controller = new AbortController();
@@ -596,18 +781,30 @@ export default function InProgress() {
             console.log('makeApiCallWithAmount - Sending request:', {
                 url: route('in-progress.mark-in-progress'),
                 csrfToken: csrfToken ? csrfToken.substring(0, 20) + '...' : 'MISSING',
+<<<<<<< HEAD
                 body,
+=======
+                body
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             });
 
             const response = await fetch(route('in-progress.mark-in-progress'), {
                 method: 'POST',
                 body: JSON.stringify(body),
                 headers: {
+<<<<<<< HEAD
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                 },
                 signal: controller.signal,
                 credentials: 'include',
+=======
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken
+                },
+                signal: controller.signal,
+                credentials: 'include'
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             });
 
             clearTimeout(timeoutId);
@@ -616,14 +813,22 @@ export default function InProgress() {
                 const error = await response.json().catch(() => ({ message: 'Network error' }));
                 console.error('makeApiCallWithAmount - Response error:', {
                     status: response.status,
+<<<<<<< HEAD
                     error,
+=======
+                    error
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                 });
                 throw new Error(error.message || `HTTP error! status: ${response.status}`);
             }
 
             const result = await response.json();
             console.log('makeApiCallWithAmount - Success:', result);
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             if (result.success === false) {
                 throw new Error(result.message || 'Failed to update appointment');
             }
@@ -636,7 +841,11 @@ export default function InProgress() {
             }
             throw error;
         }
+<<<<<<< HEAD
     };
+=======
+    }
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 
     // Or update your existing makeApiCall function:
     const makeApiCall = async (jobId: number, status: string, amount?: number, technicianStatus?: string) => {
@@ -646,7 +855,11 @@ export default function InProgress() {
             currentUserId: currentUserId,
             status: status,
             price: amount || 0,
+<<<<<<< HEAD
             technicianStatus: technicianStatus,
+=======
+            technicianStatus: technicianStatus
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
         };
 
         const controller = new AbortController();
@@ -656,18 +869,30 @@ export default function InProgress() {
             console.log('makeApiCall - Sending request:', {
                 url: route('in-progress.mark-in-progress'),
                 csrfToken: csrfToken ? csrfToken.substring(0, 20) + '...' : 'MISSING',
+<<<<<<< HEAD
                 body,
+=======
+                body
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             });
 
             const response = await fetch(route('in-progress.mark-in-progress'), {
                 method: 'POST',
                 body: JSON.stringify(body),
                 headers: {
+<<<<<<< HEAD
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                 },
                 signal: controller.signal,
                 credentials: 'include',
+=======
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken
+                },
+                signal: controller.signal,
+                credentials: 'include'
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             });
 
             clearTimeout(timeoutId);
@@ -676,14 +901,22 @@ export default function InProgress() {
                 const error = await response.json().catch(() => ({ message: 'Network error' }));
                 console.error('makeApiCall - Response error:', {
                     status: response.status,
+<<<<<<< HEAD
                     error,
+=======
+                    error
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                 });
                 throw new Error(error.message || `HTTP error! status: ${response.status}`);
             }
 
             const result = await response.json();
             console.log('makeApiCall - Success:', result);
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             if (result.success === false) {
                 throw new Error(result.message || 'Failed to update appointment');
             }
@@ -696,11 +929,16 @@ export default function InProgress() {
             }
             throw error;
         }
+<<<<<<< HEAD
     };
+=======
+    }
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 
     return (
         <>
             {/* Note Modal */}
+<<<<<<< HEAD
             <Modal open={isNoteModalOpen} onClose={() => !sendingNote && setIsNoteModalOpen(false)} aria-labelledby="note-modal-title">
                 <Box
                     sx={{
@@ -718,6 +956,27 @@ export default function InProgress() {
                         overflowY: 'auto',
                     }}
                 >
+=======
+            <Modal
+                open={isNoteModalOpen}
+                onClose={() => !sendingNote && setIsNoteModalOpen(false)}
+                aria-labelledby="note-modal-title"
+            >
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '90%',
+                    maxWidth: 600,
+                    bgcolor: 'background.paper',
+                    boxShadow: 24,
+                    p: { xs: 3, sm: 4 },
+                    borderRadius: 2,
+                    maxHeight: '90vh',
+                    overflowY: 'auto'
+                }}>
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                     <Typography id="note-modal-title" variant="h6" component="h2" className="mb-4">
                         Send Note to Client
                     </Typography>
@@ -774,6 +1033,7 @@ export default function InProgress() {
             </Modal>
 
             {/* Transfer Appointment Modal */}
+<<<<<<< HEAD
             <Modal open={isTransferModalOpen} onClose={() => !transferring && setIsTransferModalOpen(false)} aria-labelledby="transfer-modal-title">
                 <Box
                     sx={{
@@ -791,12 +1051,40 @@ export default function InProgress() {
                         overflowY: 'auto',
                     }}
                 >
+=======
+            <Modal
+                open={isTransferModalOpen}
+                onClose={() => !transferring && setIsTransferModalOpen(false)}
+                aria-labelledby="transfer-modal-title"
+            >
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '90%',
+                    maxWidth: 500,
+                    bgcolor: 'background.paper',
+                    boxShadow: 24,
+                    p: { xs: 3, sm: 4 },
+                    borderRadius: 2,
+                    maxHeight: '90vh',
+                    overflowY: 'auto'
+                }}>
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                     <Typography id="transfer-modal-title" variant="h6" component="h2" className="mb-4">
                         Transfer Appointment
                     </Typography>
                     <div className="mb-6">
+<<<<<<< HEAD
                         <p className="mb-2 text-gray-700">Are you sure you want to transfer this appointment to another technician?</p>
                         <div className="mt-4 border-l-4 border-blue-400 bg-blue-50 p-4">
+=======
+                        <p className="text-gray-700 mb-2">
+                            Are you sure you want to transfer this appointment to another technician?
+                        </p>
+                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4">
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             <p className="text-sm text-blue-700">
                                 <strong>Note:</strong> This appointment will be reassigned to an available technician through the queuing system.
                             </p>
@@ -806,18 +1094,30 @@ export default function InProgress() {
                         <button
                             onClick={() => setIsTransferModalOpen(false)}
                             disabled={transferring}
+<<<<<<< HEAD
                             className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+=======
+                            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleTransferSubmit}
                             disabled={transferring}
+<<<<<<< HEAD
                             className="flex items-center gap-2 rounded-lg bg-orange-600 px-4 py-2 text-white hover:bg-orange-700 disabled:opacity-50"
                         >
                             {transferring ? (
                                 <>
                                     <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+=======
+                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center gap-2"
+                        >
+                            {transferring ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                                     Transferring...
                                 </>
                             ) : (
@@ -836,7 +1136,11 @@ export default function InProgress() {
             />
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="In Progress" />
+<<<<<<< HEAD
                 <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+=======
+                <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                     <h1 className="text-xl font-semibold">Pending Appointments</h1>
 
                     <div className="flex flex-col gap-4">
@@ -874,20 +1178,49 @@ export default function InProgress() {
                                         {/* </p> */}
                                     </div>
 
+<<<<<<< HEAD
                                     <div className="flex justify-between">
                                         <div className="mt-3 flex flex-wrap gap-2">
                                             {/* Send Note Button - Always visible */}
+=======
+                                <div className='flex justify-between'>
+
+                                    <div className="mt-3 flex gap-2 flex-wrap">
+                                        {/* Send Note Button - Always visible */}
+                                        <button
+                                            onClick={() => handleOpenNoteModal(job.id)}
+                                            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 flex items-center gap-2"
+                                            disabled={loadingJobs.has(job.appointmentId)}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                            </svg>
+                                            Send Note
+                                        </button>
+
+                                        {/* Sequential buttons: pending -> in-progress -> completed */}
+                                        {job.status === "pending" && (
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                                             <button
                                                 onClick={() => handleOpenNoteModal(job.id)}
                                                 className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
                                                 disabled={loadingJobs.has(job.appointmentId)}
                                             >
+<<<<<<< HEAD
                                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                                 </svg>
                                                 Send Note
+=======
+                                                {loadingJobs.get(job.appointmentId) === 'in-progress' ? (
+                                                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    "Mark In Progress"
+                                                )}
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                                             </button>
 
+<<<<<<< HEAD
                                             {/* Sequential buttons: pending -> in-progress -> completed */}
                                             {job.status === 'pending' && (
                                                 <button
@@ -950,6 +1283,55 @@ export default function InProgress() {
                                 </div>
                             ))
                         )}
+=======
+                                        {job.status === "in-progress" && (
+                                            <button
+                                                onClick={() => handleMark(job.appointmentId, 'completed')}
+                                                className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                                                disabled={loadingJobs.has(job.appointmentId)}
+                                            >
+                                                {loadingJobs.get(job.appointmentId) === 'completed' ? (
+                                                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    "Mark Completed"
+                                                )}
+                                            </button>
+                                        )}
+
+                                        {/* Cancel button - Always visible for both statuses */}
+                                        {(job.status === "pending" || job.status === "in-progress") && (
+                                            <button
+                                                onClick={() => handleMark(job.appointmentId, 'canceled')}
+                                                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                                                disabled={loadingJobs.has(job.appointmentId)}
+                                            >
+                                                {loadingJobs.get(job.appointmentId) === 'canceled' ? (
+                                                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    "Mark Cancel"
+                                                )}
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Transfer Button */}
+                                    <div className="mt-3 flex justify-end">
+                                        <button
+                                            onClick={() => handleTransferAppointment(job.appointmentId)}
+                                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2"
+                                            disabled={loadingJobs.has(job.appointmentId)}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8zM12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z" />
+                                            </svg>
+                                            Transfer Appointment
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        )))}
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                     </div>
                 </div>
             </AppLayout>

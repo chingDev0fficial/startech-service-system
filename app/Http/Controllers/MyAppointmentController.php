@@ -27,6 +27,7 @@ class MyAppointmentController extends Controller
                 'appointment.item as appointment_item_name',
                 'appointment.service_type as appointment_service_type',
                 'appointment.service_location as appointment_service_location',
+                'appointment.address as client_address',
                 'appointment.schedule_at as appointment_date',
                 'appointment.description as appointment_description',
                 'client.name as client_name',
@@ -63,7 +64,7 @@ class MyAppointmentController extends Controller
             }
 
             $user = DB::table('users')
-                ->select('status')
+                ->select('status', 'scheduled_unavailable_date')
                 ->where('id', $userId)
                 ->first();
 
@@ -77,7 +78,8 @@ class MyAppointmentController extends Controller
             return response()->json([
                 'success' => true,
                 // 'userId' => $userId,
-                'status' => $user->status ?? 'available'
+                'status' => $user->status ?? 'available',
+                'scheduled_unavailable_date' => $user->scheduled_unavailable_date ?? null
             ]);
 
         } catch (\Exception $e) {
@@ -99,8 +101,8 @@ class MyAppointmentController extends Controller
         try {
             // Validate the incoming request
             $validated = $request->validate([
-                'status' => ['required', Rule::in(['available', 'unavailable'])]
-                // 'status' => 'required|string'
+                'status' => ['nullable', Rule::in(['available', 'unavailable'])],
+                'scheduled_unavailable_date' => 'nullable|date|after:today'
             ]);
 
             $userId = Auth::id();
@@ -114,31 +116,46 @@ class MyAppointmentController extends Controller
                 ], 401);
             }
 
+            $updateData = ['updated_at' => now()];
+
+            // Handle status update if provided
+            if (isset($validated['status'])) {
+                $updateData['status'] = $validated['status'];
+            }
+
+            // Handle scheduled unavailable date
+            if (array_key_exists('scheduled_unavailable_date', $validated)) {
+                $updateData['scheduled_unavailable_date'] = $validated['scheduled_unavailable_date'];
+            }
+
             // Update the availability status
             $updated = DB::table('users')
                 ->where('id', $userId)
-                ->update([
-                    'status' => $validated['status'],
-                    'updated_at' => now()
-                ]);
+                ->update($updateData);
 
-            if ($updated) {
-                // Log the status change
-                Log::info("User ID {$userId} changed availability status to {$validated['status']}");
+            if ($updated !== false) {
+                // Log the changes
+                if (isset($validated['status'])) {
+                    Log::info("User ID {$userId} changed availability status to {$validated['status']}");
+                }
+                if (array_key_exists('scheduled_unavailable_date', $validated)) {
+                    Log::info("User ID {$userId} scheduled unavailable date: " . ($validated['scheduled_unavailable_date'] ?? 'cleared'));
+                }
 
                 // Optional: Broadcast event for real-time updates
                 // event(new TechnicianAvailabilityChanged($userId, $validated['status']));
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Availability status updated successfully',
-                    'status' => $validated['status']
+                    'message' => 'Updated successfully',
+                    'status' => $validated['status'] ?? null,
+                    'scheduled_unavailable_date' => $validated['scheduled_unavailable_date'] ?? null
                 ]);
             }
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update availability status'
+                'message' => 'Failed to update'
             ], 500);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -166,10 +183,10 @@ class MyAppointmentController extends Controller
     {
         try {
             $validated = $request->validate([
-                'appointmentId' => 'required|integer|exists:service,id'
+                'appointmentId' => 'required|integer|exists:appointment,id'
             ]);
 
-            $serviceId = $validated['appointmentId'];
+            $appointmentId = $validated['appointmentId'];
             $currentUserId = Auth::id();
 
             if (!$currentUserId) {
@@ -181,7 +198,7 @@ class MyAppointmentController extends Controller
 
             // Get the service record to retrieve appointment_id, warranty info
             $service = DB::table('service')
-                ->where('id', $serviceId)
+                ->where('appointment_id', $appointmentId)
                 ->where('user_id', $currentUserId)
                 ->first();
 
@@ -192,7 +209,7 @@ class MyAppointmentController extends Controller
                 ], 404);
             }
 
-            $appointmentId = $service->appointment_id;
+            $serviceId = $service->id;
             $warranty = $service->warranty;
             $warrantyStatus = $service->warranty_status;
 

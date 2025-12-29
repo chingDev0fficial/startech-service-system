@@ -28,6 +28,10 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+<<<<<<< HEAD
+=======
+import { Modal } from "flowbite-react";
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -36,7 +40,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-function Dot({ serviceType }) {
+interface DotProps {
+    serviceType: string;
+}
+
+function Dot({ serviceType }: DotProps) {
     return (<>
         <div className="grid grid-cols-1 grid-rows-1 place-items-center">
             <div className={`rounded-xl w-[7px] h-[7px] ${ serviceType.toLowerCase() === "home service" ? "bg-blue-500" : "bg-orange-500"}`}></div>
@@ -44,7 +52,15 @@ function Dot({ serviceType }) {
     </>)
 }
 
-function DashboardCard({ icon, iconColor, title, value }) {
+interface DashboardCardProps {
+    icon: any;
+    iconColor: 'blue' | 'orange' | 'green' | 'purple';
+    title: string;
+    value: string | number;
+    onClick?: () => void;
+}
+
+function DashboardCard({ icon, iconColor, title, value, onClick }: DashboardCardProps) {
 
     const colors = {
         blue: {
@@ -69,7 +85,10 @@ function DashboardCard({ icon, iconColor, title, value }) {
     const icon_text_color =  colors[iconColor].text;
 
     return (<>
-        <Card className="!flex-row items-center justify-between w-full bg-sidebar shadow-lg m-4 border border-sidebar-border p-2">
+        <Card 
+            className={`!flex-row items-center justify-between w-full bg-sidebar shadow-lg m-4 border border-sidebar-border p-2 ${onClick ? 'cursor-pointer hover:bg-sidebar-accent transition-colors' : ''}`}
+            onClick={onClick}
+        >
             <CardContent className="!p-[0]">
                 <CardTitle className="!font-normal text-[0.7rem] text-[#393E46] dark:text-[#ffffff]">{ title }</CardTitle>
                 <CardDescription className="!font-semibold text-[1.2rem] text-[#222831] dark:text-[#ffffff]">{ value }</CardDescription>
@@ -81,11 +100,19 @@ function DashboardCard({ icon, iconColor, title, value }) {
     </>);
 }
 
-function PricingCard({ title, initialPrice, icon, description, onPriceChange }) {
+interface PricingCardProps {
+    title: string;
+    initialPrice: number;
+    icon: any;
+    description: string;
+    onPriceChange: (price: number) => void;
+}
+
+function PricingCard({ title, initialPrice, icon, description, onPriceChange }: PricingCardProps) {
     const [price, setPrice] = useState(initialPrice);
 
-    const handlePriceChange = (e) => {
-        const newPrice = e.target.value;
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newPrice = parseFloat(e.target.value) || 0;
         setPrice(newPrice);
         onPriceChange(newPrice);
     };
@@ -135,6 +162,12 @@ interface AppointmentDetails {
     name: string;
     status?: string;
     rating?: number;
+<<<<<<< HEAD
+=======
+    technician_name?: string;
+    technician_email?: string;
+    technician_id?: number;
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 }
 
 function AppointmentInfoModal({ isOpen, onClose, appointmentId }: { 
@@ -193,12 +226,21 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
+<<<<<<< HEAD
             <DialogContent className="bg-sidebar border-sidebar-border">
                 <DialogHeader>
                     <DialogTitle className="text-[#222831] dark:text-white">
                         Appointment Details
                     </DialogTitle>
                     <DialogDescription className="text-[#393E46] dark:text-gray-300">
+=======
+            <DialogContent className="bg-sidebar border-sidebar-border max-w-[95vw] sm:max-w-[90vw] md:max-w-2xl lg:max-w-3xl max-h-[90vh] flex flex-col p-4 sm:p-6">
+                <DialogHeader className="flex-shrink-0 pb-3 sm:pb-4">
+                    <DialogTitle className="text-base sm:text-lg md:text-xl text-[#222831] dark:text-white">
+                        Appointment Details
+                    </DialogTitle>
+                    <DialogDescription className="text-xs sm:text-sm text-[#393E46] dark:text-gray-300">
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                         {appointmentId && `Appointment ${appointmentId}`}
                     </DialogDescription>
                 </DialogHeader>
@@ -216,11 +258,19 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
                 )}
 
                 {appointmentData && !isLoading && (
+<<<<<<< HEAD
                     <div className="space-y-4 max-h-[500px] overflow-y-auto">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Service Type</p>
                                 <p className="font-semibold text-[#222831] dark:text-white capitalize">{appointmentData.service_type}</p>
+=======
+                    <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-2 sm:pr-3 -mr-2 sm:-mr-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            <div>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400">Service Type</p>
+                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white capitalize break-words">{appointmentData.service_type}</p>
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             </div>
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Status</p>
@@ -235,26 +285,60 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
                             </div>
                         </div>
 
+<<<<<<< HEAD
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Customer Name</p>
                                 <p className="font-semibold text-[#222831] dark:text-white">{appointmentData.name}</p>
+=======
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            <div>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400">Customer Name</p>
+                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.name}</p>
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             </div>
                             {appointmentData.phone_number && (
                                 <div>
                                     <p className="text-xs text-[#393E46] dark:text-gray-400">Phone Number</p>
+<<<<<<< HEAD
                                     <p className="font-semibold text-[#222831] dark:text-white">{appointmentData.phone_number}</p>
+=======
+                                    <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.phone_number}</p>
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                                 </div>
                             )}
                         </div>
 
+<<<<<<< HEAD
                         <div>
                             <p className="text-xs text-[#393E46] dark:text-gray-400">Item/Device</p>
                             <p className="font-semibold text-[#222831] dark:text-white">{appointmentData.item}</p>
+=======
+                        {appointmentData.technician_name && (
+                            <div className="border-t border-sidebar-border pt-3 sm:pt-4 mt-2">
+                                <p className="text-xs text-[#393E46] dark:text-gray-400 mb-2 font-semibold">Assigned Technician</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                    <div>
+                                        <p className="text-xs text-[#393E46] dark:text-gray-400">Name</p>
+                                        <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.technician_name}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-[#393E46] dark:text-gray-400">Email</p>
+                                        <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.technician_email}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div>
+                            <p className="text-xs text-[#393E46] dark:text-gray-400">Item/Device</p>
+                            <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.item}</p>
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                         </div>
 
                         <div>
                             <p className="text-xs text-[#393E46] dark:text-gray-400">Description</p>
+<<<<<<< HEAD
                             <p className="text-[#222831] dark:text-white">{appointmentData.description}</p>
                         </div>
 
@@ -266,25 +350,47 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Mark As</p>
                                 <p className="font-semibold text-[#222831] dark:text-white capitalize">{appointmentData.mark_as}</p>
+=======
+                            <p className="text-sm sm:text-base text-[#222831] dark:text-white break-words">{appointmentData.description}</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            <div>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400">Service Location</p>
+                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white capitalize break-words">{appointmentData.service_location}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-[#393E46] dark:text-gray-400">Mark As</p>
+                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white capitalize break-words">{appointmentData.mark_as}</p>
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             </div>
                         </div>
 
                         {appointmentData.address && (
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Address</p>
+<<<<<<< HEAD
                                 <p className="text-[#222831] dark:text-white">{appointmentData.address}</p>
+=======
+                                <p className="text-sm sm:text-base text-[#222831] dark:text-white break-words">{appointmentData.address}</p>
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             </div>
                         )}
 
                         <div>
                             <p className="text-xs text-[#393E46] dark:text-gray-400">Scheduled At</p>
+<<<<<<< HEAD
                             <p className="font-semibold text-[#222831] dark:text-white">
+=======
+                            <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                                 {new Date(appointmentData.schedule_at).toLocaleString()}
                             </p>
                         </div>
 
                         {appointmentData.warranty_receipt && (
                             <div>
+<<<<<<< HEAD
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Warranty Receipt</p>
                                 <a 
                                     href={`/storage/${appointmentData.warranty_receipt}`} 
@@ -294,35 +400,217 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
                                 >
                                     View Receipt
                                 </a>
+=======
+                                <p className="text-xs text-[#393E46] dark:text-gray-400 mb-2">Warranty Receipt</p>
+                                <img 
+                                    src={`/storage/${appointmentData.warranty_receipt}`} 
+                                    alt="Warranty Receipt"
+                                    className="w-full max-w-md rounded-lg border border-sidebar-border shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                                    onClick={() => window.open(`/storage/${appointmentData.warranty_receipt}`, '_blank')}
+                                />
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             </div>
                         )}
 
                         {appointmentData.price && (
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Price</p>
+<<<<<<< HEAD
                                 <p className="font-semibold text-[#222831] dark:text-white">₱{appointmentData.price}</p>
+=======
+                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white">₱{appointmentData.price}</p>
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             </div>
                         )}
 
                         {appointmentData.rating && (
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Rating</p>
+<<<<<<< HEAD
                                 <p className="font-semibold text-[#222831] dark:text-white">⭐ {appointmentData.rating}/5</p>
                             </div>
                         )}
 
                         <div className="text-xs text-[#393E46] dark:text-gray-400 pt-2 border-t border-sidebar-border">
                             <p>Created: {new Date(appointmentData.created_at).toLocaleString()}</p>
+=======
+                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white">⭐ {appointmentData.rating}/5</p>
+                            </div>
+                        )}
+
+                        <div className="text-xs text-[#393E46] dark:text-gray-400 pt-2 border-t border-sidebar-border pb-4">
+                            <p className="mb-1">Created: {new Date(appointmentData.created_at).toLocaleString()}</p>
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             <p>Updated: {new Date(appointmentData.updated_at).toLocaleString()}</p>
                         </div>
                     </div>
                 )}
 
+<<<<<<< HEAD
                 <div className="flex justify-end gap-2 mt-4">
                     <Button onClick={onClose} variant="outline">
                         Close
                     </Button>
                 </div>
+=======
+                {/* <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-sidebar-border flex-shrink-0">
+                    <Button onClick={onClose} variant="outline">
+                        Close
+                    </Button>
+                </div> */}
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function ViewRatingsModal({isOpen, onClose} : {
+    isOpen: boolean;
+    onClose: () => void;
+}) {
+    const [ratings, setRatings] = useState<Array<any>>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleFetchRatings = async () => {
+        try {
+
+            const response = await fetch("dashboard/fetch-ratings", {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            console.log(`This is result => ${result}`);
+
+            if (result.success && result.data) {
+                setRatings(result.data);
+            } else {
+                throw new Error('Failed to fetch ratings');
+            }
+
+        } catch (error) {
+            throw new Error(`An error occour: ${error}`)
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        if (isOpen) {
+            handleFetchRatings();
+        }
+    }, [isOpen]);
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="bg-sidebar border-sidebar-border max-w-[95vw] sm:max-w-[90vw] md:max-w-4xl max-h-[90vh] flex flex-col p-4 sm:p-6">
+                <DialogHeader className="flex-shrink-0 pb-3 sm:pb-4">
+                    <DialogTitle className="text-base sm:text-lg md:text-xl text-[#222831] dark:text-white">
+                        Customer Ratings & Reviews
+                    </DialogTitle>
+                    <DialogDescription className="text-xs sm:text-sm text-[#393E46] dark:text-gray-300">
+                        View all customer feedback and ratings
+                    </DialogDescription>
+                </DialogHeader>
+
+                {isLoading && (
+                    <div className="flex items-center justify-center py-8">
+                        <p className="text-[#393E46] dark:text-white">Loading ratings...</p>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        {error}
+                    </div>
+                )}
+
+                {!isLoading && !error && ratings.length === 0 && (
+                    <div className="flex items-center justify-center py-8">
+                        <p className="text-[#393E46] dark:text-white">No ratings found</p>
+                    </div>
+                )}
+
+                {!isLoading && !error && ratings.length > 0 && (
+                    <div className="space-y-4 overflow-y-auto flex-1 pr-2 sm:pr-3 -mr-2 sm:-mr-3">
+                        {ratings.map((rating) => (
+                            <Card key={rating.id} className="bg-sidebar border-sidebar-border p-4">
+                                <div className="space-y-3">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold text-[#222831] dark:text-white">
+                                                {rating.client_name}
+                                            </h3>
+                                            <p className="text-xs text-[#393E46] dark:text-gray-400">
+                                                Appointment #{rating.appointment_id}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                            <span className="font-semibold text-[#222831] dark:text-white">
+                                                {rating.rating}/5
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                        <div>
+                                            <span className="text-[#393E46] dark:text-gray-400">Item: </span>
+                                            <span className="text-[#222831] dark:text-white font-medium">
+                                                {rating.item}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="text-[#393E46] dark:text-gray-400">Service: </span>
+                                            <span className="text-[#222831] dark:text-white font-medium capitalize">
+                                                {rating.service_type}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="text-[#393E46] dark:text-gray-400">Status: </span>
+                                            <span className={`inline-block px-2 py-0.5 rounded text-xs capitalize ${
+                                                rating.status === "completed" ? "bg-green-500/30 text-green-700" :
+                                                rating.status === "in-progress" ? "bg-yellow-500/30 text-yellow-700" :
+                                                "bg-orange-500/30 text-orange-700"
+                                            }`}>
+                                                {rating.status}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="text-[#393E46] dark:text-gray-400">Date: </span>
+                                            <span className="text-[#222831] dark:text-white">
+                                                {new Date(rating.schedule_at).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {rating.comment && (
+                                        <div className="pt-2 border-t border-sidebar-border">
+                                            <p className="text-xs text-[#393E46] dark:text-gray-400 mb-1">Comment:</p>
+                                            <p className="text-sm text-[#222831] dark:text-white italic">
+                                                "{rating.comment}"
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <div className="text-xs text-[#393E46] dark:text-gray-400 pt-2 border-t border-sidebar-border">
+                                        Reviewed on: {new Date(rating.created_at).toLocaleString()}
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             </DialogContent>
         </Dialog>
     );
@@ -354,6 +642,10 @@ export default function Dashboard() {
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+<<<<<<< HEAD
+=======
+    const [isRatingsModalOpen, setIsRatingsModalOpen] = useState(false);
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 
     const handlePendingClick = (appointmentId: string) => {
         setSelectedAppointmentId(appointmentId);
@@ -403,13 +695,8 @@ export default function Dashboard() {
         fetchInitialPrices();
     }, []);
 
-    // console.log("City Price:", cityPrice);
-    // console.log("Outside Price:", outsidePrice);
-
     const handleSavePrices = async () => {
-        console.log("Saving prices:", cityPrice, outsidePrice);
         try {
-            console.log("working")
             setIsSaving(true);
             const response = await fetch('dashboard/set-service-price', {
                 method: 'POST',
@@ -472,7 +759,8 @@ export default function Dashboard() {
             setError(null);
             return data.retrieved || [];
         } catch (error) {
-            setError(error.message);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            setError(errorMessage);
             return dataAppointments; // Return existing data on error
         } finally {
             setIsLoading(false);
@@ -507,7 +795,8 @@ export default function Dashboard() {
             setError(null);
             return data.retrieved || [];
         } catch (error) {
-            setError(error.message);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            setError(errorMessage);
             return dataTech; // Return existing data on error
         } finally {
             setIsLoading(false);
@@ -527,17 +816,16 @@ export default function Dashboard() {
     useEffect(() => {
         handleFetchAppointment()
             .then(data => {
-                const activeRepairCount = data.filter(appointment => appointment.status === "in-progress").length
-                const pendingAppointmentsCount = data.filter(appointment => appointment.status === "pending").length
+                const activeRepairCount = data.filter((appointment: any) => appointment.status === "in-progress").length
+                const pendingAppointmentsCount = data.filter((appointment: any) => appointment.status === "pending").length
 
-                console.log(data)
-                const totalRatings = data.reduce((sum, appointment) => 
+                const totalRatings = data.reduce((sum: number, appointment: any) => 
                     appointment.rating !== null && appointment.rating !== undefined 
                         ? sum + appointment.rating 
                         : sum, 
                     0
                 );
-                const numberOfRatings = data.filter(appointment => appointment.rating !== null && appointment.rating !== undefined).length;
+                const numberOfRatings = data.filter((appointment: any) => appointment.rating !== null && appointment.rating !== undefined).length;
                 const averageSatisfaction = numberOfRatings > 0 ? (totalRatings / numberOfRatings) : 0;
                 setSatisfaction(parseFloat(averageSatisfaction.toFixed(2)));
 
@@ -545,11 +833,11 @@ export default function Dashboard() {
                     style: 'currency',
                     currency: 'PHP',
                 });
-                const revenueTotal = data.filter(appointment => appointment.status === "completed")
-                    .reduce((sum, appointment) => sum + parseInt(appointment.price), 0);
+                const revenueTotal = data.filter((appointment: any) => appointment.status === "completed")
+                    .reduce((sum: number, appointment: any) => sum + parseInt(appointment.price), 0);
                 const formattedPrice = formatter.format(revenueTotal);
 
-                setTotalRevenue(formattedPrice);
+                setTotalRevenue(revenueTotal);
                 setActiveRepair(activeRepairCount);
                 setPendingAppointments(pendingAppointmentsCount);
                 setDataAppointments(data);
@@ -598,10 +886,12 @@ export default function Dashboard() {
         }))
 
     const statCards = [
-        {icon: ToolCase, iconColor: "blue", title: "Active Repairs", value: activeRepair},
-        {icon: ClipboardClock, iconColor: "orange", title: "pending Appointments", value: pendingAppointments},
-        {icon: PhilippinePeso, iconColor: "green", title: "Today's Revenue", value: totalRevenue},
-        {icon: Star, iconColor: "purple", title: "Satisfaction", value: `${satisfaction}/5`},
+        {icon: ToolCase, iconColor: "blue" as const, title: "Active Repairs", value: activeRepair},
+        {icon: ClipboardClock, iconColor: "orange" as const, title: "Pending Appointments", value: pendingAppointments},
+        {icon: PhilippinePeso, iconColor: "green" as const, title: "Total Revenue", value: totalRevenue},
+        {icon: Star, iconColor: "purple" as const, title: "Ratings", value: `${satisfaction}/5`, onClick: () => {
+            setIsRatingsModalOpen(true);
+        }},
     ];
 
     return (
@@ -616,11 +906,11 @@ export default function Dashboard() {
                 <div className="grid auto-rows-min gap-[1px] md:grid-cols-4">
                     {statCards.map((card) => (
                         <div className="flex justify-center items-center relative overflow-hidden rounded-xl dark:border-sidebar-border">
-                            <DashboardCard icon={ card.icon } iconColor={ card.iconColor } title={ card.title } value={ card.value } />
+                            <DashboardCard icon={ card.icon } iconColor={ card.iconColor } title={ card.title } value={ card.value } onClick={ card.onClick } />
                         </div>
                     ))}
                 </div>
-                <div className="grid md:grid-cols-2 gap-[1px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                     <PricingCard 
                         title="City Area Service"
                         initialPrice={cityPrice}
@@ -635,11 +925,11 @@ export default function Dashboard() {
                         icon={MapPin}
                         onPriceChange={setOutsidePrice}
                     />
-                    <div className="col-span-2 flex justify-end px-4">
+                    <div className="col-span-1 md:col-span-2 flex justify-center md:justify-end px-4 py-2">
                         <Button 
                             onClick={handleSavePrices}
                             disabled={isSaving}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto min-w-[200px]"
                         >
                             {isSaving ? 'Saving...' : 'Save Prices'}
                         </Button>
@@ -684,7 +974,7 @@ export default function Dashboard() {
                             title="Today's Appointments"
                             items={todaysAppointment}
                             visibleCount={3}
-                            renderItem={(appointment) => (
+                            renderItem={(appointment: any) => (
                                 <div className={`flex items-center gap-2 rounded-[10px] ${appointment.serviceType.toLowerCase() === "home service" ? "bg-blue-500/30" : "bg-orange-500/30"} p-[10px]`}>
                                     <Dot serviceType={appointment.serviceType} />
                                     <div>
@@ -702,15 +992,15 @@ export default function Dashboard() {
                             title="Technician Availability"
                             items={availableStatusTechnician}
                             visibleCount={3}
-                            renderItem={(technician) => (
+                            renderItem={(technician: any) => (
                                 <div className="flex items-center justify-between" >
                                     <div className="grid grid-cols-[1fr_100px] gap-5 items-center">
-                                        <Icon iconNode={technician.icon} className={ `h-6 w-6 ${ technician.status.toLowerCase() === "available" ? "text-green-700 bg-green-500/30" : technician.status.toLowerCase() === "busy" ? "text-orange-700 bg-orange-500/30" : "text-blue-700 bg-blue-500/30" } rounded-xl p-1 dark:text-[#ffffff]` } strokeWidth={2} />
+                                        <Icon iconNode={technician.icon} className={ `h-6 w-6 ${ technician.status.toLowerCase() === "available" ? "text-green-700 bg-green-500/30" : technician.status.toLowerCase() === "busy" ? "text-orange-700 bg-orange-500/30" : "text-red-700 bg-red-500/30" } rounded-xl p-1 dark:text-[#ffffff]` } strokeWidth={2} />
                                         <h1 className="text-[0.8rem] text-[#222831] font-normal dark:text-[#ffffff] whitespace-nowrap">
                                             {technician.name}
                                         </h1>
                                     </div>
-                                    <div className={`flex justify-center items-center font-medium w-20 text-[0.8rem] rounded-xl ${ technician.status.toLowerCase() === "available" ? "text-green-700 bg-green-500/30" : technician.status.toLowerCase() === "busy" ? "text-orange-700 bg-orange-500/30" : "text-blue-700 bg-blue-500/30" } p-[1px] dark:text-[#ffffff]`}>
+                                    <div className={`flex justify-center items-center font-medium w-20 text-[0.8rem] rounded-xl ${ technician.status.toLowerCase() === "available" ? "text-green-700 bg-green-500/30" : technician.status.toLowerCase() === "busy" ? "text-orange-700 bg-orange-500/30" : "text-red-700 bg-red-500/30" } p-[1px] dark:text-[#ffffff]`}>
                                         { technician.status }
                                     </div>
                                 </div>
@@ -725,6 +1015,14 @@ export default function Dashboard() {
                 onClose={handleCloseModal}
                 appointmentId={selectedAppointmentId}
             />
+<<<<<<< HEAD
+=======
+
+            <ViewRatingsModal 
+                isOpen={isRatingsModalOpen}
+                onClose={() => setIsRatingsModalOpen(false)}
+            />
+>>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
         </AppLayout>
     );
 }

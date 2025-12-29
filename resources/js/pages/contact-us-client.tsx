@@ -73,7 +73,7 @@ export default function ContactUsClient() {
                                     <p className="text-sm font-light text-gray-500 mb-3">Drop us a line anytime</p>
                                     <div className="space-y-1">
                                         <p className="text-base text-gray-700">support@startech.com</p>
-                                        <p className="text-base text-gray-700">info@startech.com</p>
+                                        <p className="text-base text-gray-700">startechsurigao@gmail.com</p>
                                     </div>
                                 </div>
                             </div>
@@ -89,7 +89,7 @@ export default function ContactUsClient() {
                                     <h3 className="text-lg font-light text-gray-800 mb-2">Phone Number</h3>
                                     <p className="text-sm font-light text-gray-500 mb-3">Call us for immediate support</p>
                                     <div className="space-y-1">
-                                        <p className="text-base text-gray-700">+63 907 755 50999</p>
+                                        <p className="text-base text-gray-700">+63 907 755 5099</p>
                                         {/* <p className="text-base text-gray-700">+63 987 654 3210</p> */}
                                     </div>
                                 </div>
@@ -106,8 +106,8 @@ export default function ContactUsClient() {
                                     <h3 className="text-lg font-light text-gray-800 mb-2">Office Location</h3>
                                     <p className="text-sm font-light text-gray-500 mb-3">Visit us at our office</p>
                                     <div className="space-y-1">
-                                        <p className="text-base text-gray-700">123 Tech Street</p>
-                                        <p className="text-base text-gray-700">Business District, City</p>
+                                        <p className="text-base text-gray-700">Amat Street Cor. Magallanes</p>
+                                        <p className="text-base text-gray-700">Surigao City</p>
                                     </div>
                                 </div>
                             </div>
@@ -128,7 +128,7 @@ export default function ContactUsClient() {
                             <div className="space-y-4 text-base font-light">
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-600">Monday - Friday</span>
-                                    <span className="text-gray-800 font-normal">8:00 AM - 6:00 PM</span>
+                                    <span className="text-gray-800 font-normal">9:00 AM - 5:00 PM</span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-600">Saturday</span>
@@ -160,7 +160,7 @@ export default function ContactUsClient() {
                                     </div>
                                 </a>
                                 <a
-                                    href="https://www.instagram.com/satoshi.e2?igsh=aHNhN2J1Z254Y3lh&utm_source=qr"
+                                    href="https://www.instagram.com/satoshi.e2?igsh=aHNhN2J1Z254Y3lh&utm_source=qr_code"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-4 p-4 rounded-2xl bg-blue-50 hover:bg-blue-100 transition-colors"
@@ -168,7 +168,7 @@ export default function ContactUsClient() {
                                     <Instagram className="w-6 h-6 text-blue-500" />
                                     <div>
                                         <p className="font-normal text-gray-800">Instagram</p>
-                                        <p className="text-sm text-gray-500">Chat with us directly</p>
+                                        <p className="text-sm text-gray-500">@startech_servicecenter</p>
                                     </div>
                                 </a>
                             </div>

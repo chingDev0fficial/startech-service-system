@@ -101,6 +101,12 @@ class ClientController extends Controller
         ]);
         // \Log::info("Validated Data: " . json_encode($validated));
 
+        $appointment = \DB::table('appointment')
+            ->join('client', 'appointment.client_id', '=', 'client.id')
+            ->where('appointment.id', $validated['appointmentId'])
+            ->select('client.name', 'appointment.item')
+            ->first();
+
         \DB::table('service')
             ->where('appointment_id', $validated['appointmentId'])
             ->update([
@@ -109,11 +115,21 @@ class ClientController extends Controller
             ]);
 
         \DB::table('rating_comments')
-            ->where('appointment_id', $validated['appointmentId'])
-            ->update([
+            ->insert([
+                'appointment_id' => $validated['appointmentId'],
                 'comment' => $validated['comment'],
+                'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+        \DB::table('notification')->insert([
+            'type' => 'rating_submitted',
+            'title' => 'New Rating Received',
+            'message' => "{$appointment->name} rated their service {$validated['rated']}/5 stars for {$appointment->item}",
+            'status' => 'unread',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         return back()->with('success', 'Thank you for your feedback!');
     }
