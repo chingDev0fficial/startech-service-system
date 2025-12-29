@@ -51,9 +51,10 @@ interface SetCompleteModalProps {
     onClose: () => void;
     onSave: (amount: number, note: string) => void;
     isLoading: boolean;
+    fixPrice: number;
 }
 
-const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteModalProps) => {
+const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading, fixPrice }: SetCompleteModalProps) => {
     const [note, setNote] = useState<string>('');
     const [isNoteNotEmpty, setIsNoteNotEmpty] = useState<boolean>(false);
     const [amount, setAmount] = useState<string>('');
@@ -135,7 +136,8 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
                 </Typography>
 
                 <Box sx={{ mt: 2 }}>
-                    <p className="mb-4">Please enter the service amount and confirm completion.</p>
+                    <p>Please enter the service amount and confirm completion.</p>
+                    <p className="mb-4 text-[13px] text-[#444]">Fix Price: {fixPrice}</p>
 
                     <div className="mb-4">
                         <label htmlFor="amount" className="mb-2 block text-sm font-medium text-gray-700">
@@ -182,6 +184,8 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading }: SetCompleteMod
                             </div>
                         </>
                     )}
+
+                    <p>Pre-Price</p>
 
                     <div className="flex justify-end gap-2">
                         <Button onClick={handleClose} variant="outline" disabled={isLoading}>
@@ -425,6 +429,7 @@ export default function InProgress() {
                 appointmentId: service.appointment_id,
                 customer: service.client_name,
                 device: service.appointment_item_name,
+                fixPrice: service.fix_price,
                 startTime: new Date(service.appointment_date).toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit',
@@ -834,6 +839,7 @@ export default function InProgress() {
                 onClose={handleCompleteModalClose}
                 onSave={handleModalSave}
                 isLoading={loadingJobs.has(jobData)}
+                fixPrice={jobs.find((job) => job.appointmentId === jobData)?.fixPrice ?? 0}
             />
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="In Progress" />

@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
+        Schema::table('appointment', function(Blueprint $table) {
+            $table->decimal('fix_price', 20, 2)->after('warranty_receipt')->default(0.0);
+        });
     }
 
     /**
@@ -19,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('appointment', function(Blueprint $table) {
+            $table->dropColumn('fix_price');
+        });
     }
 };

@@ -30,6 +30,7 @@ class MyAppointmentController extends Controller
                 'appointment.address as client_address',
                 'appointment.schedule_at as appointment_date',
                 'appointment.description as appointment_description',
+                'appointment.fix_price as fix_price',
                 'client.name as client_name',
                 'client.email as client_email',
                 'client.phone_number as client_phone',
