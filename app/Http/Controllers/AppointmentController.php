@@ -42,6 +42,7 @@ class AppointmentController extends Controller
         $validated = $request->validate([
             'warranty' => 'nullable|string',
             'warrantyStatus' => 'nullable|string|max:10',
+            'fixedPrice' => 'required|int',
         ]);
 
         // Get only available technicians
@@ -137,12 +138,12 @@ class AppointmentController extends Controller
             ]);
 
         // Also update the service status to canceled if it exists
-        // DB::table('service')
-        //     ->where('appointment_id', $appointment)
-        //     ->update([
-        //         'status' => 'canceled',
-        //         'updated_at' => now(),
-        //     ]);
+        DB::table('service')
+            ->where('appointment_id', $appointment)
+            ->update([
+                'status' => 'canceled',
+                'updated_at' => now(),
+            ]);
 
         return response()->json(['message' => 'Appointment declined successfully']);
     }
