@@ -1,23 +1,20 @@
-
-import AppLayout from '@/layouts/app-layout';
-import { Head } from '@inertiajs/react';
-import AppTable, { Column } from '@/components/table';
-import { type BreadcrumbItem, type SharedData } from '@/types';
-import { usePage } from '@inertiajs/react';
-import { useEcho } from '@laravel/echo-react';
-import { useState, useEffect } from 'react';
-import Modal from '@mui/material/Modal';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
-import { X, Eye } from 'lucide-react';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem, type SharedData } from '@/types';
+import { Head, usePage } from '@inertiajs/react';
+import { useEcho } from '@laravel/echo-react';
+import Box from '@mui/material/Box';
+import Modal from '@mui/material/Modal';
+import Typography from '@mui/material/Typography';
+import { Eye, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 const getModalStyle = () => {
     const width = typeof window !== 'undefined' ? window.innerWidth : 1024;
-    
+
     let modalWidth = 900;
     let padding = 4;
-    
+
     if (width < 640) {
         // Mobile
         modalWidth = width - 32;
@@ -31,7 +28,7 @@ const getModalStyle = () => {
         modalWidth = width - 60;
         padding = 4;
     }
-    
+
     return {
         position: 'absolute' as const,
         top: '50%',
@@ -109,12 +106,35 @@ export default function ManageHistory() {
         status: [],
         serviceType: '',
         technician: '',
-        amountRange: { min: 0, max: Number.MAX_SAFE_INTEGER }
+        amountRange: { min: 0, max: Number.MAX_SAFE_INTEGER },
     });
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
     const [services, setServices] = useState<Jobs[]>([]);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState<HistoryRecord | null>(null);
+    const printRef = useRef<HTMLDivElement>(null);
+
+    const handlePrint = () => {
+        if (printRef.current) {
+            const printContents = printRef.current.innerHTML;
+            const printWindow = window.open('', '', 'height=600,width=800');
+            if (printWindow) {
+                printWindow.document.write('<html><head><title>Billing Details</title>');
+                printWindow.document.write(
+                    '<style>body{font-family:sans-serif;padding:24px;} .text-xs{font-size:12px;} .text-sm{font-size:14px;} .font-bold{font-weight:bold;} .mb-4{margin-bottom:1rem;} .mb-1{margin-bottom:0.25rem;} .rounded-lg{border-radius:0.5rem;} .bg-gray-50{background:#f9fafb;} .bg-blue-50{background:#eff6ff;} .bg-green-50{background:#f0fdf4;} .bg-green-100{background:#dcfce7;} .bg-blue-100{background:#dbeafe;} .bg-purple-600{background:#7c3aed;} .bg-orange-600{background:#ea580c;} .text-gray-900{color:#111827;} .text-gray-700{color:#374151;} .text-gray-600{color:#4b5563;} .text-gray-500{color:#6b7280;} .text-green-700{color:#15803d;} .text-blue-600{color:#2563eb;} .text-blue-800{color:#1e40af;} .p-3{padding:0.75rem;} .p-4{padding:1rem;} .p-6{padding:1.5rem;} .border-b{border-bottom:1px solid #e5e7eb;} .pb-2{padding-bottom:0.5rem;} .gap-2{gap:0.5rem;} .gap-3{gap:0.75rem;} .gap-4{gap:1rem;} .grid{display:grid;} .grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr));} .sm\\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr));} .sm\\:gap-4{gap:1rem;} .mt-4{margin-top:1rem;} .mb-2{margin-bottom:0.5rem;} .mb-6{margin-bottom:1.5rem;} .rounded-full{border-radius:9999px;} .inline-flex{display:inline-flex;} .items-center{align-items:center;} .justify-between{justify-content:space-between;} .font-medium{font-weight:500;} .font-semibold{font-weight:600;} .overflow-y-auto{overflow-y:auto;} .max-h-\\[calc\\(95vh-60px\\)\\]{max-height:calc(95vh-60px);} </style>',
+                );
+                printWindow.document.write('</head><body>');
+                printWindow.document.write(printContents);
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                printWindow.focus();
+                setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                }, 500);
+            }
+        }
+    };
 
     // Dynamic breadcrumbs based on service location
     const breadcrumbs: BreadcrumbItem[] = [
@@ -126,9 +146,8 @@ export default function ManageHistory() {
 
     // Dynamic page title
     const pageTitle = serviceLocation === 'in-store' ? 'In Store Service History' : 'Home Service History';
-    const pageDescription = serviceLocation === 'in-store'
-        ? 'Complete record of all in-store service requests'
-        : 'Complete record of all home service requests';
+    const pageDescription =
+        serviceLocation === 'in-store' ? 'Complete record of all in-store service requests' : 'Complete record of all home service requests';
 
     const handleFetchedServices = async () => {
         try {
@@ -136,8 +155,8 @@ export default function ManageHistory() {
             const response = await fetch(route('manage-history.fetch'), {
                 method: 'GET',
                 headers: {
-                    "Content-Type": "application/json"
-                }
+                    'Content-Type': 'application/json',
+                },
             });
 
             if (!response.ok) {
@@ -146,7 +165,6 @@ export default function ManageHistory() {
 
             const result = await response.json();
             return result.retrieved;
-
         } catch (err) {
             console.error('Error fetching users:', err);
             setHistory([]);
@@ -154,7 +172,7 @@ export default function ManageHistory() {
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     const transaformServiceData = (services: Jobs[]) => {
         return services
@@ -168,12 +186,12 @@ export default function ManageHistory() {
                 serviceDate: new Date(service.appointment_date).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
-                    day: 'numeric'
+                    day: 'numeric',
                 }),
                 completionDate: new Date(service.completion_date).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
-                    day: 'numeric'
+                    day: 'numeric',
                 }),
                 status: service.service_status,
                 technician: service.technician_name || 'Not Assigned',
@@ -183,32 +201,33 @@ export default function ManageHistory() {
                 serviceLocation: serviceLocation, // Set based on current route
                 address: service.address,
                 warranty: service.warranty || null,
-                warrantyStatus: service.warranty_status || null
+                warrantyStatus: service.warranty_status || null,
             }));
-    }
+    };
 
     useEffect(() => {
         handleFetchedServices()
-            .then(fetchedServices => {
+            .then((fetchedServices) => {
                 const transformedData = transaformServiceData(fetchedServices);
                 setHistory(transformedData);
             })
-            .catch(err => console.error(err));
-
+            .catch((err) => console.error(err));
     }, [services, echo, serviceLocation]);
 
     // Advanced filtering logic
-    const filteredHistory = history.filter(record => {
+    const filteredHistory = history.filter((record) => {
         // Global search
-        const globalMatch = !searchFilters.globalSearch ||
+        const globalMatch =
+            !searchFilters.globalSearch ||
             record.customer.toLowerCase().includes(searchFilters.globalSearch.toLowerCase()) ||
             record.service.toLowerCase().includes(searchFilters.globalSearch.toLowerCase()) ||
             record.id.toLowerCase().includes(searchFilters.globalSearch.toLowerCase()) ||
             record.technician.toLowerCase().includes(searchFilters.globalSearch.toLowerCase());
 
         // Date range filter
-        const dateMatch = (!searchFilters.dateRange.from || new Date(record.serviceDate) >= new Date(searchFilters.dateRange.from)) &&
-                         (!searchFilters.dateRange.to || new Date(record.serviceDate) <= new Date(searchFilters.dateRange.to));
+        const dateMatch =
+            (!searchFilters.dateRange.from || new Date(record.serviceDate) >= new Date(searchFilters.dateRange.from)) &&
+            (!searchFilters.dateRange.to || new Date(record.serviceDate) <= new Date(searchFilters.dateRange.to));
 
         // Status filter
         const statusMatch = searchFilters.status.length === 0 || searchFilters.status.includes(record.status);
@@ -229,30 +248,28 @@ export default function ManageHistory() {
 
     const getStatusBadge = (status: string) => {
         const statusClasses = {
-            'completed': 'bg-green-100 text-green-800',
-            'Completed': 'bg-green-100 text-green-800',
-            'cancelled': 'bg-red-100 text-red-800',
-            'Cancelled': 'bg-red-100 text-red-800',
+            completed: 'bg-green-100 text-green-800',
+            Completed: 'bg-green-100 text-green-800',
+            cancelled: 'bg-red-100 text-red-800',
+            Cancelled: 'bg-red-100 text-red-800',
             'in-progress': 'bg-blue-100 text-blue-800',
             'In Progress': 'bg-blue-100 text-blue-800',
-            'pending': 'bg-yellow-100 text-yellow-800',
-            'Pending': 'bg-yellow-100 text-yellow-800'
+            pending: 'bg-yellow-100 text-yellow-800',
+            Pending: 'bg-yellow-100 text-yellow-800',
         };
 
         return `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[status] || 'bg-gray-100 text-gray-800'}`;
     };
 
     const handleStatusToggle = (status: string) => {
-        setSearchFilters(prev => ({
+        setSearchFilters((prev) => ({
             ...prev,
-            status: prev.status.includes(status)
-                ? prev.status.filter(s => s !== status)
-                : [...prev.status, status]
+            status: prev.status.includes(status) ? prev.status.filter((s) => s !== status) : [...prev.status, status],
         }));
     };
 
-    const activeFiltersCount = Object.values(searchFilters).filter(value =>
-        value && (Array.isArray(value) ? value.length > 0 : value !== '' && value !== 0)
+    const activeFiltersCount = Object.values(searchFilters).filter(
+        (value) => value && (Array.isArray(value) ? value.length > 0 : value !== '' && value !== 0),
     ).length;
 
     const handleViewDetails = (record: HistoryRecord) => {
@@ -268,25 +285,26 @@ export default function ManageHistory() {
     return (
         <>
             {/* View Details Modal */}
-            <Modal
-                open={isViewModalOpen}
-                onClose={handleCloseModal}
-                aria-labelledby="appointment-details-modal"
-            >
+            <Modal open={isViewModalOpen} onClose={handleCloseModal} aria-labelledby="appointment-details-modal">
                 <Box sx={getModalStyle()}>
-                    <Typography variant="h6" component="h2" className="flex items-center justify-between mb-4">
+                    <Typography variant="h6" component="h2" className="mb-4 flex items-center justify-between">
                         Appointment Details
-                        <Button className="text-[#ffffff] !bg-[#393E46]" onClick={handleCloseModal}>
-                            <X />
-                        </Button>
+                        <div className="item-center flex justify-center gap-[10px]">
+                            <Button onClick={handlePrint} className="p-1 text-white transition-colors sm:p-2" title="Print">
+                                Print
+                            </Button>
+                            <Button className="!bg-[#393E46] text-[#ffffff]" onClick={handleCloseModal}>
+                                <X />
+                            </Button>
+                        </div>
                     </Typography>
 
                     {selectedRecord && (
-                        <div className="grid grid-cols-1 gap-4">
+                        <div ref={printRef} className="grid grid-cols-1 gap-4">
                             {/* Service Information */}
-                            <div className="bg-blue-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-lg mb-3 text-blue-900">Service Information</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="rounded-lg bg-blue-50 p-4">
+                                <h3 className="mb-3 text-lg font-semibold text-blue-900">Service Information</h3>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div>
                                         <p className="text-sm text-gray-600">Appointment ID</p>
                                         <p className="font-medium">{selectedRecord.id}</p>
@@ -307,9 +325,9 @@ export default function ManageHistory() {
                             </div>
 
                             {/* Customer Information */}
-                            <div className="bg-green-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-lg mb-3 text-green-900">Customer Information</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="rounded-lg bg-green-50 p-4">
+                                <h3 className="mb-3 text-lg font-semibold text-green-900">Customer Information</h3>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div>
                                         <p className="text-sm text-gray-600">Customer Name</p>
                                         <p className="font-medium">{selectedRecord.customer}</p>
@@ -323,9 +341,9 @@ export default function ManageHistory() {
                             </div>
 
                             {/* Technician Information */}
-                            <div className="bg-purple-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-lg mb-3 text-purple-900">Technician Information</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="rounded-lg bg-purple-50 p-4">
+                                <h3 className="mb-3 text-lg font-semibold text-purple-900">Technician Information</h3>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div>
                                         <p className="text-sm text-gray-600">Assigned Technician</p>
                                         <p className="font-medium">{selectedRecord.technician}</p>
@@ -334,9 +352,9 @@ export default function ManageHistory() {
                             </div>
 
                             {/* Date & Status Information */}
-                            <div className="bg-yellow-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-lg mb-3 text-yellow-900">Date & Status Information</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="rounded-lg bg-yellow-50 p-4">
+                                <h3 className="mb-3 text-lg font-semibold text-yellow-900">Date & Status Information</h3>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div>
                                         <p className="text-sm text-gray-600">Service Date</p>
                                         <p className="font-medium">{selectedRecord.serviceDate}</p>
@@ -347,12 +365,17 @@ export default function ManageHistory() {
                                     </div>
                                     <div className="sm:col-span-2">
                                         <p className="text-sm text-gray-600">Status</p>
-                                        <span className={`${
-                                            selectedRecord.status.toLowerCase() === 'completed' ? 'bg-green-200 text-green-800' :
-                                            selectedRecord.status.toLowerCase() === 'in-progress' ? 'bg-blue-200 text-blue-800' :
-                                            selectedRecord.status.toLowerCase() === 'cancelled' ? 'bg-red-200 text-red-800' :
-                                            'bg-yellow-200 text-yellow-800'
-                                        } px-3 py-1 rounded-full text-sm font-medium inline-block capitalize`}>
+                                        <span
+                                            className={`${
+                                                selectedRecord.status.toLowerCase() === 'completed'
+                                                    ? 'bg-green-200 text-green-800'
+                                                    : selectedRecord.status.toLowerCase() === 'in-progress'
+                                                      ? 'bg-blue-200 text-blue-800'
+                                                      : selectedRecord.status.toLowerCase() === 'cancelled'
+                                                        ? 'bg-red-200 text-red-800'
+                                                        : 'bg-yellow-200 text-yellow-800'
+                                            } inline-block rounded-full px-3 py-1 text-sm font-medium capitalize`}
+                                        >
                                             {selectedRecord.status}
                                         </span>
                                     </div>
@@ -360,18 +383,22 @@ export default function ManageHistory() {
                             </div>
 
                             {/* Warranty Information */}
-                            <div className="bg-orange-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-lg mb-3 text-orange-900">Warranty Information</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="rounded-lg bg-orange-50 p-4">
+                                <h3 className="mb-3 text-lg font-semibold text-orange-900">Warranty Information</h3>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div>
                                         <p className="text-sm text-gray-600">Warranty Status</p>
                                         {selectedRecord.warrantyStatus ? (
-                                            <span className={`${
-                                                selectedRecord.warrantyStatus.toLowerCase() === 'valid' ? 'bg-green-200 text-green-800' :
-                                                selectedRecord.warrantyStatus.toLowerCase() === 'expired' ? 'bg-red-200 text-red-800' :
-                                                'bg-gray-200 text-gray-800'
-                                            } px-3 py-1 rounded-full text-sm font-medium inline-block capitalize`}>
-                                                {selectedRecord.warrantyStatus == 'valid' ? "valid" : "No Warranty"}
+                                            <span
+                                                className={`${
+                                                    selectedRecord.warrantyStatus.toLowerCase() === 'valid'
+                                                        ? 'bg-green-200 text-green-800'
+                                                        : selectedRecord.warrantyStatus.toLowerCase() === 'expired'
+                                                          ? 'bg-red-200 text-red-800'
+                                                          : 'bg-gray-200 text-gray-800'
+                                                } inline-block rounded-full px-3 py-1 text-sm font-medium capitalize`}
+                                            >
+                                                {selectedRecord.warrantyStatus == 'valid' ? 'valid' : 'No Warranty'}
                                             </span>
                                         ) : (
                                             <p className="text-gray-500 italic">No warranty information</p>
@@ -381,12 +408,12 @@ export default function ManageHistory() {
                             </div>
 
                             {/* Payment Information */}
-                            <div className="bg-indigo-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-lg mb-3 text-indigo-900">Payment Information</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="rounded-lg bg-indigo-50 p-4">
+                                <h3 className="mb-3 text-lg font-semibold text-indigo-900">Payment Information</h3>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div>
                                         <p className="text-sm text-gray-600">Amount</p>
-                                        <p className="font-medium text-xl text-indigo-700">₱{selectedRecord.amount.toFixed(2)}</p>
+                                        <p className="text-xl font-medium text-indigo-700">₱{selectedRecord.amount.toFixed(2)}</p>
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-600">Customer Rating</p>
@@ -394,7 +421,10 @@ export default function ManageHistory() {
                                             <div className="flex items-center gap-2">
                                                 <div className="flex">
                                                     {[...Array(5)].map((_, i) => (
-                                                        <span key={i} className={`text-lg ${i < selectedRecord.rating! ? 'text-yellow-400' : 'text-gray-300'}`}>
+                                                        <span
+                                                            key={i}
+                                                            className={`text-lg ${i < selectedRecord.rating! ? 'text-yellow-400' : 'text-gray-300'}`}
+                                                        >
                                                             ★
                                                         </span>
                                                     ))}
@@ -414,20 +444,19 @@ export default function ManageHistory() {
 
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title={pageTitle} />
-                <div className="flex h-full flex-1 flex-col gap-[1px] rounded-xl p-4 overflow-x-auto">
-
+                <div className="flex h-full flex-1 flex-col gap-[1px] overflow-x-auto rounded-xl p-4">
                     {/* Header - Updated with dynamic content */}
-                    <div className="bg-white p-6 rounded-lg shadow mb-4">
-                        <div className="flex justify-between items-center">
+                    <div className="mb-4 rounded-lg bg-white p-6 shadow">
+                        <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900">{pageTitle}</h1>
-                                <p className="text-gray-600 mt-1">{pageDescription}</p>
+                                <p className="mt-1 text-gray-600">{pageDescription}</p>
                                 <div className="mt-2">
-                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                                        serviceLocation === 'in-store'
-                                            ? 'bg-blue-100 text-blue-800'
-                                            : 'bg-green-100 text-green-800'
-                                    }`}>
+                                    <span
+                                        className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
+                                            serviceLocation === 'in-store' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                                        }`}
+                                    >
                                         {serviceLocation === 'in-store' ? 'In Store Services' : 'Home Services'}
                                     </span>
                                 </div>
@@ -435,7 +464,7 @@ export default function ManageHistory() {
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg relative"
+                                    className="relative rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200"
                                 >
                                     Advanced Filters
                                 </button>
@@ -444,61 +473,63 @@ export default function ManageHistory() {
                     </div>
 
                     {/* Quick Search */}
-                    <div className="bg-white p-4 rounded-lg shadow mb-4">
-                        <div className="flex gap-4 items-center">
+                    <div className="mb-4 rounded-lg bg-white p-4 shadow">
+                        <div className="flex items-center gap-4">
                             <div className="flex-1">
                                 <input
                                     type="text"
                                     placeholder="Search by customer, service, ID, or technician..."
                                     value={searchFilters.globalSearch}
-                                    onChange={(e) => setSearchFilters(prev => ({...prev, globalSearch: e.target.value}))}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    onChange={(e) => setSearchFilters((prev) => ({ ...prev, globalSearch: e.target.value }))}
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
-                            <div className="text-sm text-gray-500">
-                                {filteredHistory.length} results
-                            </div>
+                            <div className="text-sm text-gray-500">{filteredHistory.length} results</div>
                         </div>
                     </div>
 
                     {/* Advanced Filters Panel */}
                     {showAdvancedFilters && (
-                        <div className="bg-white p-6 rounded-lg shadow mb-4">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">Advanced Filters</h3>
+                        <div className="mb-4 rounded-lg bg-white p-6 shadow">
+                            <h3 className="mb-4 text-lg font-medium text-gray-900">Advanced Filters</h3>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                                 {/* Date Range */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Service Date Range</label>
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Service Date Range</label>
                                     <div className="flex gap-2">
                                         <input
                                             type="date"
                                             value={searchFilters.dateRange.from}
-                                            onChange={(e) => setSearchFilters(prev => ({
-                                                ...prev,
-                                                dateRange: {...prev.dateRange, from: e.target.value}
-                                            }))}
-                                            className="flex-1 px-3 py-2 border rounded-md text-sm"
+                                            onChange={(e) =>
+                                                setSearchFilters((prev) => ({
+                                                    ...prev,
+                                                    dateRange: { ...prev.dateRange, from: e.target.value },
+                                                }))
+                                            }
+                                            className="flex-1 rounded-md border px-3 py-2 text-sm"
                                         />
                                         <input
                                             type="date"
                                             value={searchFilters.dateRange.to}
-                                            onChange={(e) => setSearchFilters(prev => ({
-                                                ...prev,
-                                                dateRange: {...prev.dateRange, to: e.target.value}
-                                            }))}
-                                            className="flex-1 px-3 py-2 border rounded-md text-sm"
+                                            onChange={(e) =>
+                                                setSearchFilters((prev) => ({
+                                                    ...prev,
+                                                    dateRange: { ...prev.dateRange, to: e.target.value },
+                                                }))
+                                            }
+                                            className="flex-1 rounded-md border px-3 py-2 text-sm"
                                         />
                                     </div>
                                 </div>
 
                                 {/* Service Type */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Service Type</label>
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Service Type</label>
                                     <select
                                         value={searchFilters.serviceType}
-                                        onChange={(e) => setSearchFilters(prev => ({...prev, serviceType: e.target.value}))}
-                                        className="w-full px-3 py-2 border rounded-md text-sm"
+                                        onChange={(e) => setSearchFilters((prev) => ({ ...prev, serviceType: e.target.value }))}
+                                        className="w-full rounded-md border px-3 py-2 text-sm"
                                     >
                                         <option value="">All Types</option>
                                         <option value="hardware repair">Hardware Repair</option>
@@ -509,32 +540,34 @@ export default function ManageHistory() {
 
                                 {/* Technician */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Technician</label>
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Technician</label>
                                     <select
                                         value={searchFilters.technician}
-                                        onChange={(e) => setSearchFilters(prev => ({...prev, technician: e.target.value}))}
-                                        className="w-full px-3 py-2 border rounded-md text-sm"
+                                        onChange={(e) => setSearchFilters((prev) => ({ ...prev, technician: e.target.value }))}
+                                        className="w-full rounded-md border px-3 py-2 text-sm"
                                     >
                                         <option value="">All Technicians</option>
                                         {/* Dynamic technician options based on your data */}
-                                        {Array.from(new Set(history.map(h => h.technician))).map(tech => (
-                                            <option key={tech} value={tech}>{tech}</option>
+                                        {Array.from(new Set(history.map((h) => h.technician))).map((tech) => (
+                                            <option key={tech} value={tech}>
+                                                {tech}
+                                            </option>
                                         ))}
                                     </select>
                                 </div>
 
                                 {/* Status Multi-select */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Status</label>
                                     <div className="flex flex-wrap gap-2">
-                                        {['completed', 'cancelled', 'in-progress', 'pending'].map(status => (
+                                        {['completed', 'cancelled', 'in-progress', 'pending'].map((status) => (
                                             <button
                                                 key={status}
                                                 onClick={() => handleStatusToggle(status)}
-                                                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors capitalize ${
+                                                className={`rounded-full border px-3 py-1 text-xs font-medium capitalize transition-colors ${
                                                     searchFilters.status.includes(status)
-                                                        ? 'bg-blue-100 text-blue-800 border-blue-200'
-                                                        : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
+                                                        ? 'border-blue-200 bg-blue-100 text-blue-800'
+                                                        : 'border-gray-200 bg-gray-100 text-gray-600 hover:bg-gray-200'
                                                 }`}
                                             >
                                                 {status}
@@ -545,7 +578,7 @@ export default function ManageHistory() {
 
                                 {/* Amount Range */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">
                                         Amount Range: ₱{searchFilters.amountRange.min} - ₱{searchFilters.amountRange.max}
                                     </label>
                                     <div className="flex gap-2">
@@ -553,21 +586,25 @@ export default function ManageHistory() {
                                             type="number"
                                             placeholder="Min"
                                             value={searchFilters.amountRange.min}
-                                            onChange={(e) => setSearchFilters(prev => ({
-                                                ...prev,
-                                                amountRange: {...prev.amountRange, min: Number(e.target.value)}
-                                            }))}
-                                            className="flex-1 px-3 py-2 border rounded-md text-sm"
+                                            onChange={(e) =>
+                                                setSearchFilters((prev) => ({
+                                                    ...prev,
+                                                    amountRange: { ...prev.amountRange, min: Number(e.target.value) },
+                                                }))
+                                            }
+                                            className="flex-1 rounded-md border px-3 py-2 text-sm"
                                         />
                                         <input
                                             type="number"
                                             placeholder="Max"
                                             value={searchFilters.amountRange.max}
-                                            onChange={(e) => setSearchFilters(prev => ({
-                                                ...prev,
-                                                amountRange: {...prev.amountRange, max: Number(e.target.value)}
-                                            }))}
-                                            className="flex-1 px-3 py-2 border rounded-md text-sm"
+                                            onChange={(e) =>
+                                                setSearchFilters((prev) => ({
+                                                    ...prev,
+                                                    amountRange: { ...prev.amountRange, max: Number(e.target.value) },
+                                                }))
+                                            }
+                                            className="flex-1 rounded-md border px-3 py-2 text-sm"
                                         />
                                     </div>
                                 </div>
@@ -577,26 +614,22 @@ export default function ManageHistory() {
 
                     {/* Active Filters Display */}
                     {activeFiltersCount > 0 && (
-                        <div className="bg-blue-50 p-3 rounded-lg mb-4">
-                            <div className="flex flex-wrap gap-2 items-center">
+                        <div className="mb-4 rounded-lg bg-blue-50 p-3">
+                            <div className="flex flex-wrap items-center gap-2">
                                 <span className="text-sm font-medium text-blue-800">Active Filters:</span>
                                 {searchFilters.globalSearch && (
-                                    <span className="bg-blue-200 text-blue-800 px-2 py-1 rounded text-xs">
+                                    <span className="rounded bg-blue-200 px-2 py-1 text-xs text-blue-800">
                                         Search: "{searchFilters.globalSearch}"
                                     </span>
                                 )}
                                 {searchFilters.serviceType && (
-                                    <span className="bg-blue-200 text-blue-800 px-2 py-1 rounded text-xs">
-                                        Type: {searchFilters.serviceType}
-                                    </span>
+                                    <span className="rounded bg-blue-200 px-2 py-1 text-xs text-blue-800">Type: {searchFilters.serviceType}</span>
                                 )}
                                 {searchFilters.technician && (
-                                    <span className="bg-blue-200 text-blue-800 px-2 py-1 rounded text-xs">
-                                        Tech: {searchFilters.technician}
-                                    </span>
+                                    <span className="rounded bg-blue-200 px-2 py-1 text-xs text-blue-800">Tech: {searchFilters.technician}</span>
                                 )}
-                                {searchFilters.status.map(status => (
-                                    <span key={status} className="bg-blue-200 text-blue-800 px-2 py-1 rounded text-xs capitalize">
+                                {searchFilters.status.map((status) => (
+                                    <span key={status} className="rounded bg-blue-200 px-2 py-1 text-xs text-blue-800 capitalize">
                                         {status}
                                     </span>
                                 ))}
@@ -605,41 +638,25 @@ export default function ManageHistory() {
                     )}
 
                     {/* Table */}
-                    <div className="bg-white rounded-lg shadow overflow-hidden">
+                    <div className="overflow-hidden rounded-lg bg-white shadow">
                         {loading ? (
                             <div className="p-8 text-center">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                                <p className="text-gray-500 mt-2">Loading history...</p>
+                                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+                                <p className="mt-2 text-gray-500">Loading history...</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="min-w-full">
                                     <thead className="bg-gray-50">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Service Request
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Customer
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Technician
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Service Date
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Status
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Amount
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Rating
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                                                Actions
-                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service Request</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Technician</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service Date</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rating</th>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
@@ -654,46 +671,31 @@ export default function ManageHistory() {
                                                 <tr key={record.id} className="hover:bg-gray-50">
                                                     <td className="px-6 py-4">
                                                         <div>
-                                                            <div className="text-sm font-medium text-gray-900">
-                                                                {record.service}
-                                                            </div>
-                                                            <div className="text-sm text-gray-500">
-                                                                {record.id}
-                                                            </div>
-                                                            <div className="text-xs text-blue-600">
-                                                                {record.serviceType}
-                                                            </div>
+                                                            <div className="text-sm font-medium text-gray-900">{record.service}</div>
+                                                            <div className="text-sm text-gray-500">{record.id}</div>
+                                                            <div className="text-xs text-blue-600">{record.serviceType}</div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-900">
-                                                        {record.customer}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-900">
-                                                        {record.technician}
-                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-900">{record.customer}</td>
+                                                    <td className="px-6 py-4 text-sm text-gray-900">{record.technician}</td>
                                                     <td className="px-6 py-4">
-                                                        <div className="text-sm text-gray-900">
-                                                            {record.serviceDate}
-                                                        </div>
+                                                        <div className="text-sm text-gray-900">{record.serviceDate}</div>
                                                         {record.status.toLowerCase() === 'completed' && record.completionDate && (
-                                                            <div className="text-xs text-gray-500">
-                                                                Completed: {record.completionDate}
-                                                            </div>
+                                                            <div className="text-xs text-gray-500">Completed: {record.completionDate}</div>
                                                         )}
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className={getStatusBadge(record.status)}>
-                                                            {record.status}
-                                                        </span>
+                                                        <span className={getStatusBadge(record.status)}>{record.status}</span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                                                        ₱{record.amount.toFixed(2)}
-                                                    </td>
+                                                    <td className="px-6 py-4 text-sm font-medium text-gray-900">₱{record.amount.toFixed(2)}</td>
                                                     <td className="px-6 py-4">
                                                         {record.rating ? (
                                                             <div className="flex items-center">
                                                                 {[...Array(5)].map((_, i) => (
-                                                                    <span key={i} className={`text-sm ${i < record.rating! ? 'text-yellow-400' : 'text-gray-300'}`}>
+                                                                    <span
+                                                                        key={i}
+                                                                        className={`text-sm ${i < record.rating! ? 'text-yellow-400' : 'text-gray-300'}`}
+                                                                    >
                                                                         ★
                                                                     </span>
                                                                 ))}
@@ -705,11 +707,11 @@ export default function ManageHistory() {
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
                                                         <div className="flex justify-end gap-2">
-                                                            <button 
+                                                            <button
                                                                 onClick={() => handleViewDetails(record)}
-                                                                className="text-blue-600 hover:text-blue-900 text-sm flex items-center gap-1"
+                                                                className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-900"
                                                             >
-                                                                <Eye className="w-4 h-4" />
+                                                                <Eye className="h-4 w-4" />
                                                                 View
                                                             </button>
                                                         </div>

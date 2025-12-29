@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
@@ -6,7 +7,7 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
 import { X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -53,6 +54,29 @@ export default function ManageBillings() {
         status: [] as string[],
         amountRange: { min: '', max: '' },
     });
+    const printRef = useRef<HTMLDivElement>(null);
+
+    const handlePrint = () => {
+        if (printRef.current) {
+            const printContents = printRef.current.innerHTML;
+            const printWindow = window.open('', '', 'height=600,width=800');
+            if (printWindow) {
+                printWindow.document.write('<html><head><title>Billing Details</title>');
+                printWindow.document.write(
+                    '<style>body{font-family:sans-serif;padding:24px;} .text-xs{font-size:12px;} .text-sm{font-size:14px;} .font-bold{font-weight:bold;} .mb-4{margin-bottom:1rem;} .mb-1{margin-bottom:0.25rem;} .rounded-lg{border-radius:0.5rem;} .bg-gray-50{background:#f9fafb;} .bg-blue-50{background:#eff6ff;} .bg-green-50{background:#f0fdf4;} .bg-green-100{background:#dcfce7;} .bg-blue-100{background:#dbeafe;} .bg-purple-600{background:#7c3aed;} .bg-orange-600{background:#ea580c;} .text-gray-900{color:#111827;} .text-gray-700{color:#374151;} .text-gray-600{color:#4b5563;} .text-gray-500{color:#6b7280;} .text-green-700{color:#15803d;} .text-blue-600{color:#2563eb;} .text-blue-800{color:#1e40af;} .p-3{padding:0.75rem;} .p-4{padding:1rem;} .p-6{padding:1.5rem;} .border-b{border-bottom:1px solid #e5e7eb;} .pb-2{padding-bottom:0.5rem;} .gap-2{gap:0.5rem;} .gap-3{gap:0.75rem;} .gap-4{gap:1rem;} .grid{display:grid;} .grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr));} .sm\\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr));} .sm\\:gap-4{gap:1rem;} .mt-4{margin-top:1rem;} .mb-2{margin-bottom:0.5rem;} .mb-6{margin-bottom:1.5rem;} .rounded-full{border-radius:9999px;} .inline-flex{display:inline-flex;} .items-center{align-items:center;} .justify-between{justify-content:space-between;} .font-medium{font-weight:500;} .font-semibold{font-weight:600;} .overflow-y-auto{overflow-y:auto;} .max-h-\\[calc\\(95vh-60px\\)\\]{max-height:calc(95vh-60px);} </style>',
+                );
+                printWindow.document.write('</head><body>');
+                printWindow.document.write(printContents);
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                printWindow.focus();
+                setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                }, 500);
+            }
+        }
+    };
 
     const handleFetchedAppointments = async () => {
         try {
@@ -213,13 +237,18 @@ export default function ManageBillings() {
                         <Typography variant="h5" component="h2" className="text-base font-bold text-white sm:text-xl">
                             Billing Details
                         </Typography>
-                        <button onClick={handleCloseModal} className="rounded-full p-1 text-white transition-colors hover:bg-blue-800 sm:p-2">
-                            <X className="h-5 w-5 sm:h-6 sm:w-6" />
-                        </button>
+                        <div className="flex items-center justify-center">
+                            <Button onClick={handlePrint} className="bg-blue p-1 text-white transition-colors hover:bg-blue-800 sm:p-2" title="Print">
+                                Print
+                            </Button>
+                            <button onClick={handleCloseModal} className="rounded-full p-1 text-white transition-colors hover:bg-blue-800 sm:p-2">
+                                <X className="h-5 w-5 sm:h-6 sm:w-6" />
+                            </button>
+                        </div>
                     </div>
 
                     {selectedBilling && (
-                        <div className="overflow-y-auto p-3 sm:p-4 md:p-6" style={{ maxHeight: 'calc(95vh - 60px)' }}>
+                        <div ref={printRef} className="overflow-y-auto p-3 sm:p-4 md:p-6" style={{ maxHeight: 'calc(95vh - 60px)' }}>
                             {/* Billing ID and Status */}
                             <div className="mb-4 rounded-lg bg-gray-50 p-3 sm:mb-6 sm:p-4">
                                 <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center sm:gap-0">
@@ -230,7 +259,6 @@ export default function ManageBillings() {
                                     <span className={getStatusBadge(selectedBilling.status)}>{selectedBilling.status}</span>
                                 </div>
                             </div>
-
                             {/* Service Information */}
                             <div className="mb-4 sm:mb-6">
                                 <h3 className="mb-2 flex items-center gap-2 border-b pb-2 text-xs font-semibold text-gray-700 sm:mb-3 sm:text-sm">
@@ -262,7 +290,6 @@ export default function ManageBillings() {
                                     </div>
                                 )}
                             </div>
-
                             {/* Customer Information */}
                             <div className="mb-4 sm:mb-6">
                                 <h3 className="mb-2 flex items-center gap-2 border-b pb-2 text-xs font-semibold text-gray-700 sm:mb-3 sm:text-sm">
@@ -294,7 +321,6 @@ export default function ManageBillings() {
                                     )}
                                 </div>
                             </div>
-
                             {/* Payment Information */}
                             <div className="mb-4 sm:mb-6">
                                 <h3 className="mb-2 flex items-center gap-2 border-b pb-2 text-xs font-semibold text-gray-700 sm:mb-3 sm:text-sm">
@@ -306,7 +332,6 @@ export default function ManageBillings() {
                                     <p className="text-2xl font-bold text-green-700 sm:text-3xl">₱{selectedBilling.amount.toFixed(2)}</p>
                                 </div>
                             </div>
-
                             {/* Timeline */}
                             <div>
                                 <h3 className="mb-2 flex items-center gap-2 border-b pb-2 text-xs font-semibold text-gray-700 sm:mb-3 sm:text-sm">
@@ -340,16 +365,6 @@ export default function ManageBillings() {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Close Button */}
-                            {/* <div className="mt-6 pt-4 border-t flex justify-end">
-                            <button
-                                onClick={handleCloseModal}
-                                className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                            >
-                                Close
-                            </button>
-                        </div> */}
                         </div>
                     )}
                 </Box>
