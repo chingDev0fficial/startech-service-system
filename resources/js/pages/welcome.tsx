@@ -334,7 +334,7 @@ export default function Welcome() {
                 'Content-Type': 'multipart/form-data',
             },
             onSuccess: () => {
-                setNotification('Booking sent successfully! We will contact you soon.');
+                setNotification('Appointment booked successfully! 🎉');
                 setTimeout(() => setNotification(null), 5000);
                 reset(); // Reset all at once instead of individually
                 setPreview(null);
@@ -356,14 +356,14 @@ export default function Welcome() {
         <>
             {/* Top Notification */}
             {notification && (
-                <div className="fixed top-4 left-1/2 z-[100] -translate-x-1/2 transform transition-all duration-300 ease-in-out">
+                <div className="fixed top-4 left-1/2 z-[100] -translate-x-1/2 transform transition-all duration-300 ease-in-out animate-in slide-in-from-top-2 fade-in">
                     <div
-                        className={`flex max-w-[500px] min-w-[300px] items-center gap-3 rounded-lg px-6 py-4 shadow-lg ${
+                        className={`flex max-w-[500px] min-w-[300px] items-center gap-3 rounded-lg px-6 py-4 shadow-xl ${
                             notification.includes('Failed')
-                                ? 'bg-red-500 text-white'
+                                ? 'bg-gradient-to-r from-red-400 to-red-600 text-white'
                                 : notification.includes('successfully')
-                                  ? 'bg-green-500 text-white'
-                                  : 'bg-blue-500 text-white'
+                                  ? 'bg-gradient-to-r from-green-400 to-green-600 text-white'
+                                  : 'bg-gradient-to-r from-blue-400 to-blue-600 text-white'
                         }`}
                     >
                         {/* Loading Spinner for "Sending" message */}
@@ -393,13 +393,6 @@ export default function Welcome() {
                         )}
 
                         <span className="flex-1 font-medium">{notification}</span>
-
-                        {/* Close Button - only show for non-loading notifications */}
-                        {notification !== 'Sending your booking...' && (
-                            <button onClick={() => setNotification(null)} className="ml-2 transition-opacity hover:opacity-80">
-                                <X size={16} />
-                            </button>
-                        )}
                     </div>
                 </div>
             )}

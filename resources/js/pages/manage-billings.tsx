@@ -473,5 +473,6 @@ export default function ManageBillings() {
 
             </div>
         </AppLayout>
+    
     </>);
 }

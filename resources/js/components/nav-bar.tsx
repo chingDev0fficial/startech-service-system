@@ -54,7 +54,18 @@ export function NavBar({ tabs }: NavBarProps){
 
     return (
         <>
-            <nav className="flex flex-row items-center justify-between bg-gradient-to-r from-[#ff0000] via-[#ff0000] to-[#fdc700] p-[20px] h-[5rem]">
+            <style>{`
+                @keyframes move {
+                    0% { background-position: 100% 50%; }
+                    100% { background-position: 0% 50%; }
+                }
+                .moving-bg {
+                    background: linear-gradient(90deg, rgba(253, 199, 0, 0.85) 0%, #ff0000 25%, rgba(253, 199, 0, 0.85) 50%, #ff0000 75%, rgba(253, 199, 0, 0.85) 100%);
+                    background-size: 200% 100%;
+                    animation: move 4s linear infinite;
+                }
+            `}</style>
+            <nav className="flex flex-row items-center justify-between moving-bg p-[20px] h-[5rem]">
                 <AppLogo />
                 
                 {/* Desktop Menu */}
@@ -114,7 +125,7 @@ export function NavBar({ tabs }: NavBarProps){
                 isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
             }`}>
                 {/* Menu Header */}
-                <div className="flex items-center justify-between bg-gradient-to-r from-[#ff0000] via-[#ff0000] to-[#fdc700] p-[20px]">
+                <div className="flex items-center justify-between moving-bg p-[20px]">
                     <h2 className="text-[#ffffff] text-[1.2rem] font-semibold">Menu</h2>
                     <button
                         onClick={() => setIsMobileMenuOpen(false)}
