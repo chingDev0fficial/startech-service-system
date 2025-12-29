@@ -46,6 +46,13 @@ export default function ManageBillings() {
     const [fetchedAppointments, setFetchedAppointments] = useState<any[]>([]);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [selectedBilling, setSelectedBilling] = useState<any>(null);
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    const [searchFilters, setSearchFilters] = useState({
+        dateRange: { from: '', to: '' },
+        serviceType: '',
+        status: [] as string[],
+        amountRange: { min: '', max: '' },
+    });
 
     const handleFetchedAppointments = async () => {
         try {
@@ -129,12 +136,37 @@ export default function ManageBillings() {
     // Filter billings
     const filteredBillings = billings
         .filter((billing) => {
+            // Search
             const matchesSearch =
                 billing.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 billing.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 billing.id.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesStatus = statusFilter === 'all' || billing.status.toLowerCase().replace(' ', '') === statusFilter;
-            return matchesSearch && matchesStatus;
+
+            // Status
+            const matchesStatus = searchFilters.status.length === 0 || searchFilters.status.includes(billing.status);
+
+            // Service Type
+            const matchesServiceType = !searchFilters.serviceType || billing.serviceType === searchFilters.serviceType;
+
+            // Date Range
+            let matchesDate = true;
+            if (searchFilters.dateRange.from) {
+                matchesDate = new Date(billing.scheduleAt) >= new Date(searchFilters.dateRange.from);
+            }
+            if (matchesDate && searchFilters.dateRange.to) {
+                matchesDate = new Date(billing.scheduleAt) <= new Date(searchFilters.dateRange.to);
+            }
+
+            // Amount Range
+            let matchesAmount = true;
+            if (searchFilters.amountRange.min) {
+                matchesAmount = billing.amount >= Number(searchFilters.amountRange.min);
+            }
+            if (matchesAmount && searchFilters.amountRange.max) {
+                matchesAmount = billing.amount <= Number(searchFilters.amountRange.max);
+            }
+
+            return matchesSearch && matchesStatus && matchesServiceType && matchesDate && matchesAmount;
         })
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -326,15 +358,118 @@ export default function ManageBillings() {
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="Manage Billings" />
                 <div className="flex h-full flex-1 flex-col gap-[1px] overflow-x-auto rounded-xl p-4">
-                    {/* Header */}
+                    {/* Header - Updated with dynamic content */}
                     <div className="mb-4 rounded-lg bg-white p-6 shadow">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900">Manage Billings</h1>
                                 <p className="mt-1 text-gray-600">Track and manage service billing requests</p>
                             </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                                    className="relative rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200"
+                                >
+                                    Advanced Filters
+                                </button>
+                            </div>
                         </div>
                     </div>
+
+                    {/* Header */}
+                    {/* <div className="mb-4 rounded-lg bg-white p-6 shadow">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900">Manage Billings</h1>
+                                <p className="mt-1 text-gray-600">Track and manage service billing requests</p>
+                            </div>
+                        </div>
+                    </div> */}
+
+                    {/* Advanced Filters Panel */}
+                    {showAdvancedFilters && (
+                        <div className="mb-4 rounded-lg bg-white p-6 shadow">
+                            <h3 className="mb-4 text-lg font-medium text-gray-900">Advanced Filters</h3>
+                            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                                {/* Date Range */}
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Service Date Range</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="date"
+                                            value={searchFilters.dateRange.from}
+                                            onChange={(e) =>
+                                                setSearchFilters((prev) => ({
+                                                    ...prev,
+                                                    dateRange: { ...prev.dateRange, from: e.target.value },
+                                                }))
+                                            }
+                                            className="flex-1 rounded-md border px-3 py-2 text-sm"
+                                        />
+                                        <input
+                                            type="date"
+                                            value={searchFilters.dateRange.to}
+                                            onChange={(e) =>
+                                                setSearchFilters((prev) => ({
+                                                    ...prev,
+                                                    dateRange: { ...prev.dateRange, to: e.target.value },
+                                                }))
+                                            }
+                                            className="flex-1 rounded-md border px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Service Type */}
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Service Type</label>
+                                    <select
+                                        value={searchFilters.serviceType}
+                                        onChange={(e) => setSearchFilters((prev) => ({ ...prev, serviceType: e.target.value }))}
+                                        className="w-full rounded-md border px-3 py-2 text-sm"
+                                    >
+                                        <option value="">All Types</option>
+                                        {[...new Set(billings.map((b) => b.serviceType))].map((type) => (
+                                            <option key={type} value={type}>
+                                                {type}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Amount Range */}
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-gray-700">Amount Range</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="number"
+                                            placeholder="Min"
+                                            value={searchFilters.amountRange.min}
+                                            onChange={(e) =>
+                                                setSearchFilters((prev) => ({
+                                                    ...prev,
+                                                    amountRange: { ...prev.amountRange, min: e.target.value },
+                                                }))
+                                            }
+                                            className="flex-1 rounded-md border px-3 py-2 text-sm"
+                                        />
+                                        <input
+                                            type="number"
+                                            placeholder="Max"
+                                            value={searchFilters.amountRange.max}
+                                            onChange={(e) =>
+                                                setSearchFilters((prev) => ({
+                                                    ...prev,
+                                                    amountRange: { ...prev.amountRange, max: e.target.value },
+                                                }))
+                                            }
+                                            className="flex-1 rounded-md border px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Summary */}
                     <div className="mt-4 mb-4 grid grid-cols-2 gap-4">
