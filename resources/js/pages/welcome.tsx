@@ -1,10 +1,7 @@
 import InputError from '@/components/input-error';
 import { type SharedData } from '@/types';
-<<<<<<< HEAD
 import { useForm, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-=======
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 
 import { CustomCard } from '@/components/custom-card';
 import { CustomFooter } from '@/components/custom-footer';
@@ -12,19 +9,13 @@ import { CustomRadio } from '@/components/custom-radio';
 import { PrimaryButton } from '@/components/default-button';
 import { NavBar } from '@/components/nav-bar';
 import { Label } from '@/components/ui/label';
-<<<<<<< HEAD
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AppWindow, BookOpen, BrushCleaning, Github, LaptopMinimal, X } from 'lucide-react';
-=======
-import { Input } from '@/components/ui/input';
-import { echo } from '@laravel/echo-react';
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 
 type ServiceType = 'hardware repair' | 'software solution' | 'maintenance';
 
 interface AppointmentFormData {
     clientId: number;
-<<<<<<< HEAD
     serviceLocation: string;
     date: string;
     time: string;
@@ -41,24 +32,6 @@ interface AppointmentFormData {
 }
 
 export default function Welcome() {
-=======
-    serviceLocation: string,
-    date: string,
-    time: string,
-    serviceType: ServiceType | "",
-    fullname: string,
-    email: string,
-    phone_no: string,
-    address?: string,
-    item: string,
-    description: string,
-    warrantyReceipt: File | null,
-    clientStatus: string,
-    [key: string]: any;
-}
-
-export default function Welcome(){
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
     const { auth } = usePage<SharedData>().props;
     const [notification, setNotification] = useState<string | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
@@ -98,17 +71,10 @@ export default function Welcome(){
 
     const tabs = [
         {
-<<<<<<< HEAD
             component: 'text',
             name: `Welcome, ${client?.name || 'Guest'}`,
             href: undefined,
             className: `transition-colors whitespace-nowrap ml-2 ${client ? '' : 'hover:underline'}`,
-=======
-            component: "text",
-            name: `Welcome, ${client?.name || 'Guest'}`,
-            href: undefined,
-            className: `transition-colors whitespace-nowrap ml-2 ${client ? "" : "hover:underline"}`
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
         },
         {
             component: 'link',
@@ -191,11 +157,7 @@ export default function Welcome(){
         if (data.date === today) {
             const currentTime = getCurrentTime();
             setMinTime(currentTime);
-<<<<<<< HEAD
 
-=======
-            
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             // Clear time if it's in the past
             if (data.time && data.time < currentTime) {
                 setData('time', '');
@@ -229,21 +191,13 @@ export default function Welcome(){
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
         // If date is changed, update minimum time and clear past times
         if (name === 'date') {
             if (value === today) {
                 const currentTime = getCurrentTime();
                 setMinTime(currentTime);
-<<<<<<< HEAD
 
-=======
-                
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                 // Clear time if it's in the past
                 if (data.time && data.time < currentTime) {
                     setData('time', '');
@@ -252,11 +206,7 @@ export default function Welcome(){
                 setMinTime('');
             }
         }
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
         // Prevent selecting past time on today's date
         if (name === 'time' && data.date === today) {
             const currentTime = getCurrentTime();
@@ -264,16 +214,8 @@ export default function Welcome(){
                 return; // Don't update if trying to select past time
             }
         }
-<<<<<<< HEAD
 
         setData(name as keyof AppointmentFormData, value);
-=======
-        
-        setData(
-            name as keyof AppointmentFormData,
-            value,
-        );
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
     };
 
     const processImage = (file: File): Promise<File> => {
@@ -516,7 +458,6 @@ export default function Welcome(){
                                     />
                                 </div>
 
-<<<<<<< HEAD
                                 <div className="flex w-full flex-col gap-[10px]">
                                     <label className="font-medium text-[#222831]">Select Date</label>
                                     <input
@@ -643,119 +584,6 @@ export default function Welcome(){
                             <PrimaryButton text="Confirm Booking" type="submit" onClick={() => {}} processing={processing} />
                         </form>
                     </div>
-=======
-        <div className="grid grid-rows-1 bg-[#F0F1F2] min-h-screen">
-            <div className="sticky top-0 left-0 right-0 z-50">
-                <NavBar tabs={tabs} />
-            </div>
-
-             <div className="grid content-center justify-items-center p-[20px]">
-                <h1 className="text-[2rem] font-bold text-[#222831]">Our Services & Pricing</h1>
-                <div className="grid lg:grid-flow-col w-full content-center justify-items-center gap-4">
-                    <CustomCard icon={ LaptopMinimal } iconColor="blue" title="Hardware Repair" content={ cardsContent.hardwareRepair } buttonText="Book Service" onButtonClick={() => alert("Learn More clicked")}/>
-                    <CustomCard icon={ AppWindow } iconColor="green" title="Software Solution" content={ cardsContent.softwareSolution } buttonText="Book Service" onButtonClick={() => alert("Learn More clicked")} />
-                    <CustomCard icon={ BrushCleaning } iconColor="purple" title="Maintenance" content={ cardsContent.maintenance } buttonText="Book Service" onButtonClick={ () => alert("Learn More Clicked") } />
-                </div>
-            </div>
-
-            <div className="grid content-center justify-items-center p-[20px]">
-                <h1 className="text-[2rem] font-bold text-[#222831]">Book Your Service</h1>
-                <div className="lg:w-[60%] w-full">
-                    <form onSubmit={handleSubmitAppointment} encType="multipart/form-data" className="flex flex-col bg-[#ffffff] shadow-lg rounded-lg p-[20px] gap-5">
-                        <div className="flex lg:flex-row flex-col justify-center gap-[10px]">
-                            <div className="flex flex-col gap-[10px] w-full">
-                                <label className="font-medium text-[#222831]">Service Location</label>
-                                <CustomRadio
-                                    options={options}
-                                    name="serviceLocation"
-                                    value={data.serviceLocation}
-                                    onChange={(option) => setData('serviceLocation', option)}
-                                />
-                            </div>
-
-                            <div className="flex flex-col gap-[10px] w-full">
-                                <label className="font-medium text-[#222831]">Select Date</label>
-                                <input
-                                    type="date"
-                                    name="date"
-                                    value={data.date}
-                                    onChange={handleChange}
-                                    min={today}
-                                    className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0"
-                                    required
-                                />
-                                <label className="font-medium text-[#222831] mt-2">Select Time</label>
-                                <input
-                                    type="time"
-                                    name="time"
-                                    value={data.time}
-                                    onChange={handleChange}
-                                    min={minTime}
-                                    className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0"
-                                    required
-                                />
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-[10px] w-full">
-                            <Label htmlFor="serviceType">Services</Label>
-                            <Select
-                                name="serviceType"
-                                value={data.serviceType}
-                                onValueChange={(value: ServiceType) => setData('serviceType', value)}
-                                disabled={processing}
-                                required
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a service" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="hardware repair">Hardware Repair</SelectItem>
-                                    <SelectItem value="software solution">Software Solution</SelectItem>
-                                    <SelectItem value="maintenance">Maintenance</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <InputError message={errors.serviceType} className="mt-2" />
-                        </div>
-                        <div className="flex flex-col gap-[10px] w-full">
-                            <label className="font-medium text-[#222831]">Contact Inforation</label>
-                            <div className="grid lg:grid-rows-2 lg:grid-cols-2 gap-2">
-                                <input name="fullname" value={data.fullname} onChange={handleChange} type="text" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Full Name" required />
-                                <input name="email" value={data.email} onChange={handleChange} type="email" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Email"  required />
-                                <input name="phone_no" value={data.phone_no} onChange={handleChange} type="tel" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Phone Number" required />
-                                <input name="address" value={data.address} onChange={handleChange} type="text" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Address (for home service only)" required={data.serviceLocation === 'home-service' && !data.address?.trim()} />
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-[10px] w-full">
-                            <label className="font-medium text-[#222831]">Client Device</label>
-                            <input name="item" value={data.item} onChange={handleChange} type="text" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Eg. Printer Epson L23500" required />
-                            <label className="font-medium text-[#222831]">Problem Description</label>
-                            <textarea name="description" value={data.description} onChange={handleChange} className="h-32 rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0" placeholder="Please describe the issue you're experiencing..." required ></textarea>
-                        </div>
-
-
-                        <div className="flex flex-col gap-[1px] w-full">
-                            <label className="font-medium text-[#222831]">Warranty Sticker/Reciept</label>
-                            <input name="warrantyReceipt" onChange={handleImageChange} type="file" accept="image/*" className="rounded-[15px] font-thin text-[#393E46] p-[10px] border border-input focus:outline-none focus:ring-0 w-[100%]" />
-                            {preview && (
-                                <div className="mt-4">
-                                <p>Image Preview:</p>
-                                <img
-                                    src={preview}
-                                    alt="Preview"
-                                    className="w-48 rounded shadow"
-                                />
-                                </div>
-                            )}
-                        </div>
-                        <PrimaryButton 
-                            text="Confirm Booking" 
-                            type="submit"
-                            onClick={() => {}} 
-                            processing={processing}
-                        />
-                    </form>
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                 </div>
             </div>
             <CustomFooter />

@@ -12,20 +12,8 @@ use Inertia\Inertia;
 
 Route::get('get-service-price', [DashboardController::class, 'getServicePrice'])
     ->name('client.get.service.price');
-
-<<<<<<< HEAD
-Route::get('dashboard/fetch-appointment-data/{id}', [DashboardController::class, 'fetchAppointmentData'])
-    ->name('fetch.appointment-data');
-=======
-// Route::get('dashboard/fetch-appointment-data/{id}', [DashboardController::class, 'fetchAppointmentData'])
-//     ->name('fetch.appointment-data');
-// Route::get('my-appointments/fetch', [App\Http\Controllers\MyAppointmentController::class, 'fetch'])
-//             ->name('my-appointments.fetch');
-// Route::get('manage-appointments/fetch', [AppointmentController::class, 'fetch'])
-//     ->name('appointment.fetch');
 Route::get('dashboard/fetch-ratings', [DashboardController::class, 'fetchRatings'])
         ->name('fetch.ratings');
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 
 Route::middleware(['client'])->group(function () {
 
@@ -80,13 +68,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('dashboard/get-service-price', [DashboardController::class, 'getServicePrice'])
             ->name('get.service.price');
-<<<<<<< HEAD
-        // Route::get('dashboard/fetch-appointment-data/{id}', [DashboardController::class, 'fetchAppointmentData'])
-        //     ->name('fetch.appointment-data');
-=======
         Route::get('dashboard/fetch-appointment-data/{id}', [DashboardController::class, 'fetchAppointmentData'])
             ->name('fetch.appointment-data');
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
         Route::get('dashboard/fetch-technician', [DashboardController::class, 'fetchTech']);
         Route::post('dashboard/set-service-price', [DashboardController::class, 'updateServicePrice'])
             ->name('update.service.price');

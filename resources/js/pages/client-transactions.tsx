@@ -1,17 +1,5 @@
-<<<<<<< HEAD
 import { CustomFooter } from '@/components/custom-footer';
 import { NavBar } from '@/components/nav-bar';
-=======
-import * as React from 'react';
-import {usePage} from '@inertiajs/react';
-import { useState, useEffect } from 'react';
-import { useForm, Link } from '@inertiajs/react';
-import { useEcho } from '@laravel/echo-react';
-import { NavBar } from "@/components/nav-bar";
-import { CustomFooter } from "@/components/custom-footer";
-import { LaptopMinimal, LoaderCircle } from 'lucide-react';
-import { Rating, Textarea } from "@material-tailwind/react";
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 import { Label } from '@/components/ui/label';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { useEcho } from '@laravel/echo-react';
@@ -387,11 +375,7 @@ export default function ClientTransactions() {
             href: '/client-logout',
             className: 'hover:underline transition-colors whitespace-nowrap ml-2',
         },
-<<<<<<< HEAD
         { component: 'link', name: 'Contact Us', href: '/contact-us', className: 'hover:underline transition-colors whitespace-nowrap ml-2' },
-=======
-        { component: "link", name: "Contact Us", href: "/contact-us", className: "hover:underline transition-colors whitespace-nowrap ml-2" }
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
     ];
 
     const handleFetchTransactions = async () => {
@@ -500,17 +484,10 @@ export default function ClientTransactions() {
                         serviceLocation: service.appointment_service_location,
                         technicianNote: service.technician_note || null,
                         noteSentAt: service.note_sent_at || null,
-<<<<<<< HEAD
                         updatedAt: service.completion_date || service.appointment_date,
                     }))
                     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
-=======
-                        updatedAt: service.completion_date || service.appointment_date
-                    }))
-                    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-                
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                 setTransactions(clientTransactions);
                 setLoading(false);
             })
@@ -522,7 +499,6 @@ export default function ClientTransactions() {
 
         console.log(transactions);
 
-<<<<<<< HEAD
         echo.channel('transactions').listen('.transactions.retrieve', (event: any) => {
             setTransactions((prev) =>
                 prev
@@ -555,37 +531,6 @@ export default function ClientTransactions() {
                     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()),
             );
         });
-=======
-        echo.channel("transactions")
-            .listen(".transactions.retrieve", (event: any) => {
-                setTransactions(prev => 
-                    prev.filter((service: Jobs) => service.client_id === client.id)
-                        .map((service: any) => ({
-                            id: service.id.toString(),
-                            service: `${service.appointment_item_name} - ${service.appointment_service_type}`,
-                            customer: service.client_name,
-                            serviceDate: new Date(service.appointment_date).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                            }),
-                            completionDate: service.completion_date ? new Date(service.completion_date).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                            }) : null,
-                            status: service.service_status,
-                            mark_as: service.mark_as,
-                            technician: service.technician_name || 'Not Assigned',
-                            amount: service.amount || 0,
-                            rating: service.rating || null,
-                            serviceType: service.appointment_service_type,
-                            serviceLocation: service.appointment_service_location,
-                            updatedAt: service.completion_date || service.appointment_date
-                        }))
-                        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()));
-            })
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
         // Cleanup listener on unmount
         return () => {
             echo.leaveChannel('transactions');
@@ -594,17 +539,10 @@ export default function ClientTransactions() {
 
     const getStatusBadge = (status: string) => {
         const statusClasses: Record<string, string> = {
-<<<<<<< HEAD
             completed: 'bg-green-100 text-green-800',
             Completed: 'bg-green-100 text-green-800',
             canceled: 'bg-red-100 text-red-800',
             Canceled: 'bg-red-100 text-red-800',
-=======
-            'completed': 'bg-green-100 text-green-800',
-            'Completed': 'bg-green-100 text-green-800',
-            'canceled': 'bg-red-100 text-red-800',
-            'Canceled': 'bg-red-100 text-red-800',
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             'in-progress': 'bg-blue-100 text-blue-800',
             'In Progress': 'bg-blue-100 text-blue-800',
             pending: 'bg-yellow-100 text-yellow-800',
@@ -648,17 +586,10 @@ export default function ClientTransactions() {
                     rating: service.rating || null,
                     serviceType: service.appointment_service_type,
                     serviceLocation: service.appointment_service_location,
-<<<<<<< HEAD
                     updatedAt: service.completion_date || service.appointment_date,
                 }))
                 .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
-=======
-                    updatedAt: service.completion_date || service.appointment_date
-                }))
-                .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-            
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             setTransactions(clientTransactions);
         } catch (err) {
             console.error('Failed to fetch transactions:', err);
@@ -712,7 +643,6 @@ export default function ClientTransactions() {
                 </div>
 
                 <div className="mt-8 ml-5">
-<<<<<<< HEAD
                     <Link
                         href="/client"
                         className="group inline-flex items-center gap-2 px-4 py-2 text-gray-600 transition-colors hover:text-gray-900"
@@ -721,16 +651,6 @@ export default function ClientTransactions() {
                         <span className="font-light">Back to Home</span>
                     </Link>
                 </div>
-=======
-                        <Link
-                            href="/client"
-                            className="inline-flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors group"
-                        >
-                            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                            <span className="font-light">Back to Home</span>
-                        </Link>
-                    </div>
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 
                 {/* <div className='w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8'>
                     <Button
@@ -810,108 +730,12 @@ export default function ClientTransactions() {
                                                         Actions
                                                     </th>
                                                 </tr>
-<<<<<<< HEAD
                                             </thead>
                                             <tbody className="divide-y divide-gray-200 bg-white">
                                                 {transactions.length === 0 ? (
                                                     <tr>
                                                         <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                                                             No transactions found
-=======
-                                            ) : (
-                                                transactions.map((record) => (
-                                                    <tr key={record.id} className="hover:bg-gray-50 transition-colors">
-                                                        <td className="px-4 xl:px-6 py-4">
-                                                            <div>
-                                                                <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
-                                                                    {record.service}
-                                                                    {record.technicianNote && (
-                                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800" title="Technician has left a note">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                                                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                                                            </svg>
-                                                                            <span className="ml-1">Note</span>
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                                <div className="text-xs text-gray-500 mt-1">
-                                                                    {record.id}
-                                                                </div>
-                                                                <div className="text-xs text-blue-600 mt-1">
-                                                                    {record.serviceType}
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-4 xl:px-6 py-4 text-sm text-gray-900">
-                                                            {record.customer}
-                                                        </td>
-                                                        <td className="px-4 xl:px-6 py-4 text-sm text-gray-900">
-                                                            {record.technician}
-                                                        </td>
-                                                        <td className="px-4 xl:px-6 py-4">
-                                                            <div className="text-sm text-gray-900">
-                                                                {record.serviceDate}
-                                                            </div>
-                                                            {record.completionDate && (
-                                                                <div className="text-xs text-gray-500 mt-1">
-                                                                    { record.status === "completed" && (
-                                                                        <>Completed: {record.completionDate}</>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-4 xl:px-6 py-4">
-                                                            {record.mark_as === "accepted" ? (
-                                                                <span className={getStatusBadge(record.status)}>
-                                                                    {record.status}
-                                                                </span>
-                                                            ) : record.mark_as === "declined" ? (
-                                                                <span className={getStatusBadge("declined")}>
-                                                                    Declined
-                                                                </span>
-                                                            ) : (
-                                                                <span className={getStatusBadge(record.status)}>
-                                                                    {record.status}
-                                                                </span>
-                                                            )}
-                                                                
-                                                        </td>
-                                                        <td className="px-4 xl:px-6 py-4 text-sm font-medium text-gray-900">
-                                                            ₱{(Number(record.amount) || 0)?.toFixed(2) || '0.00'}
-                                                        </td>
-                                                        <td className="px-4 xl:px-6 py-4">
-                                                            {record.rating ? (
-                                                                <div className="flex items-center">
-                                                                    {[...Array(5)].map((_, i) => (
-                                                                        <span
-                                                                            key={i}
-                                                                            className={`text-sm ${i < record.rating! ? 'text-yellow-400' : 'text-gray-300'}`}
-                                                                        >
-                                                                                ★
-                                                                            </span>
-                                                                    ))}
-                                                                    <span className="ml-1 text-xs text-gray-500">
-                                                                            ({record.rating})
-                                                                        </span>
-                                                                </div>
-                                                            ) : (
-                                                                <span className="text-xs text-gray-400">No rating</span>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-4 xl:px-6 py-4 text-right">
-                                                            <button 
-                                                                onClick={() => handleViewTransaction(record)}
-                                                                className="text-blue-600 hover:text-blue-900 text-sm font-medium"
-                                                            >
-                                                                View
-                                                            </button>
-
-                                                            {record.status === 'completed' && !record.rating && (
-                                                                <button onClick={() => ratingAction(record)} className="ml-4 text-green-600 hover:text-green-900 text-sm font-medium">
-                                                                    Rate
-                                                                </button>
-                                                            )}
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                                                         </td>
                                                     </tr>
                                                 ) : (

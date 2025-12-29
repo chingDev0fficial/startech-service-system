@@ -126,8 +126,6 @@ class DashboardController extends Controller
             ], 500);
         }
     }
-<<<<<<< HEAD
-=======
 
     public function fetchRatings()
     {
@@ -155,5 +153,4 @@ class DashboardController extends Controller
 
         return response()->json(['success' => false]);
     }
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 }
