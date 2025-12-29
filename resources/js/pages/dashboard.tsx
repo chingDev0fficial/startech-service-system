@@ -1,37 +1,27 @@
-import * as React from "react"
+import * as React from 'react';
 
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+// import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 
-import { Card, CardTitle, CardDescription, CardContent, CardHeader } from "@/components/ui/card";
-import { Avatar } from "@/components/ui/avatar";
-import { Icon } from "@/components/icon";
+import { Icon } from '@/components/icon';
+import { Avatar } from '@/components/ui/avatar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-import { ToolCase, ClipboardClock, PhilippinePeso, Star, User, LaptopMinimal, AppWindow, BrushCleaning } from 'lucide-react';
+import { AppWindow, BrushCleaning, ClipboardClock, LaptopMinimal, PhilippinePeso, Star, ToolCase, User } from 'lucide-react';
 
-import { CollapsibleWrapper } from "@/components/collapsable-content";
+import { CollapsibleWrapper } from '@/components/collapsable-content';
 
-import { useState, useEffect, useCallback } from 'react';
 import { useEcho } from '@laravel/echo-react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Home, MapPin } from 'lucide-react';
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { floated } from "@material-tailwind/react/types/components/card";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-<<<<<<< HEAD
-=======
-import { Modal } from "flowbite-react";
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+// import { floated } from "@material-tailwind/react/types/components/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -45,11 +35,13 @@ interface DotProps {
 }
 
 function Dot({ serviceType }: DotProps) {
-    return (<>
-        <div className="grid grid-cols-1 grid-rows-1 place-items-center">
-            <div className={`rounded-xl w-[7px] h-[7px] ${ serviceType.toLowerCase() === "home service" ? "bg-blue-500" : "bg-orange-500"}`}></div>
-        </div>
-    </>)
+    return (
+        <>
+            <div className="grid grid-cols-1 grid-rows-1 place-items-center">
+                <div className={`h-[7px] w-[7px] rounded-xl ${serviceType.toLowerCase() === 'home service' ? 'bg-blue-500' : 'bg-orange-500'}`}></div>
+            </div>
+        </>
+    );
 }
 
 interface DashboardCardProps {
@@ -61,43 +53,44 @@ interface DashboardCardProps {
 }
 
 function DashboardCard({ icon, iconColor, title, value, onClick }: DashboardCardProps) {
-
     const colors = {
         blue: {
-            bg: "bg-blue-500/30",
-            text: "text-blue-700"
+            bg: 'bg-blue-500/30',
+            text: 'text-blue-700',
         },
         orange: {
-            bg: "bg-orange-500/30",
-            text: "text-orange-700"
+            bg: 'bg-orange-500/30',
+            text: 'text-orange-700',
         },
         green: {
-            bg: "bg-green-500/30",
-            text: "text-green-700"
+            bg: 'bg-green-500/30',
+            text: 'text-green-700',
         },
         purple: {
-            bg: "bg-purple-500/30",
-            text: "text-purple-700"
-        }
+            bg: 'bg-purple-500/30',
+            text: 'text-purple-700',
+        },
     };
 
     const icon_bg_color = colors[iconColor].bg;
-    const icon_text_color =  colors[iconColor].text;
+    const icon_text_color = colors[iconColor].text;
 
-    return (<>
-        <Card 
-            className={`!flex-row items-center justify-between w-full bg-sidebar shadow-lg m-4 border border-sidebar-border p-2 ${onClick ? 'cursor-pointer hover:bg-sidebar-accent transition-colors' : ''}`}
-            onClick={onClick}
-        >
-            <CardContent className="!p-[0]">
-                <CardTitle className="!font-normal text-[0.7rem] text-[#393E46] dark:text-[#ffffff]">{ title }</CardTitle>
-                <CardDescription className="!font-semibold text-[1.2rem] text-[#222831] dark:text-[#ffffff]">{ value }</CardDescription>
-            </CardContent>
-            <Avatar className={`h-9 w-9 flex items-center justify-center ${icon_bg_color}`}>
-                <Icon iconNode={icon} className={` ${ icon_text_color } dark:text-[#ffffff] `} strokeWidth={2} />
-            </Avatar>
-        </Card>
-    </>);
+    return (
+        <>
+            <Card
+                className={`m-4 w-full !flex-row items-center justify-between border border-sidebar-border bg-sidebar p-2 shadow-lg ${onClick ? 'cursor-pointer transition-colors hover:bg-sidebar-accent' : ''}`}
+                onClick={onClick}
+            >
+                <CardContent className="!p-[0]">
+                    <CardTitle className="text-[0.7rem] !font-normal text-[#393E46] dark:text-[#ffffff]">{title}</CardTitle>
+                    <CardDescription className="text-[1.2rem] !font-semibold text-[#222831] dark:text-[#ffffff]">{value}</CardDescription>
+                </CardContent>
+                <Avatar className={`flex h-9 w-9 items-center justify-center ${icon_bg_color}`}>
+                    <Icon iconNode={icon} className={` ${icon_text_color} dark:text-[#ffffff]`} strokeWidth={2} />
+                </Avatar>
+            </Card>
+        </>
+    );
 }
 
 interface PricingCardProps {
@@ -118,25 +111,19 @@ function PricingCard({ title, initialPrice, icon, description, onPriceChange }: 
     };
 
     return (
-        <Card className="bg-sidebar shadow-lg m-4 border border-sidebar-border p-4">
+        <Card className="m-4 border border-sidebar-border bg-sidebar p-4 shadow-lg">
             <CardContent className="flex items-center justify-between">
                 <div className="w-full">
-                    <CardTitle className="text-lg font-semibold mb-2">{title}</CardTitle>
+                    <CardTitle className="mb-2 text-lg font-semibold">{title}</CardTitle>
                     <div className="flex items-center gap-4">
                         <div className="flex items-baseline">
-                            <span className="text-lg font-bold text-[#222831] dark:text-white mr-2">₱</span>
-                            <Input
-                                type="number"
-                                value={initialPrice}
-                                onChange={handlePriceChange}
-                                className="w-32"
-                                min="0"
-                            />
+                            <span className="mr-2 text-lg font-bold text-[#222831] dark:text-white">₱</span>
+                            <Input type="number" value={initialPrice} onChange={handlePriceChange} className="w-32" min="0" />
                         </div>
                         <span className="text-sm text-gray-500">{description}</span>
                     </div>
                 </div>
-                <Avatar className="h-12 w-12 flex items-center justify-center bg-blue-500/30">
+                <Avatar className="flex h-12 w-12 items-center justify-center bg-blue-500/30">
                     <Icon iconNode={icon} className="text-blue-700 dark:text-white" strokeWidth={2} />
                 </Avatar>
             </CardContent>
@@ -162,19 +149,12 @@ interface AppointmentDetails {
     name: string;
     status?: string;
     rating?: number;
-<<<<<<< HEAD
-=======
     technician_name?: string;
     technician_email?: string;
     technician_id?: number;
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 }
 
-function AppointmentInfoModal({ isOpen, onClose, appointmentId }: { 
-    isOpen: boolean; 
-    onClose: () => void; 
-    appointmentId: string | null;
-}) {
+function AppointmentInfoModal({ isOpen, onClose, appointmentId }: { isOpen: boolean; onClose: () => void; appointmentId: string | null }) {
     const [appointmentData, setAppointmentData] = useState<AppointmentDetails | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -196,13 +176,13 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
             const cleanId = appointmentId.replace('#', '');
 
             const response = await fetch(`/dashboard/fetch-appointment-data/${cleanId}`, {
-                method: "GET",
+                method: 'GET',
                 headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
-                credentials: 'include'
+                credentials: 'include',
             });
 
             if (!response.ok) {
@@ -210,13 +190,13 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
             }
 
             const result = await response.json();
-            
+
             if (result.success && result.data) {
                 setAppointmentData(result.data);
             } else {
                 throw new Error(result.error || 'Failed to fetch appointment');
             }
-        } catch(error) {
+        } catch (error) {
             console.error('Error fetching appointment info:', error);
             setError(error instanceof Error ? error.message : 'Failed to fetch appointment details');
         } finally {
@@ -226,21 +206,10 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-<<<<<<< HEAD
-            <DialogContent className="bg-sidebar border-sidebar-border">
-                <DialogHeader>
-                    <DialogTitle className="text-[#222831] dark:text-white">
-                        Appointment Details
-                    </DialogTitle>
-                    <DialogDescription className="text-[#393E46] dark:text-gray-300">
-=======
-            <DialogContent className="bg-sidebar border-sidebar-border max-w-[95vw] sm:max-w-[90vw] md:max-w-2xl lg:max-w-3xl max-h-[90vh] flex flex-col p-4 sm:p-6">
+            <DialogContent className="flex max-h-[90vh] max-w-[95vw] flex-col border-sidebar-border bg-sidebar p-4 sm:max-w-[90vw] sm:p-6 md:max-w-2xl lg:max-w-3xl">
                 <DialogHeader className="flex-shrink-0 pb-3 sm:pb-4">
-                    <DialogTitle className="text-base sm:text-lg md:text-xl text-[#222831] dark:text-white">
-                        Appointment Details
-                    </DialogTitle>
-                    <DialogDescription className="text-xs sm:text-sm text-[#393E46] dark:text-gray-300">
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
+                    <DialogTitle className="text-base text-[#222831] sm:text-lg md:text-xl dark:text-white">Appointment Details</DialogTitle>
+                    <DialogDescription className="text-xs text-[#393E46] sm:text-sm dark:text-gray-300">
                         {appointmentId && `Appointment ${appointmentId}`}
                     </DialogDescription>
                 </DialogHeader>
@@ -251,80 +220,67 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
                     </div>
                 )}
 
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                        {error}
-                    </div>
-                )}
+                {error && <div className="rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">{error}</div>}
 
                 {appointmentData && !isLoading && (
-<<<<<<< HEAD
-                    <div className="space-y-4 max-h-[500px] overflow-y-auto">
-                        <div className="grid grid-cols-2 gap-4">
+                    <div className="-mr-2 flex-1 space-y-3 overflow-y-auto pr-2 sm:-mr-3 sm:space-y-4 sm:pr-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Service Type</p>
-                                <p className="font-semibold text-[#222831] dark:text-white capitalize">{appointmentData.service_type}</p>
-=======
-                    <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-2 sm:pr-3 -mr-2 sm:-mr-3">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                            <div>
-                                <p className="text-xs text-[#393E46] dark:text-gray-400">Service Type</p>
-                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white capitalize break-words">{appointmentData.service_type}</p>
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
+                                <p className="text-sm font-semibold break-words text-[#222831] capitalize sm:text-base dark:text-white">
+                                    {appointmentData.service_type}
+                                </p>
                             </div>
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Status</p>
-                                <div className={`inline-block px-2 py-1 rounded text-xs capitalize ${
-                                    appointmentData.status?.toLowerCase() === "pending" ? "bg-orange-500/30 text-orange-700" :
-                                    appointmentData.status?.toLowerCase() === "in-progress" ? "bg-yellow-500/30 text-yellow-700" :
-                                    appointmentData.status?.toLowerCase() === "completed" ? "bg-green-500/30 text-green-700" :
-                                    "bg-red-500/30 text-red-700"
-                                }`}>
+                                <div
+                                    className={`inline-block rounded px-2 py-1 text-xs capitalize ${
+                                        appointmentData.status?.toLowerCase() === 'pending'
+                                            ? 'bg-orange-500/30 text-orange-700'
+                                            : appointmentData.status?.toLowerCase() === 'in-progress'
+                                              ? 'bg-yellow-500/30 text-yellow-700'
+                                              : appointmentData.status?.toLowerCase() === 'completed'
+                                                ? 'bg-green-500/30 text-green-700'
+                                                : 'bg-red-500/30 text-red-700'
+                                    }`}
+                                >
                                     {appointmentData.status || 'N/A'}
                                 </div>
                             </div>
                         </div>
 
-<<<<<<< HEAD
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Customer Name</p>
-                                <p className="font-semibold text-[#222831] dark:text-white">{appointmentData.name}</p>
-=======
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                            <div>
-                                <p className="text-xs text-[#393E46] dark:text-gray-400">Customer Name</p>
-                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.name}</p>
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
+                                <p className="text-sm font-semibold break-words text-[#222831] sm:text-base dark:text-white">
+                                    {appointmentData.name}
+                                </p>
                             </div>
                             {appointmentData.phone_number && (
                                 <div>
                                     <p className="text-xs text-[#393E46] dark:text-gray-400">Phone Number</p>
-<<<<<<< HEAD
-                                    <p className="font-semibold text-[#222831] dark:text-white">{appointmentData.phone_number}</p>
-=======
-                                    <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.phone_number}</p>
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
+                                    <p className="text-sm font-semibold break-words text-[#222831] sm:text-base dark:text-white">
+                                        {appointmentData.phone_number}
+                                    </p>
                                 </div>
                             )}
                         </div>
 
-<<<<<<< HEAD
-                        <div>
-                            <p className="text-xs text-[#393E46] dark:text-gray-400">Item/Device</p>
-                            <p className="font-semibold text-[#222831] dark:text-white">{appointmentData.item}</p>
-=======
                         {appointmentData.technician_name && (
-                            <div className="border-t border-sidebar-border pt-3 sm:pt-4 mt-2">
-                                <p className="text-xs text-[#393E46] dark:text-gray-400 mb-2 font-semibold">Assigned Technician</p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            <div className="mt-2 border-t border-sidebar-border pt-3 sm:pt-4">
+                                <p className="mb-2 text-xs font-semibold text-[#393E46] dark:text-gray-400">Assigned Technician</p>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                                     <div>
                                         <p className="text-xs text-[#393E46] dark:text-gray-400">Name</p>
-                                        <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.technician_name}</p>
+                                        <p className="text-sm font-semibold break-words text-[#222831] sm:text-base dark:text-white">
+                                            {appointmentData.technician_name}
+                                        </p>
                                     </div>
                                     <div>
                                         <p className="text-xs text-[#393E46] dark:text-gray-400">Email</p>
-                                        <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.technician_email}</p>
+                                        <p className="text-sm font-semibold break-words text-[#222831] sm:text-base dark:text-white">
+                                            {appointmentData.technician_email}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -332,127 +288,76 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
 
                         <div>
                             <p className="text-xs text-[#393E46] dark:text-gray-400">Item/Device</p>
-                            <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">{appointmentData.item}</p>
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
+                            <p className="text-sm font-semibold break-words text-[#222831] sm:text-base dark:text-white">{appointmentData.item}</p>
                         </div>
 
                         <div>
                             <p className="text-xs text-[#393E46] dark:text-gray-400">Description</p>
-<<<<<<< HEAD
-                            <p className="text-[#222831] dark:text-white">{appointmentData.description}</p>
+                            <p className="text-sm break-words text-[#222831] sm:text-base dark:text-white">{appointmentData.description}</p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Service Location</p>
-                                <p className="font-semibold text-[#222831] dark:text-white capitalize">{appointmentData.service_location}</p>
+                                <p className="text-sm font-semibold break-words text-[#222831] capitalize sm:text-base dark:text-white">
+                                    {appointmentData.service_location}
+                                </p>
                             </div>
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Mark As</p>
-                                <p className="font-semibold text-[#222831] dark:text-white capitalize">{appointmentData.mark_as}</p>
-=======
-                            <p className="text-sm sm:text-base text-[#222831] dark:text-white break-words">{appointmentData.description}</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                            <div>
-                                <p className="text-xs text-[#393E46] dark:text-gray-400">Service Location</p>
-                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white capitalize break-words">{appointmentData.service_location}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-[#393E46] dark:text-gray-400">Mark As</p>
-                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white capitalize break-words">{appointmentData.mark_as}</p>
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
+                                <p className="text-sm font-semibold break-words text-[#222831] capitalize sm:text-base dark:text-white">
+                                    {appointmentData.mark_as}
+                                </p>
                             </div>
                         </div>
 
                         {appointmentData.address && (
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Address</p>
-<<<<<<< HEAD
-                                <p className="text-[#222831] dark:text-white">{appointmentData.address}</p>
-=======
-                                <p className="text-sm sm:text-base text-[#222831] dark:text-white break-words">{appointmentData.address}</p>
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
+                                <p className="text-sm break-words text-[#222831] sm:text-base dark:text-white">{appointmentData.address}</p>
                             </div>
                         )}
 
                         <div>
                             <p className="text-xs text-[#393E46] dark:text-gray-400">Scheduled At</p>
-<<<<<<< HEAD
-                            <p className="font-semibold text-[#222831] dark:text-white">
-=======
-                            <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white break-words">
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
+                            <p className="text-sm font-semibold break-words text-[#222831] sm:text-base dark:text-white">
                                 {new Date(appointmentData.schedule_at).toLocaleString()}
                             </p>
                         </div>
 
                         {appointmentData.warranty_receipt && (
                             <div>
-<<<<<<< HEAD
-                                <p className="text-xs text-[#393E46] dark:text-gray-400">Warranty Receipt</p>
-                                <a 
-                                    href={`/storage/${appointmentData.warranty_receipt}`} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline"
-                                >
-                                    View Receipt
-                                </a>
-=======
-                                <p className="text-xs text-[#393E46] dark:text-gray-400 mb-2">Warranty Receipt</p>
-                                <img 
-                                    src={`/storage/${appointmentData.warranty_receipt}`} 
+                                <p className="mb-2 text-xs text-[#393E46] dark:text-gray-400">Warranty Receipt</p>
+                                <img
+                                    src={`/storage/${appointmentData.warranty_receipt}`}
                                     alt="Warranty Receipt"
-                                    className="w-full max-w-md rounded-lg border border-sidebar-border shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                                    className="w-full max-w-md cursor-pointer rounded-lg border border-sidebar-border shadow-sm transition-shadow hover:shadow-md"
                                     onClick={() => window.open(`/storage/${appointmentData.warranty_receipt}`, '_blank')}
                                 />
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             </div>
                         )}
 
                         {appointmentData.price && (
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Price</p>
-<<<<<<< HEAD
-                                <p className="font-semibold text-[#222831] dark:text-white">₱{appointmentData.price}</p>
-=======
-                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white">₱{appointmentData.price}</p>
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
+                                <p className="text-sm font-semibold text-[#222831] sm:text-base dark:text-white">₱{appointmentData.price}</p>
                             </div>
                         )}
 
                         {appointmentData.rating && (
                             <div>
                                 <p className="text-xs text-[#393E46] dark:text-gray-400">Rating</p>
-<<<<<<< HEAD
-                                <p className="font-semibold text-[#222831] dark:text-white">⭐ {appointmentData.rating}/5</p>
+                                <p className="text-sm font-semibold text-[#222831] sm:text-base dark:text-white">⭐ {appointmentData.rating}/5</p>
                             </div>
                         )}
 
-                        <div className="text-xs text-[#393E46] dark:text-gray-400 pt-2 border-t border-sidebar-border">
-                            <p>Created: {new Date(appointmentData.created_at).toLocaleString()}</p>
-=======
-                                <p className="text-sm sm:text-base font-semibold text-[#222831] dark:text-white">⭐ {appointmentData.rating}/5</p>
-                            </div>
-                        )}
-
-                        <div className="text-xs text-[#393E46] dark:text-gray-400 pt-2 border-t border-sidebar-border pb-4">
+                        <div className="border-t border-sidebar-border pt-2 pb-4 text-xs text-[#393E46] dark:text-gray-400">
                             <p className="mb-1">Created: {new Date(appointmentData.created_at).toLocaleString()}</p>
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
                             <p>Updated: {new Date(appointmentData.updated_at).toLocaleString()}</p>
                         </div>
                     </div>
                 )}
 
-<<<<<<< HEAD
-                <div className="flex justify-end gap-2 mt-4">
-                    <Button onClick={onClose} variant="outline">
-                        Close
-                    </Button>
-                </div>
-=======
                 {/* <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-sidebar-border flex-shrink-0">
                     <Button onClick={onClose} variant="outline">
                         Close
@@ -463,24 +368,20 @@ function AppointmentInfoModal({ isOpen, onClose, appointmentId }: {
     );
 }
 
-function ViewRatingsModal({isOpen, onClose} : {
-    isOpen: boolean;
-    onClose: () => void;
-}) {
+function ViewRatingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
     const [ratings, setRatings] = useState<Array<any>>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     const handleFetchRatings = async () => {
         try {
-
-            const response = await fetch("dashboard/fetch-ratings", {
+            const response = await fetch('dashboard/fetch-ratings', {
                 method: 'GET',
                 headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                }
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
             });
 
             if (!response.ok) {
@@ -496,13 +397,12 @@ function ViewRatingsModal({isOpen, onClose} : {
             } else {
                 throw new Error('Failed to fetch ratings');
             }
-
         } catch (error) {
-            throw new Error(`An error occour: ${error}`)
+            throw new Error(`An error occour: ${error}`);
         } finally {
             setIsLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
         if (isOpen) {
@@ -512,12 +412,10 @@ function ViewRatingsModal({isOpen, onClose} : {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-sidebar border-sidebar-border max-w-[95vw] sm:max-w-[90vw] md:max-w-4xl max-h-[90vh] flex flex-col p-4 sm:p-6">
+            <DialogContent className="flex max-h-[90vh] max-w-[95vw] flex-col border-sidebar-border bg-sidebar p-4 sm:max-w-[90vw] sm:p-6 md:max-w-4xl">
                 <DialogHeader className="flex-shrink-0 pb-3 sm:pb-4">
-                    <DialogTitle className="text-base sm:text-lg md:text-xl text-[#222831] dark:text-white">
-                        Customer Ratings & Reviews
-                    </DialogTitle>
-                    <DialogDescription className="text-xs sm:text-sm text-[#393E46] dark:text-gray-300">
+                    <DialogTitle className="text-base text-[#222831] sm:text-lg md:text-xl dark:text-white">Customer Ratings & Reviews</DialogTitle>
+                    <DialogDescription className="text-xs text-[#393E46] sm:text-sm dark:text-gray-300">
                         View all customer feedback and ratings
                     </DialogDescription>
                 </DialogHeader>
@@ -528,11 +426,7 @@ function ViewRatingsModal({isOpen, onClose} : {
                     </div>
                 )}
 
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                        {error}
-                    </div>
-                )}
+                {error && <div className="rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">{error}</div>}
 
                 {!isLoading && !error && ratings.length === 0 && (
                     <div className="flex items-center justify-center py-8">
@@ -541,47 +435,41 @@ function ViewRatingsModal({isOpen, onClose} : {
                 )}
 
                 {!isLoading && !error && ratings.length > 0 && (
-                    <div className="space-y-4 overflow-y-auto flex-1 pr-2 sm:pr-3 -mr-2 sm:-mr-3">
+                    <div className="-mr-2 flex-1 space-y-4 overflow-y-auto pr-2 sm:-mr-3 sm:pr-3">
                         {ratings.map((rating) => (
-                            <Card key={rating.id} className="bg-sidebar border-sidebar-border p-4">
+                            <Card key={rating.id} className="border-sidebar-border bg-sidebar p-4">
                                 <div className="space-y-3">
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
-                                            <h3 className="font-semibold text-[#222831] dark:text-white">
-                                                {rating.client_name}
-                                            </h3>
-                                            <p className="text-xs text-[#393E46] dark:text-gray-400">
-                                                Appointment #{rating.appointment_id}
-                                            </p>
+                                            <h3 className="font-semibold text-[#222831] dark:text-white">{rating.client_name}</h3>
+                                            <p className="text-xs text-[#393E46] dark:text-gray-400">Appointment #{rating.appointment_id}</p>
                                         </div>
                                         <div className="flex items-center gap-1">
-                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                            <span className="font-semibold text-[#222831] dark:text-white">
-                                                {rating.rating}/5
-                                            </span>
+                                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                            <span className="font-semibold text-[#222831] dark:text-white">{rating.rating}/5</span>
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                    <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                                         <div>
                                             <span className="text-[#393E46] dark:text-gray-400">Item: </span>
-                                            <span className="text-[#222831] dark:text-white font-medium">
-                                                {rating.item}
-                                            </span>
+                                            <span className="font-medium text-[#222831] dark:text-white">{rating.item}</span>
                                         </div>
                                         <div>
                                             <span className="text-[#393E46] dark:text-gray-400">Service: </span>
-                                            <span className="text-[#222831] dark:text-white font-medium capitalize">
-                                                {rating.service_type}
-                                            </span>
+                                            <span className="font-medium text-[#222831] capitalize dark:text-white">{rating.service_type}</span>
                                         </div>
                                         <div>
                                             <span className="text-[#393E46] dark:text-gray-400">Status: </span>
-                                            <span className={`inline-block px-2 py-0.5 rounded text-xs capitalize ${
-                                                rating.status === "completed" ? "bg-green-500/30 text-green-700" :
-                                                rating.status === "in-progress" ? "bg-yellow-500/30 text-yellow-700" :
-                                                "bg-orange-500/30 text-orange-700"
-                                            }`}>
+                                            <span
+                                                className={`inline-block rounded px-2 py-0.5 text-xs capitalize ${
+                                                    rating.status === 'completed'
+                                                        ? 'bg-green-500/30 text-green-700'
+                                                        : rating.status === 'in-progress'
+                                                          ? 'bg-yellow-500/30 text-yellow-700'
+                                                          : 'bg-orange-500/30 text-orange-700'
+                                                }`}
+                                            >
                                                 {rating.status}
                                             </span>
                                         </div>
@@ -594,15 +482,13 @@ function ViewRatingsModal({isOpen, onClose} : {
                                     </div>
 
                                     {rating.comment && (
-                                        <div className="pt-2 border-t border-sidebar-border">
-                                            <p className="text-xs text-[#393E46] dark:text-gray-400 mb-1">Comment:</p>
-                                            <p className="text-sm text-[#222831] dark:text-white italic">
-                                                "{rating.comment}"
-                                            </p>
+                                        <div className="border-t border-sidebar-border pt-2">
+                                            <p className="mb-1 text-xs text-[#393E46] dark:text-gray-400">Comment:</p>
+                                            <p className="text-sm text-[#222831] italic dark:text-white">"{rating.comment}"</p>
                                         </div>
                                     )}
 
-                                    <div className="text-xs text-[#393E46] dark:text-gray-400 pt-2 border-t border-sidebar-border">
+                                    <div className="border-t border-sidebar-border pt-2 text-xs text-[#393E46] dark:text-gray-400">
                                         Reviewed on: {new Date(rating.created_at).toLocaleString()}
                                     </div>
                                 </div>
@@ -610,7 +496,6 @@ function ViewRatingsModal({isOpen, onClose} : {
                         ))}
                     </div>
                 )}
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
             </DialogContent>
         </Dialog>
     );
@@ -642,10 +527,7 @@ export default function Dashboard() {
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
-<<<<<<< HEAD
-=======
     const [isRatingsModalOpen, setIsRatingsModalOpen] = useState(false);
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
 
     const handlePendingClick = (appointmentId: string) => {
         setSelectedAppointmentId(appointmentId);
@@ -658,15 +540,15 @@ export default function Dashboard() {
     };
 
     const getServicePrices = async () => {
-       try {
+        try {
             const response = await fetch('dashboard/get-service-price', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
-                credentials: 'include'
+                credentials: 'include',
             });
 
             if (!response.ok) {
@@ -675,12 +557,10 @@ export default function Dashboard() {
 
             const data = await response.json();
             return data;
-        }
-        catch (error)
-        {
+        } catch (error) {
             console.error('Error fetching service prices:', error);
         }
-    }
+    };
 
     useEffect(() => {
         // Fetch initial service prices on component mount
@@ -702,13 +582,13 @@ export default function Dashboard() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
                 body: JSON.stringify({
-                    within  :  cityPrice,
-                    outside :  outsidePrice
-                })
+                    within: cityPrice,
+                    outside: outsidePrice,
+                }),
             });
 
             if (!response.ok) {
@@ -725,7 +605,6 @@ export default function Dashboard() {
         }
     };
 
-
     const handleFetchAppointment = useCallback(async () => {
         // Check cache
         const now = Date.now();
@@ -739,9 +618,9 @@ export default function Dashboard() {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    Accept: 'application/json',
                 },
-                credentials: 'include'
+                credentials: 'include',
             });
 
             // Check for non-JSON responses
@@ -752,7 +631,7 @@ export default function Dashboard() {
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
-            } 
+            }
 
             const data = await response.json();
             setLastFetchTime(now);
@@ -780,10 +659,10 @@ export default function Dashboard() {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
-                credentials: 'include'
+                credentials: 'include',
             });
 
             if (!response.ok) {
@@ -807,33 +686,32 @@ export default function Dashboard() {
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentDateTime(new Date());
-        }, 10000);
-
+        }, 5000);
         return () => clearInterval(timer);
     }, []);
 
     // Update data fetch effects
     useEffect(() => {
         handleFetchAppointment()
-            .then(data => {
-                const activeRepairCount = data.filter((appointment: any) => appointment.status === "in-progress").length
-                const pendingAppointmentsCount = data.filter((appointment: any) => appointment.status === "pending").length
+            .then((data) => {
+                const activeRepairCount = data.filter((appointment: any) => appointment.status === 'in-progress').length;
+                const pendingAppointmentsCount = data.filter((appointment: any) => appointment.status === 'pending').length;
 
-                const totalRatings = data.reduce((sum: number, appointment: any) => 
-                    appointment.rating !== null && appointment.rating !== undefined 
-                        ? sum + appointment.rating 
-                        : sum, 
-                    0
+                const totalRatings = data.reduce(
+                    (sum: number, appointment: any) =>
+                        appointment.rating !== null && appointment.rating !== undefined ? sum + appointment.rating : sum,
+                    0,
                 );
                 const numberOfRatings = data.filter((appointment: any) => appointment.rating !== null && appointment.rating !== undefined).length;
-                const averageSatisfaction = numberOfRatings > 0 ? (totalRatings / numberOfRatings) : 0;
+                const averageSatisfaction = numberOfRatings > 0 ? totalRatings / numberOfRatings : 0;
                 setSatisfaction(parseFloat(averageSatisfaction.toFixed(2)));
 
                 const formatter = new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: 'PHP',
                 });
-                const revenueTotal = data.filter((appointment: any) => appointment.status === "completed")
+                const revenueTotal = data
+                    .filter((appointment: any) => appointment.status === 'completed')
                     .reduce((sum: number, appointment: any) => sum + parseInt(appointment.price), 0);
                 const formattedPrice = formatter.format(revenueTotal);
 
@@ -842,146 +720,165 @@ export default function Dashboard() {
                 setPendingAppointments(pendingAppointmentsCount);
                 setDataAppointments(data);
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error('Failed to fetch appointments:', error);
             });
     }, [currentDateTime, echo, handleFetchAppointment]);
 
     useEffect(() => {
         handleFetchTech()
-            .then(data => {
+            .then((data) => {
                 setDataTech(data);
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error('Failed to fetch appointments:', error);
             });
     }, [currentDateTime, echo, handleFetchTech]);
 
     let todaysAppointment = dataAppointments
-        .filter(appointment => new Date(appointment?.schedule_at).toLocaleDateString() === currentDateTime.toLocaleDateString())
-        .map(appointment => ({
+        .filter((appointment) => new Date(appointment?.schedule_at).toLocaleDateString() === currentDateTime.toLocaleDateString())
+        .map((appointment) => ({
             setTime: appointment.schedule_at,
             serviceType: appointment.service_type,
             client: appointment.name,
             purpose: appointment.service_location,
-        }))
+        }));
 
     let recentServiceReq = dataAppointments
-        .filter(service => service.status === "pending" || service.status === "in-progress")
-        .map(service => ({
+        .filter((service) => service.status === 'pending' || service.status === 'in-progress')
+        .map((service) => ({
             serviceType: service.service_type,
             itemBrand: service.item,
             purpose: service.description,
             customerName: service.name,
             appointmentId: `#${service.id}`,
-            status: service.status
-        }))
+            status: service.status,
+        }));
 
     let availableStatusTechnician = dataTech
-        .filter(tech => tech.role === "technician")
-        .map(tech => ({
+        .filter((tech) => tech.role === 'technician')
+        .map((tech) => ({
             icon: User,
             name: tech.name,
-            status: tech.status
-        }))
+            status: tech.status,
+        }));
 
     const statCards = [
-        {icon: ToolCase, iconColor: "blue" as const, title: "Active Repairs", value: activeRepair},
-        {icon: ClipboardClock, iconColor: "orange" as const, title: "Pending Appointments", value: pendingAppointments},
-        {icon: PhilippinePeso, iconColor: "green" as const, title: "Total Revenue", value: totalRevenue},
-        {icon: Star, iconColor: "purple" as const, title: "Ratings", value: `${satisfaction}/5`, onClick: () => {
-            setIsRatingsModalOpen(true);
-        }},
+        { icon: ToolCase, iconColor: 'blue' as const, title: 'Active Repairs', value: activeRepair },
+        { icon: ClipboardClock, iconColor: 'orange' as const, title: 'Pending Appointments', value: pendingAppointments },
+        { icon: PhilippinePeso, iconColor: 'green' as const, title: 'Total Revenue', value: totalRevenue },
+        {
+            icon: Star,
+            iconColor: 'purple' as const,
+            title: 'Ratings',
+            value: `${satisfaction}/5`,
+            onClick: () => {
+                setIsRatingsModalOpen(true);
+            },
+        },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
             {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <div className="relative rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700" role="alert">
                     <span className="block sm:inline">{error}</span>
                 </div>
             )}
-            <div className="flex h-full flex-1 flex-col gap-[1px] rounded-xl p-4 overflow-x-auto">
+            <div className="flex h-full flex-1 flex-col gap-[1px] overflow-x-auto rounded-xl p-4">
                 <div className="grid auto-rows-min gap-[1px] md:grid-cols-4">
                     {statCards.map((card) => (
-                        <div className="flex justify-center items-center relative overflow-hidden rounded-xl dark:border-sidebar-border">
-                            <DashboardCard icon={ card.icon } iconColor={ card.iconColor } title={ card.title } value={ card.value } onClick={ card.onClick } />
+                        <div className="relative flex items-center justify-center overflow-hidden rounded-xl dark:border-sidebar-border">
+                            <DashboardCard icon={card.icon} iconColor={card.iconColor} title={card.title} value={card.value} onClick={card.onClick} />
                         </div>
                     ))}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                    <PricingCard 
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
+                    <PricingCard
                         title="City Area Service"
                         initialPrice={cityPrice}
                         description="base price for home service"
                         icon={Home}
                         onPriceChange={setCityPrice}
                     />
-                    <PricingCard 
+                    <PricingCard
                         title="Outside City Service"
                         initialPrice={outsidePrice}
                         description="base price for home service"
                         icon={MapPin}
                         onPriceChange={setOutsidePrice}
                     />
-                    <div className="col-span-1 md:col-span-2 flex justify-center md:justify-end px-4 py-2">
-                        <Button 
+                    <div className="col-span-1 flex justify-center px-4 py-2 md:col-span-2 md:justify-end">
+                        <Button
                             onClick={handleSavePrices}
                             disabled={isSaving}
-                            className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto min-w-[200px]"
+                            className="w-full min-w-[200px] bg-blue-600 text-white hover:bg-blue-700 sm:w-auto"
                         >
                             {isSaving ? 'Saving...' : 'Save Prices'}
                         </Button>
                     </div>
                 </div>
-                <div className="grid lg:grid-cols-[1fr_400px] gap-1 relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-transparent md:min-h-min">
+                <div className="relative grid min-h-[100vh] flex-1 gap-1 overflow-hidden rounded-xl border border-transparent md:min-h-min lg:grid-cols-[1fr_400px]">
                     <div className="h-full w-full rounded-xl">
-                       <Card className="bg-sidebar p-5 shadow-lg m-4 border border-sidebar-border p-2">
+                        <Card className="m-4 border border-sidebar-border bg-sidebar p-2 p-5 shadow-lg">
                             <CardHeader className="grid grid-cols-[1fr_60px] items-center">
                                 <CardTitle>Pending Appointments</CardTitle>
                                 {/* <a href={route('manage-appointments')} className="text-xs">View All</a> */}
                             </CardHeader>
 
                             <CardContent className="grid grid-cols-1 gap-3 pb-5">
-
                                 {recentServiceReq.slice(0, 6).map((req) => (
-                                    <div onClick={() => handlePendingClick(req.appointmentId)} className="flex items-center justify-between w-full p-2 border border-sidebar-border rounded-xl cursor-pointer hover:bg-sidebar-accent transition-colors">
+                                    <div
+                                        onClick={() => handlePendingClick(req.appointmentId)}
+                                        className="flex w-full cursor-pointer items-center justify-between rounded-xl border border-sidebar-border p-2 transition-colors hover:bg-sidebar-accent"
+                                    >
                                         <div className="flex items-center gap-2">
-
-                                            <Icon iconNode={req.serviceType.toLowerCase() === "hardware repair" ? LaptopMinimal : req.serviceType.toLowerCase() === "software solution" ? AppWindow : BrushCleaning } className={ `dark:text-[#ffffff] h-6 w-6 rounded-xl p-1 ${req.serviceType.toLowerCase() === "hardware repair" ? "bg-blue-500/30 text-blue-700" : req.serviceType.toLowerCase() === "software solution" ? "bg-green-500/30 text-green-700" : "bg-purple-500/30 text-purple-700" }` } strokeWidth={2} />
+                                            <Icon
+                                                iconNode={
+                                                    req.serviceType.toLowerCase() === 'hardware repair'
+                                                        ? LaptopMinimal
+                                                        : req.serviceType.toLowerCase() === 'software solution'
+                                                          ? AppWindow
+                                                          : BrushCleaning
+                                                }
+                                                className={`h-6 w-6 rounded-xl p-1 dark:text-[#ffffff] ${req.serviceType.toLowerCase() === 'hardware repair' ? 'bg-blue-500/30 text-blue-700' : req.serviceType.toLowerCase() === 'software solution' ? 'bg-green-500/30 text-green-700' : 'bg-purple-500/30 text-purple-700'}`}
+                                                strokeWidth={2}
+                                            />
                                             <div className="grid grid-cols-1 text-[0.8rem]">
                                                 <div className="font-semibold text-[#222831] dark:text-[#ffffff]">
                                                     {req.itemBrand} - {req.purpose}
                                                 </div>
                                                 <div className="text-[0.7rem] text-[#393E46] dark:text-[#ffffff]">
-                                                    Customer: { req.customerName } - ID: { req.appointmentId }
+                                                    Customer: {req.customerName} - ID: {req.appointmentId}
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className={`flex items-center justify-center w-22 text-[0.7rem] ${req.status.toLowerCase() === "pending" ? "bg-orange-500/30 text-orange-700" : req.status.toLowerCase() === "in-progress" ? "bg-yellow-500/30 text-yellow-700" : req.status.toLowerCase() === "completed" ? "bg-green-500/30 text-green-700" : "bg-red-500/30 text-red-700"} dark:text-[#ffffff] p-1 rounded-xl`}>
-                                            { req.status }
+                                        <div
+                                            className={`flex w-22 items-center justify-center text-[0.7rem] ${req.status.toLowerCase() === 'pending' ? 'bg-orange-500/30 text-orange-700' : req.status.toLowerCase() === 'in-progress' ? 'bg-yellow-500/30 text-yellow-700' : req.status.toLowerCase() === 'completed' ? 'bg-green-500/30 text-green-700' : 'bg-red-500/30 text-red-700'} rounded-xl p-1 dark:text-[#ffffff]`}
+                                        >
+                                            {req.status}
                                         </div>
                                     </div>
                                 ))}
-
                             </CardContent>
-
                         </Card>
                     </div>
-                    <div className="grid grid-cols-1 h-full p-0">
+                    <div className="grid h-full grid-cols-1 p-0">
                         <CollapsibleWrapper
                             title="Today's Appointments"
                             items={todaysAppointment}
                             visibleCount={3}
                             renderItem={(appointment: any) => (
-                                <div className={`flex items-center gap-2 rounded-[10px] ${appointment.serviceType.toLowerCase() === "home service" ? "bg-blue-500/30" : "bg-orange-500/30"} p-[10px]`}>
+                                <div
+                                    className={`flex items-center gap-2 rounded-[10px] ${appointment.serviceType.toLowerCase() === 'home service' ? 'bg-blue-500/30' : 'bg-orange-500/30'} p-[10px]`}
+                                >
                                     <Dot serviceType={appointment.serviceType} />
                                     <div>
-                                        <h1 className="text-[0.8rem] text-[#222831] font-semibold dark:text-[#ffffff]">
+                                        <h1 className="text-[0.8rem] font-semibold text-[#222831] dark:text-[#ffffff]">
                                             {appointment.setTime} - {appointment.serviceType}
                                         </h1>
-                                        <p className="text-[0.7rem] text-[#393E46] font-normal dark:text-[#ffffff]">
+                                        <p className="text-[0.7rem] font-normal text-[#393E46] dark:text-[#ffffff]">
                                             {appointment.client} - {appointment.purpose}
                                         </p>
                                     </div>
@@ -993,15 +890,21 @@ export default function Dashboard() {
                             items={availableStatusTechnician}
                             visibleCount={3}
                             renderItem={(technician: any) => (
-                                <div className="flex items-center justify-between" >
-                                    <div className="grid grid-cols-[1fr_100px] gap-5 items-center">
-                                        <Icon iconNode={technician.icon} className={ `h-6 w-6 ${ technician.status.toLowerCase() === "available" ? "text-green-700 bg-green-500/30" : technician.status.toLowerCase() === "busy" ? "text-orange-700 bg-orange-500/30" : "text-red-700 bg-red-500/30" } rounded-xl p-1 dark:text-[#ffffff]` } strokeWidth={2} />
-                                        <h1 className="text-[0.8rem] text-[#222831] font-normal dark:text-[#ffffff] whitespace-nowrap">
+                                <div className="flex items-center justify-between">
+                                    <div className="grid grid-cols-[1fr_100px] items-center gap-5">
+                                        <Icon
+                                            iconNode={technician.icon}
+                                            className={`h-6 w-6 ${technician.status.toLowerCase() === 'available' ? 'bg-green-500/30 text-green-700' : technician.status.toLowerCase() === 'busy' ? 'bg-orange-500/30 text-orange-700' : 'bg-red-500/30 text-red-700'} rounded-xl p-1 dark:text-[#ffffff]`}
+                                            strokeWidth={2}
+                                        />
+                                        <h1 className="text-[0.8rem] font-normal whitespace-nowrap text-[#222831] dark:text-[#ffffff]">
                                             {technician.name}
                                         </h1>
                                     </div>
-                                    <div className={`flex justify-center items-center font-medium w-20 text-[0.8rem] rounded-xl ${ technician.status.toLowerCase() === "available" ? "text-green-700 bg-green-500/30" : technician.status.toLowerCase() === "busy" ? "text-orange-700 bg-orange-500/30" : "text-red-700 bg-red-500/30" } p-[1px] dark:text-[#ffffff]`}>
-                                        { technician.status }
+                                    <div
+                                        className={`flex w-20 items-center justify-center rounded-xl text-[0.8rem] font-medium ${technician.status.toLowerCase() === 'available' ? 'bg-green-500/30 text-green-700' : technician.status.toLowerCase() === 'busy' ? 'bg-orange-500/30 text-orange-700' : 'bg-red-500/30 text-red-700'} p-[1px] dark:text-[#ffffff]`}
+                                    >
+                                        {technician.status}
                                     </div>
                                 </div>
                             )}
@@ -1010,19 +913,9 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            <AppointmentInfoModal 
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                appointmentId={selectedAppointmentId}
-            />
-<<<<<<< HEAD
-=======
+            <AppointmentInfoModal isOpen={isModalOpen} onClose={handleCloseModal} appointmentId={selectedAppointmentId} />
 
-            <ViewRatingsModal 
-                isOpen={isRatingsModalOpen}
-                onClose={() => setIsRatingsModalOpen(false)}
-            />
->>>>>>> 1b4a70aecac778728e0f46c40b89351295f7f424
+            <ViewRatingsModal isOpen={isRatingsModalOpen} onClose={() => setIsRatingsModalOpen(false)} />
         </AppLayout>
     );
 }

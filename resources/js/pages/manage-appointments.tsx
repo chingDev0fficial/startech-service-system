@@ -3,10 +3,11 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { useEcho } from '@laravel/echo-react';
-import { AlertCircle, Check, CheckCircle, Eye, X } from 'lucide-react';
+import { AlertCircle, Check, CheckCircle, Eye, LoaderCircle, X } from 'lucide-react';
 import { FormEventHandler, useEffect, useState } from 'react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import { Button } from '@/components/ui/button';
@@ -276,6 +277,10 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
                             </Select>
                         </div>
 
+                        <div>
+                            <Input name="fixedPrice"></Input>
+                        </div>
+
                         <div className="flex flex-col justify-end gap-2 pt-4 sm:flex-row">
                             <button
                                 type="button"
@@ -299,7 +304,7 @@ function SetAppointmentModal({ isOpen, onClose, appointmentData }) {
     );
 }
 
-export default function ManageAccount() {
+export default function ManageAppointments() {
     const echo = useEcho();
     const [fetchedAppointments, setFetchedAppointments] = useState<any[]>([]);
     const [fetchLoading, setFetchLoading] = useState(true);
@@ -397,7 +402,7 @@ export default function ManageAccount() {
             });
 
             const data = await res.json();
-            console.log(data);
+            return appointmentId;
         } catch (err) {
             console.error('Error accepting appointment:', err);
         }
@@ -429,9 +434,17 @@ export default function ManageAccount() {
                     </button>
                     <button
                         className="transform cursor-pointer rounded-md bg-red-700 p-2 text-[#222831] text-[#ffffff] transition-transform duration-300 hover:scale-105"
-                        onClick={() => handleDecline(row.appointmentId)}
+                        onClick={() =>
+                            handleDecline(row.appointmentId).then((appointmentId) => {
+                                setDeclineProcessing((prev) => {
+                                    const newSet = new Set(prev);
+                                    newSet.delete(appointmentId);
+                                    return newSet;
+                                });
+                            })
+                        }
                     >
-                        <X className="h-4 w-4" />
+                        {declineProcessLoading.has(row.appointmentId) ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
                     </button>
                 </div>
             ),

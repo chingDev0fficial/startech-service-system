@@ -497,8 +497,6 @@ export default function ClientTransactions() {
                 setLoading(false);
             });
 
-        console.log(transactions);
-
         echo.channel('transactions').listen('.transactions.retrieve', (event: any) => {
             setTransactions((prev) =>
                 prev
@@ -626,7 +624,7 @@ export default function ClientTransactions() {
         window.location.href = '/client';
     };
 
-    // console.log('Transactions:', transactions);
+    console.log('Transactions:', transactions);
 
     return (
         <>
@@ -847,7 +845,13 @@ export default function ClientTransactions() {
                                                             </h3>
                                                             <p className="mt-1 text-xs text-gray-500 sm:text-sm">ID: {record.id}</p>
                                                         </div>
-                                                        <span className={getStatusBadge(record.status)}>{record.status}</span>
+                                                        {record.mark_as === 'accepted' ? (
+                                                            <span className={getStatusBadge(record.status)}>{record.status}</span>
+                                                        ) : record.mark_as === 'declined' ? (
+                                                            <span className={getStatusBadge('declined')}>Declined</span>
+                                                        ) : (
+                                                            <span className={getStatusBadge(record.status)}>{record.status}</span>
+                                                        )}
                                                     </div>
 
                                                     {/* Details Grid */}

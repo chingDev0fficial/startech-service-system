@@ -3,6 +3,7 @@ import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useEcho } from '@laravel/echo-react';
 import { LoaderCircle } from 'lucide-react';
+
 import { useEffect, useState } from 'react';
 
 import { X } from 'lucide-react';

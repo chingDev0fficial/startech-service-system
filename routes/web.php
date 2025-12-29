@@ -58,14 +58,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:super user'])->group(function () {
         Route::get('dashboard/fetch-todays-appointment', [DashboardController::class, 'fetchTodaysAppoint'])
             ->name('fetch.todaysAppoint');
-        
-        
-        
-            // Route::get('dashboard/fetch-ratings', [DashboardController::class, 'fetchRatings'])
-        //     ->name('fetch.ratings');
-
-
-
         Route::get('dashboard/get-service-price', [DashboardController::class, 'getServicePrice'])
             ->name('get.service.price');
         Route::get('dashboard/fetch-appointment-data/{id}', [DashboardController::class, 'fetchAppointmentData'])
