@@ -61,6 +61,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading, fixPrice }: SetC
     const [totalValue, setTotalValue] = useState<string>('0.00');
     const [amount, setAmount] = useState<string>('');
     const [error, setError] = useState<string>('');
+    // const [isBtnClickable, setIsBtnClickable] = useState<boolean>(false);
     // const [openNote, setOpenNote] = useState<boolean>(false);
 
     const handleNoteChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -169,6 +170,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading, fixPrice }: SetC
                             className={`w-full rounded-md border px-3 py-2 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none ${
                                 error ? 'border-red-500' : 'border-gray-300'
                             }`}
+                            required
                         />
                         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
                     </div>
@@ -196,6 +198,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading, fixPrice }: SetC
                             className={`w-full resize-none rounded-md border px-3 py-2 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none ${
                                 error ? 'border-red-500' : 'border-gray-300'
                             }`}
+                            required
                         />
                     </div>
                     {/* </>
@@ -209,7 +212,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading, fixPrice }: SetC
                         <Button onClick={handleClose} variant="outline" disabled={isLoading}>
                             Cancel
                         </Button>
-                        <Button onClick={handleSave} disabled={isLoading} className="bg-green-600 hover:bg-green-700">
+                        <Button onClick={handleSave} disabled={isLoading || !note} className="bg-green-600 hover:bg-green-700">
                             {isLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Mark Complete'}
                         </Button>
                     </div>
