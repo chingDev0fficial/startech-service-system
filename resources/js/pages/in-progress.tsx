@@ -56,10 +56,12 @@ interface SetCompleteModalProps {
 
 const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading, fixPrice }: SetCompleteModalProps) => {
     const [note, setNote] = useState<string>('');
-    const [isNoteNotEmpty, setIsNoteNotEmpty] = useState<boolean>(false);
+    // const [isNoteNotEmpty, setIsNoteNotEmpty] = useState<boolean>(false);
+    const [addOnsValue, setAddOnsValue] = useState<string>('0.00');
+    const [totalValue, setTotalValue] = useState<string>('0.00');
     const [amount, setAmount] = useState<string>('');
     const [error, setError] = useState<string>('');
-    const [openNote, setOpenNote] = useState<boolean>(false);
+    // const [openNote, setOpenNote] = useState<boolean>(false);
 
     const handleNoteChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const value = e.target.value;
@@ -71,6 +73,8 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading, fixPrice }: SetC
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const value = e.target.value;
 
+        console.log(value);
+
         // Allow only numbers and decimal points
         if (value === '' || /^\d*\.?\d*$/.test(value)) {
             setAmount(value);
@@ -78,18 +82,25 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading, fixPrice }: SetC
 
             // Check if amount is 0 or empty to show note field
             const numericValue = parseFloat(value);
-            if (value === '' || isNaN(numericValue) || numericValue <= 0) {
-                setOpenNote(true);
-                setIsNoteNotEmpty(true);
-            } else {
-                setOpenNote(false);
-                setIsNoteNotEmpty(false);
-            }
+            const addPrice = isNaN(numericValue) ? 0 : numericValue;
+            const total = Number(fixPrice) + Number(addPrice);
+            const addPriceTransform = addPrice.toFixed(2);
+            const totalFormatted = total.toFixed(2);
+
+            setAddOnsValue(addPriceTransform);
+            setTotalValue(totalFormatted);
+            // if (value === '' || isNaN(numericValue) || numericValue <= 0) {
+            //     setOpenNote(true);
+            //     setIsNoteNotEmpty(true);
+            // } else {
+            //     setOpenNote(true);
+            //     setIsNoteNotEmpty(false);
+            // }
         }
     };
 
     const handleSave = () => {
-        const numericAmount = parseFloat(amount);
+        const numericAmount = parseFloat(totalValue);
 
         if (!amount || amount.trim() === '') {
             setError('Amount is required');
@@ -114,10 +125,16 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading, fixPrice }: SetC
         setAmount('');
         setNote('');
         setError('');
-        setOpenNote(false);
-        setIsNoteNotEmpty(false);
+        // setOpenNote(false);
+        // setIsNoteNotEmpty(false);
         onClose();
     };
+
+    // const handleInputAddOnsPrice = (e: { target: { value: any } }) => {
+    //     let value = e.target.value;
+
+    //     console.log(value);
+    // };
 
     return (
         <Modal
@@ -136,8 +153,7 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading, fixPrice }: SetC
                 </Typography>
 
                 <Box sx={{ mt: 2 }}>
-                    <p>Please enter the service amount and confirm completion.</p>
-                    <p className="mb-4 text-[13px] text-[#444]">Fix Price: {fixPrice}</p>
+                    <p className="mb-4">Please enter the service amount and confirm completion.</p>
 
                     <div className="mb-4">
                         <label htmlFor="amount" className="mb-2 block text-sm font-medium text-gray-700">
@@ -157,45 +173,43 @@ const SetCompleteModal = ({ isOpen, onClose, onSave, isLoading, fixPrice }: SetC
                         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
                     </div>
 
-                    {openNote && (
-                        <>
-                            <div className="color-[#FFFFF] mb-4 rounded-sm border border-[#FFA500] bg-[#FFA500]/20 p-3">
-                                <p className="text-sm font-semibold">⚠️ Note Required</p>
-                                <p className="mt-1 text-sm">
-                                    Since the amount is ₱0, please explain why no charge is being applied. This will notify the admin.
-                                </p>
-                            </div>
+                    {/* {openNote && (
+                        <> */}
+                    {/* <div className="color-[#FFFFF] mb-4 rounded-sm border border-[#FFA500] bg-[#FFA500]/20 p-3">
+                        <p className="text-sm font-semibold">⚠️ Note Required</p>
+                        <p className="mt-1 text-sm">
+                            Since the amount is ₱0, please explain why no charge is being applied. This will notify the admin.
+                        </p>
+                    </div> */}
 
-                            <div className="mb-1">
-                                <label htmlFor="note" className="mb-2 block text-sm font-medium text-gray-700">
-                                    Technician Note <span className="text-red-500">*</span>
-                                </label>
-                                <textarea
-                                    id="note"
-                                    value={note}
-                                    onChange={handleNoteChange}
-                                    placeholder="Explain why no charge is being applied..."
-                                    disabled={isLoading}
-                                    rows={4}
-                                    className={`w-full resize-none rounded-md border px-3 py-2 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none ${
-                                        error ? 'border-red-500' : 'border-gray-300'
-                                    }`}
-                                />
-                            </div>
-                        </>
-                    )}
+                    <div className="mb-1">
+                        <label htmlFor="note" className="mb-2 block text-sm font-medium text-gray-700">
+                            Technician Note <span className="text-red-500">*</span>
+                        </label>
+                        <textarea
+                            id="note"
+                            value={note}
+                            onChange={handleNoteChange}
+                            placeholder="Explain why no charge is being applied..."
+                            disabled={isLoading}
+                            rows={4}
+                            className={`w-full resize-none rounded-md border px-3 py-2 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none ${
+                                error ? 'border-red-500' : 'border-gray-300'
+                            }`}
+                        />
+                    </div>
+                    {/* </>
+                    )} */}
 
-                    <p>Pre-Price</p>
+                    <p className="text-[13px] text-[#444]">Fix Price: {fixPrice}</p>
+                    <p className="text-[13px] text-[#444]">Add Price: {addOnsValue}</p>
+                    <p className="text-[13px] text-[#444]">Total: {totalValue}</p>
 
                     <div className="flex justify-end gap-2">
                         <Button onClick={handleClose} variant="outline" disabled={isLoading}>
                             Cancel
                         </Button>
-                        <Button
-                            onClick={handleSave}
-                            disabled={isLoading || (isNoteNotEmpty && note.trim() === '')}
-                            className="bg-green-600 hover:bg-green-700"
-                        >
+                        <Button onClick={handleSave} disabled={isLoading} className="bg-green-600 hover:bg-green-700">
                             {isLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : 'Mark Complete'}
                         </Button>
                     </div>

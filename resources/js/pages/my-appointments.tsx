@@ -361,7 +361,7 @@ export default function TechnicianAppointments() {
 
     const filteredServices = services.filter((appointment) => {
         // Exclude completed appointments from display
-        if (appointment.status === 'completed') {
+        if (appointment.status === 'completed' || appointment.status === 'canceled') {
             return false;
         }
         return statusFilter === 'all' || appointment.status.toLowerCase().replace(' ', '') === statusFilter;
